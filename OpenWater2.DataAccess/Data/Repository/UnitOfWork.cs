@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
-    
+
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _db;
@@ -14,9 +14,12 @@ namespace OpenWater2.DataAccess.Data.Repository
         {
             _db = db;
             tEpaOrgsRepository = new TEpaOrgsRepository(_db);
+            wqxOrganizationRepository = new TWqxOrganizationRepository(_db);
         }
 
         public ITEpaOrgsRepository tEpaOrgsRepository { get; private set; }
+
+        public TWqxOrganizationRepository wqxOrganizationRepository { get; private set; }
 
         public void Dispose()
         {
