@@ -6,6 +6,8 @@ using OpenWater2.Models.Model;
 using OpenWater2.DataAccess.Data.Repository;
 using Microsoft.Extensions.Options;
 using IdentityServer4.EntityFramework.Options;
+using Microsoft.Data.Sqlite;
+using TestSupport.EfHelpers;
 
 namespace Open_Waters2.Tests
 {
@@ -16,19 +18,43 @@ namespace Open_Waters2.Tests
             [Fact]
             public void TestMethod1()
             {
+                //This creates the SQLite connection string to in-memory database
+                var connectionStringBuilder = new SqliteConnectionStringBuilder
+                { DataSource = ":memory:" };
+                var connectionString = connectionStringBuilder.ToString();
+
+                //This creates a SqliteConnectionwith that string
+                var connection = new SqliteConnection(connectionString);
+
+                //The connection MUST be opened here
+                connection.Open();
+
+                var option2 = new DbContextOptionsBuilder<ApplicationDbContext>()
+                                   .UseSqlite(connection)
+                                   .Options;
                 var option = new DbContextOptionsBuilder<ApplicationDbContext>()
                                 .UseInMemoryDatabase("dbname")
                                 .Options;
                 var option1 = new DbContextOptionsBuilder<ApplicationDbContext>()
                                 .UseSqlServer("data source=DESKTOP-5ANGL4D;initial catalog=OpenEnvironment;integrated security=True")
                                 .Options;
+                
                 IOptions<OperationalStoreOptions> operationalStoreOptions
                     = Options.Create(new OperationalStoreOptions());
                 SetupTestData(option, operationalStoreOptions);
 
+                var mydb = SqliteInMemory.CreateOptions<ApplicationDbContext>();
+                //var _db2 = new ApplicationDbContext(mydb, operationalStoreOptions);
+
                 var _db = new ApplicationDbContext(option1, operationalStoreOptions);
-                UnitOfWork unitOfWork = new UnitOfWork(_db);
-                var result = unitOfWork.wqxOrganizationRepository.GetAll();
+                using(var _db2 = new ApplicationDbContext(mydb, operationalStoreOptions))
+                {
+                    _db2.Database.EnsureCreated();
+                    
+                    UnitOfWork unitOfWork = new UnitOfWork(_db2);
+                    var result = unitOfWork.wqxOrganizationRepository.GetAll();
+                }
+                
             }
 
            
@@ -54,5 +80,8 @@ namespace Open_Waters2.Tests
             };
             return orgs;
         }
+
+        
     }
+
 }

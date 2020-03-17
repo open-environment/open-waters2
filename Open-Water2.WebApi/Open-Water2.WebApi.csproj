@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Open_Water2.WebApi</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenWater2.DataAccess\OpenWater2.DataAccess.csproj" />
+    <ProjectReference Include="..\OpenWater2.Utility\OpenWater2.Utility.csproj" />
+  </ItemGroup>
+
+
+</Project>
