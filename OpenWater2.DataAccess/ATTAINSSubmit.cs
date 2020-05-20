@@ -8,29 +8,32 @@ using System.Threading;
 using System.IO;
 using Ionic.Zip;
 using System.Xml.Linq;
+using OpenWater2.DataAccess.Data;
+using OpenWater2.Models.Model;
 
 namespace OpwnWater2.DataAccess
 {
 
     public class ATTAINSSubmit
     {
-
+        private static ApplicationDbContext _db;
         /// <summary>
         /// will be called by windows service to loop through all unsubmitted ATTAIN reports
         /// </summary>
-        public static void ATTAINS_Master()
+        public static void ATTAINS_Master(ApplicationDbContext db)
         {
-
+            _db = db;
         }
 
         public static void ATTAINS_byReport(int ReportIDX)
         {
             //get OrgID for the report 
-            T_ATTAINS_REPORT r = db_Attains.GetT_ATTAINS_REPORT_byID(ReportIDX);
+
+            TAttainsReport r = db_Attains.GetT_ATTAINS_REPORT_byID(ReportIDX);
             if (r != null)
             {
                 //get CDX username, password, and CDX destination URL
-                CDXCredentials cred = WQXSubmit.GetCDXSubmitCredentials2(r.ORG_ID);
+                CDXCredentials cred = WQXSubmit.GetCDXSubmitCredentials2(r.OrgId);
 
                 //*******AUTHENTICATE*********************************************************************************************************
                 string token = WQXSubmit.AuthHelper(cred.userID, cred.credential, "Password", "default", cred.NodeURL);
@@ -40,7 +43,7 @@ namespace OpwnWater2.DataAccess
                 byte[] bytes = Utils.StrToByteArray(requestXml);
                 if (bytes == null) return;
 
-                StatusResponseType subStatus = WQXSubmit.SubmitHelper(cred.NodeURL, token, "ATTAINS", "default", bytes, "submit.xml", DocumentFormatType.XML, "1");
+                NetworkNode2.StatusResponseType subStatus = WQXSubmit.SubmitHelper(cred.NodeURL, token, "ATTAINS", "default", bytes, "submit.xml", NetworkNode2.DocumentFormatType.XML, "1");
                 if (subStatus != null)
                 {
                     //*******GET STATUS********************************************************************************************************
@@ -50,7 +53,7 @@ namespace OpwnWater2.DataAccess
                     {
                         i += 1;
                         Thread.Sleep(10000);
-                        StatusResponseType gsResp = WQXSubmit.GetStatusHelper(cred.NodeURL, token, subStatus.transactionId);
+                        NetworkNode2.StatusResponseType gsResp = WQXSubmit.GetStatusHelper(cred.NodeURL, token, subStatus.transactionId);
                         if (gsResp != null)
                         {
                             status = gsResp.status.ToString();

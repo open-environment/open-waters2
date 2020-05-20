@@ -1,12 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using OpenWater2.Models.Model;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+//using System.Web;
+//using System.Web.UI;
+//using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
 
@@ -22,9 +24,9 @@ namespace OpwnWater2.DataAccess
         public string _addfield { get; set; }
     }
 
-    internal static class Utils
+    public static class Utils
     {
-        internal static bool ValidateParameter(ref string param, bool checkForNull, bool checkIfEmpty, bool checkForCommas, int maxSize)
+        public static bool ValidateParameter(ref string param, bool checkForNull, bool checkIfEmpty, bool checkForCommas, int maxSize)
         {
             if (param == null)
             {
@@ -45,7 +47,7 @@ namespace OpwnWater2.DataAccess
             return true;
         }
 
-        internal static bool ValidateParameter(ref string param, bool checkForNull, bool checkIfEmpty, bool checkForCommas, int maxSize, int minSize)
+        public static bool ValidateParameter(ref string param, bool checkForNull, bool checkIfEmpty, bool checkForCommas, int maxSize, int minSize)
         {
             if (param == null)
             {
@@ -156,16 +158,18 @@ namespace OpwnWater2.DataAccess
         /// <summary>
         ///  Binds a dropdownlist to a datasource and adds a blank item at the beginning.
         /// </summary>
-        public static void BindList(DropDownList list, ObjectDataSource datasource, string valueName, string textName)
-        {
-            list.Items.Clear();
-            list.Items.Insert(0, "");
-            list.AppendDataBoundItems = true;
-            list.DataValueField = valueName;
-            list.DataTextField = textName;
-            list.DataSource = datasource;
-            list.DataBind();
-        }
+        
+        //TODO: Web.UI not supported in core, need to fix
+        //public static void BindList(DropDownList list, ObjectDataSource datasource, string valueName, string textName)
+        //{
+        //    list.Items.Clear();
+        //    list.Items.Insert(0, "");
+        //    list.AppendDataBoundItems = true;
+        //    list.DataValueField = valueName;
+        //    list.DataTextField = textName;
+        //    list.DataSource = datasource;
+        //    list.DataBind();
+        //}
 
         /// <summary>
         ///  Generic data type converter 
@@ -279,41 +283,50 @@ namespace OpwnWater2.DataAccess
         /// <param name="TimeZoneStandardCode">WQX Standard Code</param>
         /// <param name="TimeZoneDaylightCode">WQX Daylight Savings Code</param>
         /// <returns></returns>
-        public static string GetWQXTimeZoneByDate(DateTime dt)
+        //TODO: Handle session in core
+        public static string GetWQXTimeZoneByDate(DateTime dt, IHttpContextAccessor httpcontextaccessor)
         {
             try
             {
-                string OrgID = (HttpContext.Current.Session["OrgID"] ?? "").ToString();
+                //string OrgID = (HttpContext.Current.Session["OrgID"] ?? "").ToString();
+                string OrgID = httpcontextaccessor.HttpContext.Session.GetString("OrgID");
 
                 //see if session has any timezone value
-                if ((HttpContext.Current.Session[OrgID + "_TZ"] ?? "") == "")
+                //if ((HttpContext.Current.Session[OrgID + "_TZ"] ?? "") == "")
+                if ((httpcontextaccessor.HttpContext.Session.GetString("OrgID" + "_TZ") ?? "") == "")
                 {
                     //no default time zone found in session, need to retrieve from database
                     string TimeZoneID = "";
 
-                    T_WQX_ORGANIZATION org = db_WQX.GetWQX_ORGANIZATION_ByID(OrgID);
+                    TWqxOrganization org = db_WQX.GetWQX_ORGANIZATION_ByID(OrgID);
                     if (org != null)
                     {
-                        if ((org.DEFAULT_TIMEZONE ?? "") != "")
-                            TimeZoneID = org.DEFAULT_TIMEZONE;
+                        if ((org.DefaultTimezone ?? "") != "")
+                            TimeZoneID = org.DefaultTimezone;
                         else
                             TimeZoneID = db_Ref.GetT_OE_APP_SETTING("Default Timezone");
                     }
 
-                    T_WQX_REF_DEFAULT_TIME_ZONE tz = db_Ref.GetT_WQX_REF_DEFAULT_TIME_ZONE_ByName(TimeZoneID);
+                    TWqxRefDefaultTimeZone tz = db_Ref.GetT_WQX_REF_DEFAULT_TIME_ZONE_ByName(TimeZoneID);
                     if (tz != null)
                     {
-                        HttpContext.Current.Session[OrgID + "_TZ"] = tz.OFFICIAL_TIME_ZONE_NAME;
-                        HttpContext.Current.Session[OrgID + "_TZ_S"] = tz.WQX_CODE_STANDARD;
-                        HttpContext.Current.Session[OrgID + "_TZ_D"] = tz.WQX_CODE_DAYLIGHT;
+                        //HttpContext.Current.Session[OrgID + "_TZ"] = tz.OfficialTimeZoneName;
+                        httpcontextaccessor.HttpContext.Session.SetString("OrgID" + "_TZ", tz.OfficialTimeZoneName);
+                        //HttpContext.Current.Session[OrgID + "_TZ_S"] = tz.WqxCodeStandard;
+                        httpcontextaccessor.HttpContext.Session.SetString("OrgID" + "_TZ_S", tz.WqxCodeStandard);
+                        //HttpContext.Current.Session[OrgID + "_TZ_D"] = tz.WqxCodeDaylight;
+                        httpcontextaccessor.HttpContext.Session.SetString("OrgID" + "_TZ_D", tz.WqxCodeDaylight);
                     }
                 }
 
-                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById(HttpContext.Current.Session[OrgID + "_TZ"].ToString());
+                //TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById(HttpContext.Current.Session[OrgID + "_TZ"].ToString());
+                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById(httpcontextaccessor.HttpContext.Session.GetString("OrgID" + "_TZ"));
                 if (tzi.IsDaylightSavingTime(dt))
-                    return HttpContext.Current.Session[OrgID + "_TZ_S"].ToString();
+                    //return HttpContext.Current.Session[OrgID + "_TZ_S"].ToString();
+                    return httpcontextaccessor.HttpContext.Session.GetString("OrgID" + "_TZ_S");
                 else
-                    return HttpContext.Current.Session[OrgID + "_TZ_D"].ToString();
+                    //return HttpContext.Current.Session[OrgID + "_TZ_D"].ToString();
+                    return httpcontextaccessor.HttpContext.Session.GetString("OrgID" + "_TZ_D");
             }
             catch
             {
@@ -342,96 +355,99 @@ namespace OpwnWater2.DataAccess
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="gv"></param>
-        public static void RenderGridToExcelFormat(string fileName, GridView gv)
-        {
-            HttpContext.Current.Response.Clear();
-            HttpContext.Current.Response.AddHeader("content-disposition", string.Format("attachment; filename={0}", fileName));
-            HttpContext.Current.Response.ContentType = "application/vnd.ms-excel";
+        //TODO: Web.UI not supported in core, need to fix
+        //public static void RenderGridToExcelFormat(string fileName, GridView gv)
+        //{
+        //    HttpContext.Current.Response.Clear();
+        //    HttpContext.Current.Response.AddHeader("content-disposition", string.Format("attachment; filename={0}", fileName));
+        //    HttpContext.Current.Response.ContentType = "application/vnd.ms-excel";
 
-            using (StringWriter sw = new StringWriter())
-            {
-                using (HtmlTextWriter htw = new HtmlTextWriter(sw))
-                {
-                    //  Create a form to contain the grid 
-                    Table table = new Table();
+        //    using (StringWriter sw = new StringWriter())
+        //    {
+        //        using (HtmlTextWriter htw = new HtmlTextWriter(sw))
+        //        {
+        //            //  Create a form to contain the grid 
+        //            Table table = new Table();
 
-                    //  add the header row to the table 
-                    if (gv.HeaderRow != null)
-                    {
-                        PrepareControlForExport(gv.HeaderRow);
-                        table.Rows.Add(gv.HeaderRow);
-                    }
+        //            //  add the header row to the table 
+        //            if (gv.HeaderRow != null)
+        //            {
+        //                PrepareControlForExport(gv.HeaderRow);
+        //                table.Rows.Add(gv.HeaderRow);
+        //            }
 
-                    //  add each of the data rows to the table 
-                    foreach (GridViewRow row in gv.Rows)
-                    {
-                        PrepareControlForExport(row);
-                        table.Rows.Add(row);
-                    }
+        //            //  add each of the data rows to the table 
+        //            foreach (GridViewRow row in gv.Rows)
+        //            {
+        //                PrepareControlForExport(row);
+        //                table.Rows.Add(row);
+        //            }
 
-                    //  add the footer row to the table 
-                    if (gv.FooterRow != null)
-                    {
-                        PrepareControlForExport(gv.FooterRow);
-                        table.Rows.Add(gv.FooterRow);
-                    }
+        //            //  add the footer row to the table 
+        //            if (gv.FooterRow != null)
+        //            {
+        //                PrepareControlForExport(gv.FooterRow);
+        //                table.Rows.Add(gv.FooterRow);
+        //            }
 
-                    //  render the table into the htmlwriter 
-                    table.RenderControl(htw);
+        //            //  render the table into the htmlwriter 
+        //            table.RenderControl(htw);
 
-                    //  render the htmlwriter into the response 
-                    HttpContext.Current.Response.Write(sw.ToString());
-                    HttpContext.Current.Response.End();
-                }
-            }
+        //            //  render the htmlwriter into the response 
+        //            HttpContext.Current.Response.Write(sw.ToString());
+        //            HttpContext.Current.Response.End();
+        //        }
+        //    }
 
-        }
+        //}
 
         /// <summary> 
         /// Replace any of the contained controls with literals 
         /// </summary> 
         /// <param name="control"></param> 
-        private static void PrepareControlForExport(Control control)
-        {
-            for (int i = 0; i < control.Controls.Count; i++)
-            {
-                Control current = control.Controls[i];
-                if (current is LinkButton)
-                {
-                    control.Controls.Remove(current);
-                    control.Controls.AddAt(i, new LiteralControl((current as LinkButton).Text));
-                }
-                else if (current is ImageButton)
-                {
-                    control.Controls.Remove(current);
-                    control.Controls.AddAt(i, new LiteralControl((current as ImageButton).AlternateText));
-                }
-                else if (current is Image)
-                {
-                    control.Controls.Remove(current);
-                }
-                else if (current is HyperLink)
-                {
-                    control.Controls.Remove(current);
-                    control.Controls.AddAt(i, new LiteralControl((current as HyperLink).Text));
-                }
-                else if (current is DropDownList)
-                {
-                    control.Controls.Remove(current);
-                    control.Controls.AddAt(i, new LiteralControl((current as DropDownList).SelectedItem.Text));
-                }
-                else if (current is CheckBox)
-                {
-                    control.Controls.Remove(current);
-                    control.Controls.AddAt(i, new LiteralControl((current as CheckBox).Checked ? "True" : "False"));
-                }
+        
+        //TODO: Web.UI not supported in core, need to fix
+        //private static void PrepareControlForExport(Control control)
+        //{
+        //    for (int i = 0; i < control.Controls.Count; i++)
+        //    {
+        //        Control current = control.Controls[i];
+        //        if (current is LinkButton)
+        //        {
+        //            control.Controls.Remove(current);
+        //            control.Controls.AddAt(i, new LiteralControl((current as LinkButton).Text));
+        //        }
+        //        else if (current is ImageButton)
+        //        {
+        //            control.Controls.Remove(current);
+        //            control.Controls.AddAt(i, new LiteralControl((current as ImageButton).AlternateText));
+        //        }
+        //        else if (current is Image)
+        //        {
+        //            control.Controls.Remove(current);
+        //        }
+        //        else if (current is HyperLink)
+        //        {
+        //            control.Controls.Remove(current);
+        //            control.Controls.AddAt(i, new LiteralControl((current as HyperLink).Text));
+        //        }
+        //        else if (current is DropDownList)
+        //        {
+        //            control.Controls.Remove(current);
+        //            control.Controls.AddAt(i, new LiteralControl((current as DropDownList).SelectedItem.Text));
+        //        }
+        //        else if (current is CheckBox)
+        //        {
+        //            control.Controls.Remove(current);
+        //            control.Controls.AddAt(i, new LiteralControl((current as CheckBox).Checked ? "True" : "False"));
+        //        }
 
-                if (current.HasControls())
-                {
-                    PrepareControlForExport(current);
-                }
-            }
-        }
+        //        if (current.HasControls())
+        //        {
+        //            PrepareControlForExport(current);
+        //        }
+        //    }
+        //}
 
 
         /// <summary>
@@ -439,171 +455,201 @@ namespace OpwnWater2.DataAccess
         /// </summary>
         /// <param name="User"></param>
         /// <returns></returns>
-        public static int GetUserIDX(System.Security.Principal.IPrincipal User)
+        //public static int GetUserIDX(System.Security.Principal.IPrincipal User)
+        //{
+        //    try
+        //    {
+        //        if (System.Configuration.ConfigurationManager.AppSettings["UseIdentityServer"] == "true")
+        //        {
+        //            var identity = (System.Security.Claims.ClaimsIdentity)User.Identity;
+        //            IEnumerable<System.Security.Claims.Claim> claims2 = identity.Claims;
+        //            var UserIDXLoc = (from p in claims2 where p.Type == "UserIDX" select p.Value).FirstOrDefault();
+        //            return UserIDXLoc.ConvertOrDefault<int>();
+        //        }
+        //        else
+        //            return (int)System.Web.Security.Membership.GetUser().ProviderUserKey;
+        //    }
+        //    catch
+        //    {
+        //        //if fails, we don't care why, but need to return 0 to indicate not authenticated
+        //        return 0;
+        //    }
+        //}
+
+
+
+        public static void PostLoginUser(string UserID, IHttpContextAccessor httpcontextaccessor)
         {
-            try
-            {
-                if (System.Configuration.ConfigurationManager.AppSettings["UseIdentityServer"] == "true")
-                {
-                    var identity = (System.Security.Claims.ClaimsIdentity)User.Identity;
-                    IEnumerable<System.Security.Claims.Claim> claims2 = identity.Claims;
-                    var UserIDXLoc = (from p in claims2 where p.Type == "UserIDX" select p.Value).FirstOrDefault();
-                    return UserIDXLoc.ConvertOrDefault<int>();
-                }
-                else
-                    return (int)System.Web.Security.Membership.GetUser().ProviderUserKey;
-            }
-            catch
-            {
-                //if fails, we don't care why, but need to return 0 to indicate not authenticated
-                return 0;
-            }
-        }
 
-
-
-        public static void PostLoginUser(string UserID)
-        {
-            T_OE_USERS u = db_Accounts.GetT_OE_USERSByID(UserID);
+            TOeUsers u = db_Accounts.GetT_OE_USERSByID(UserID);
             if (u != null)
             {
                 //if user only belongs to 1 org, update the default org id
-                if (u.DEFAULT_ORG_ID == null)
+                if (u.DefaultOrgId == null)
                 {
-                    List<T_WQX_ORGANIZATION> os = db_WQX.GetWQX_USER_ORGS_ByUserIDX(u.USER_IDX, false);
+                    List<TWqxOrganization> os = db_WQX.GetWQX_USER_ORGS_ByUserIDX(u.UserIdx, false);
                     if (os.Count == 1)
                     {
-                        db_Accounts.UpdateT_OE_USERSDefaultOrg(u.USER_IDX, os[0].ORG_ID);
-                        HttpContext.Current.Session["OrgID"] = os[0].ORG_ID; //added 1/6/2014
+                        db_Accounts.UpdateT_OE_USERSDefaultOrg(u.UserIdx, os[0].OrgId);
+                        httpcontextaccessor.HttpContext.Session.SetString("OrgID", os[0].OrgId);
+                        //HttpContext.Current.Session["OrgID"] = os[0].OrgId; //added 1/6/2014
                     }
                 }
 
-                if (u.INITAL_PWD_FLAG == false)
+                if (u.InitalPwdFlag == false)
                 {
-                    db_Accounts.UpdateT_OE_USERS(u.USER_IDX, null, null, null, null, null, null, null, null, System.DateTime.Now, null, null, "system");
+                    db_Accounts.UpdateT_OE_USERS(u.UserIdx, null, null, null, null, null, null, null, null, System.DateTime.Now, null, null, "system");
 
                     //set important session variables
-                    HttpContext.Current.Session["UserIDX"] = u.USER_IDX;
-                    HttpContext.Current.Session["OrgID"] = u.DEFAULT_ORG_ID; //added 1/6/2014
-                    HttpContext.Current.Session["MLOC_HUC_EIGHT"] = false;
-                    HttpContext.Current.Session["MLOC_HUC_TWELVE"] = false;
-                    HttpContext.Current.Session["MLOC_TRIBAL_LAND"] = false;
-                    HttpContext.Current.Session["MLOC_SOURCE_MAP_SCALE"] = false;
-                    HttpContext.Current.Session["MLOC_HORIZ_COLL_METHOD"] = true;
-                    HttpContext.Current.Session["MLOC_HORIZ_REF_DATUM"] = true;
-                    HttpContext.Current.Session["MLOC_VERT_MEASURE"] = false;
-                    HttpContext.Current.Session["MLOC_COUNTRY_CODE"] = true;
-                    HttpContext.Current.Session["MLOC_STATE_CODE"] = true;
-                    HttpContext.Current.Session["MLOC_COUNTY_CODE"] = true;
-                    HttpContext.Current.Session["MLOC_WELL_DATA"] = false;
-                    HttpContext.Current.Session["MLOC_WELL_TYPE"] = false;
-                    HttpContext.Current.Session["MLOC_AQUIFER_NAME"] = false;
-                    HttpContext.Current.Session["MLOC_FORMATION_TYPE"] = false;
-                    HttpContext.Current.Session["MLOC_WELLHOLE_DEPTH"] = false;
-                    HttpContext.Current.Session["PROJ_SAMP_DESIGN_TYPE_CD"] = false;
-                    HttpContext.Current.Session["PROJ_QAPP_APPROVAL"] = false;
-                    HttpContext.Current.Session["SAMP_ACT_END_DT"] = false;
-                    HttpContext.Current.Session["SAMP_COLL_METHOD"] = false;
-                    HttpContext.Current.Session["SAMP_COLL_EQUIP"] = false;
-                    HttpContext.Current.Session["SAMP_PREP"] = false;
-                    HttpContext.Current.Session["SAMP_DEPTH"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetInt32("UserIDX", u.UserIdx);
+                    //HttpContext.Current.Session["UserIDX"] = u.USER_IDX;
+                    httpcontextaccessor.HttpContext.Session.SetString("UserIDX", u.DefaultOrgId);
+                    //HttpContext.Current.Session["OrgID"] = u.DEFAULT_ORG_ID; //added 1/6/2014
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_HUC_EIGHT", "false");
+                    //HttpContext.Current.Session["MLOC_HUC_EIGHT"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_HUC_TWELVE", "false");
+                    //HttpContext.Current.Session["MLOC_HUC_TWELVE"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_TRIBAL_LAND", "false");
+                    //HttpContext.Current.Session["MLOC_TRIBAL_LAND"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_SOURCE_MAP_SCALE", "false");
+                    //HttpContext.Current.Session["MLOC_SOURCE_MAP_SCALE"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_HORIZ_COLL_METHOD", "true");
+                    //HttpContext.Current.Session["MLOC_HORIZ_COLL_METHOD"] = true;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_HORIZ_REF_DATUM", "true");
+                    //HttpContext.Current.Session["MLOC_HORIZ_REF_DATUM"] = true;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_VERT_MEASURE", "false");
+                    //HttpContext.Current.Session["MLOC_VERT_MEASURE"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_COUNTRY_CODE", "true");
+                    //HttpContext.Current.Session["MLOC_COUNTRY_CODE"] = true;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_STATE_CODE", "true");
+                    //HttpContext.Current.Session["MLOC_STATE_CODE"] = true;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_COUNTY_CODE", "true");
+                    //HttpContext.Current.Session["MLOC_COUNTY_CODE"] = true;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_WELL_DATA", "false");
+                    //HttpContext.Current.Session["MLOC_WELL_DATA"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_WELL_TYPE", "false");
+                    //HttpContext.Current.Session["MLOC_WELL_TYPE"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_AQUIFER_NAME", "false");
+                    //HttpContext.Current.Session["MLOC_AQUIFER_NAME"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_FORMATION_TYPE", "false");
+                    //HttpContext.Current.Session["MLOC_FORMATION_TYPE"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("MLOC_WELLHOLE_DEPTH", "false");
+                    //HttpContext.Current.Session["MLOC_WELLHOLE_DEPTH"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("PROJ_SAMP_DESIGN_TYPE_CD", "false");
+                    //HttpContext.Current.Session["PROJ_SAMP_DESIGN_TYPE_CD"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("PROJ_QAPP_APPROVAL", "false");
+                    //HttpContext.Current.Session["PROJ_QAPP_APPROVAL"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("SAMP_ACT_END_DT", "false");
+                    //HttpContext.Current.Session["SAMP_ACT_END_DT"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("SAMP_COLL_METHOD", "false");
+                    //HttpContext.Current.Session["SAMP_COLL_METHOD"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("SAMP_COLL_EQUIP", "false");
+                    //HttpContext.Current.Session["SAMP_COLL_EQUIP"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("SAMP_PREP", "false");
+                    //HttpContext.Current.Session["SAMP_PREP"] = false;
+                    httpcontextaccessor.HttpContext.Session.SetString("SAMP_DEPTH", "false");
+                    //HttpContext.Current.Session["SAMP_DEPTH"] = false;
                 }
             }
         }
 
         //******************** GRID EXTENSION **************************************
-        public static GridView RemoveEmptyColumns(this GridView gv, bool setTableWidth, string exclHeaderText)
-        {
-            int visColCount = 0;
-            
-            // Make sure there are at least header row
-            if (gv.HeaderRow != null)
-            {
-                int columnIndex = 0;
+        //TODO: Web.UI not supported in core, need to fix
+        //public static GridView RemoveEmptyColumns(this GridView gv, bool setTableWidth, string exclHeaderText)
+        //{
+        //    int visColCount = 0;
 
-                // For each column
-                foreach (DataControlFieldCell clm in gv.HeaderRow.Cells)
-                {
-                    //skip column if specified to exclude checking this one
-                    if (clm.ContainingField.HeaderText == exclHeaderText)
-                    {
-                        columnIndex++;
-                        continue;
-                    }
+        //    // Make sure there are at least header row
+        //    if (gv.HeaderRow != null)
+        //    {
+        //        int columnIndex = 0;
 
-                    bool notAvailable = true;
+        //        // For each column
+        //        foreach (DataControlFieldCell clm in gv.HeaderRow.Cells)
+        //        {
+        //            //skip column if specified to exclude checking this one
+        //            if (clm.ContainingField.HeaderText == exclHeaderText)
+        //            {
+        //                columnIndex++;
+        //                continue;
+        //            }
 
-                    // For each row
-                    foreach (GridViewRow row in gv.Rows)
-                    {
-                        string columnData = row.Cells[columnIndex].Text;
-                        if (!(string.IsNullOrEmpty(columnData) || columnData == "&nbsp;"))
-                        {
-                            notAvailable = false;
-                            visColCount++;
-                            break;
-                        }
-                    }
+        //            bool notAvailable = true;
 
-                    if (notAvailable)
-                    {
-                        // Hide the target header cell
-                        gv.HeaderRow.Cells[columnIndex].Visible = false;
+        //            // For each row
+        //            foreach (GridViewRow row in gv.Rows)
+        //            {
+        //                string columnData = row.Cells[columnIndex].Text;
+        //                if (!(string.IsNullOrEmpty(columnData) || columnData == "&nbsp;"))
+        //                {
+        //                    notAvailable = false;
+        //                    visColCount++;
+        //                    break;
+        //                }
+        //            }
 
-                        // Hide the target cell of each row
-                        foreach (GridViewRow row in gv.Rows)
-                            row.Cells[columnIndex].Visible = false;
-                    }
+        //            if (notAvailable)
+        //            {
+        //                // Hide the target header cell
+        //                gv.HeaderRow.Cells[columnIndex].Visible = false;
 
-                    columnIndex++;
-                }
-            }
+        //                // Hide the target cell of each row
+        //                foreach (GridViewRow row in gv.Rows)
+        //                    row.Cells[columnIndex].Visible = false;
+        //            }
 
-            if (setTableWidth)
-                gv.Width = visColCount <= 14 ? Unit.Percentage(100) : Unit.Percentage(100 + (visColCount-14) * 5);
+        //            columnIndex++;
+        //        }
+        //    }
 
-            return gv;
-        }
+        //    if (setTableWidth)
+        //        gv.Width = visColCount <= 14 ? Unit.Percentage(100) : Unit.Percentage(100 + (visColCount-14) * 5);
+
+        //    return gv;
+        //}
 
 
         //******************* XML IMPORT CONFIG FILE HANDLING**********************************
-        public static Dictionary<string, int> GetColumnMapping(string ImportType, string[] headerCols)
-        {
-            // Loading configuration file listing all data import columns
-            var xml = XDocument.Load(HttpContext.Current.Server.MapPath("~/App_Docs/ImportColumnsConfig.xml"));
+        
+        //TODO: HttpContext to be fixed
+        //public static Dictionary<string, int> GetColumnMapping(string ImportType, string[] headerCols)
+        //{
+        //    // Loading configuration file listing all data import columns
+        //    var xml = XDocument.Load(HttpContext.Current.Server.MapPath("~/App_Docs/ImportColumnsConfig.xml"));
 
-            // Query list of all columns for the type
-            var allFields = (from c in xml.Root.Descendants("Alias")
-                          .Where(i => i.Parent.Attribute("Level").Value == ImportType)
-                          select new
-                          {
-                              Name = c.Parent.Attribute("FieldName").Value,
-                              Alias = c.Value.ToUpper()
-                          }).ToList();
+        //    // Query list of all columns for the type
+        //    var allFields = (from c in xml.Root.Descendants("Alias")
+        //                  .Where(i => i.Parent.Attribute("Level").Value == ImportType)
+        //                  select new
+        //                  {
+        //                      Name = c.Parent.Attribute("FieldName").Value,
+        //                      Alias = c.Value.ToUpper()
+        //                  }).ToList();
 
-            //list of fields supplied by user
-            var headerColList = headerCols.Select((value, index) => new { value, index }).ToList();
+        //    //list of fields supplied by user
+        //    var headerColList = headerCols.Select((value, index) => new { value, index }).ToList();
 
-            //return matches with index
-            var colMapping = (from f in allFields
-                              join h in headerColList
-                              on f.Alias.Trim() equals h.value.ToUpper().Trim()
-                              select new
-                              {
-                                  _Name = f.Name.Trim(),
-                                  _Col = h.index
-                              }).ToDictionary(x => x._Name, x => x._Col.ConvertOrDefault<int>());
+        //    //return matches with index
+        //    var colMapping = (from f in allFields
+        //                      join h in headerColList
+        //                      on f.Alias.Trim() equals h.value.ToUpper().Trim()
+        //                      select new
+        //                      {
+        //                          _Name = f.Name.Trim(),
+        //                          _Col = h.index
+        //                      }).ToDictionary(x => x._Name, x => x._Col.ConvertOrDefault<int>());
 
-            return colMapping;
-        }
+        //    return colMapping;
+        //}
 
 
 
         //******************* DATA IMPORT HELPERS ********************************************
-        public static List<ConfigInfoType> GetAllColumnInfo(string ImportType)
+        public static List<ConfigInfoType> GetAllColumnInfo(string ImportType, string configFilePath)
         {
             // Loading configuration file listing all data import columns
-            var xml = XDocument.Load(HttpContext.Current.Server.MapPath("~/App_Docs/ImportColumnsConfig.xml"));
+            //var xml = XDocument.Load(HttpContext.Current.Server.MapPath("~/App_Docs/ImportColumnsConfig.xml"));
+            var xml = XDocument.Load(configFilePath);
 
             // Query list of all columns for the type
             return (from c in xml.Root.Descendants("Alias")
@@ -620,10 +666,11 @@ namespace OpwnWater2.DataAccess
         }
 
 
-        public static List<string> GetAllColumnBasic(string ImportType)
+        public static List<string> GetAllColumnBasic(string ImportType, string configFilePath)
         {
             // Loading configuration file listing all data import columns
-            var xml = XDocument.Load(HttpContext.Current.Server.MapPath("~/App_Docs/ImportColumnsConfig.xml"));
+            //var xml = XDocument.Load(HttpContext.Current.Server.MapPath("~/App_Docs/ImportColumnsConfig.xml"));
+            var xml = XDocument.Load(configFilePath);
 
             return (from c in xml.Root.Descendants("Field")
                     .Where(i => i.Attribute("Level").Value == ImportType)

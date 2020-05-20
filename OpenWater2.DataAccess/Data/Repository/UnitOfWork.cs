@@ -15,12 +15,18 @@ namespace OpenWater2.DataAccess.Data.Repository
             _db = db;
             tEpaOrgsRepository = new TEpaOrgsRepository(_db);
             wqxOrganizationRepository = new TWqxOrganizationRepository(_db);
+            oeUsersRepostory = new TOeUsersRepository(_db);
+            oeUserRolesRepository = new TOeUserRolesRepository(_db);
+            oeAppSettingsRepository = new TOeAppSettingsRepository(_db);
         }
 
         public ITEpaOrgsRepository tEpaOrgsRepository { get; private set; }
 
         public TWqxOrganizationRepository wqxOrganizationRepository { get; private set; }
 
+        public TOeUsersRepository oeUsersRepostory { get; private set; }
+        public TOeUserRolesRepository oeUserRolesRepository { get; private set; }
+        public TOeAppSettingsRepository oeAppSettingsRepository { get; private set; }
         public void Dispose()
         {
             _db.Dispose();

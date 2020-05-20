@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using OpenWater2.DataAccess.Data;
 using OpenWater2.Models.Model;
 using System;
@@ -205,79 +206,77 @@ namespace OpwnWater2.DataAccess
             global::System.String fORMATION_TYPE, global::System.String wELLHOLE_DEPTH_MSR, global::System.String wELLHOLE_DEPTH_MSR_UNIT, global::System.String wQX_SUBMIT_STATUS,
             DateTime? wQXUpdateDate, Boolean? aCT_IND, Boolean? wQX_IND, String cREATE_USER = "system")
         {
-            using (OpenEnvironmentEntities ctx = new OpenEnvironmentEntities())
+            Boolean insInd = false;
+            try
             {
-                Boolean insInd = false;
-                try
+                TWqxMonloc a = new TWqxMonloc();
+
+                if (mONLOC_IDX != null)
+                    a = (from c in _db.TWqxMonloc
+                         where c.MonlocIdx == mONLOC_IDX
+                         select c).FirstOrDefault();
+                else
+                    insInd = true;
+
+                if (a == null) //insert case
                 {
-                    TWqxMonloc a = new TWqxMonloc();
-
-                    if (mONLOC_IDX != null)
-                        a = (from c in ctx.T_WQX_MONLOC
-                             where c.MONLOC_IDX == mONLOC_IDX
-                             select c).FirstOrDefault();
-                    else
-                        insInd = true;
-
-                    if (a == null) //insert case
-                    {
-                        a = new TWqxMonloc();
-                        insInd = true;
-                    }
-
-                    if (oRG_ID != null) a.OrgId = oRG_ID;
-                    if (mONLOC_ID != null) a.MonlocId = mONLOC_ID;
-                    if (mONLOC_NAME != null) a.MonlocName = mONLOC_NAME;
-                    if (mONLOC_TYPE != null) a.MonlocType = mONLOC_TYPE;
-                    if (mONLOC_DESC != null) a.MonlocDesc = mONLOC_DESC;
-                    if (hUC_EIGHT != null) a.HucEight = hUC_EIGHT;
-                    if (HUC_TWELVE != null) a.HucTwelve = HUC_TWELVE;
-                    if (tRIBAL_LAND_IND != null) a.TribalLandInd = tRIBAL_LAND_IND;
-                    if (tRIBAL_LAND_NAME != null) a.TribalLandName = tRIBAL_LAND_NAME;
-                    if (lATITUDE_MSR != null) a.LatitudeMsr = lATITUDE_MSR;
-                    if (lONGITUDE_MSR != null) a.LongitudeMsr = lONGITUDE_MSR;
-                    if (sOURCE_MAP_SCALE != null) a.SourceMapScale = sOURCE_MAP_SCALE;
-                    if (hORIZ_ACCURACY != null) a.HorizAccuracy = hORIZ_ACCURACY;
-                    if (hORIZ_ACCURACY_UNIT != null) a.HorizAccuracyUnit = hORIZ_ACCURACY_UNIT;
-                    if (hORIZ_COLL_METHOD != null) a.HorizCollMethod = hORIZ_COLL_METHOD;
-                    if (hORIZ_REF_DATUM != null) a.HorizRefDatum = hORIZ_REF_DATUM;
-                    if (vERT_MEASURE != null) a.VertMeasure = vERT_MEASURE;
-                    if (vERT_MEASURE_UNIT != null) a.VertMeasureUnit = vERT_MEASURE_UNIT;
-                    if (vERT_COLL_METHOD != null) a.VertCollMethod = vERT_COLL_METHOD;
-                    if (vERT_REF_DATUM != null) a.VertRefDatum = vERT_REF_DATUM;
-                    if (cOUNTRY_CODE != null) a.CountryCode = cOUNTRY_CODE;
-                    if (sTATE_CODE != null) a.StateCode = sTATE_CODE;
-                    if (cOUNTY_CODE != null) a.CountyCode = cOUNTY_CODE;
-
-                    if (wELL_TYPE != null) a.WellType = wELL_TYPE;
-                    if (aQUIFER_NAME != null) a.AquiferName = aQUIFER_NAME;
-                    if (fORMATION_TYPE != null) a.FormationType = fORMATION_TYPE;
-                    if (wELLHOLE_DEPTH_MSR != null) a.WellholeDepthMsr = wELLHOLE_DEPTH_MSR;
-                    if (wELLHOLE_DEPTH_MSR_UNIT != null) a.WellholeDepthMsrUnit = wELLHOLE_DEPTH_MSR_UNIT;
-                    if (wQX_SUBMIT_STATUS != null) a.WqxSubmitStatus = wQX_SUBMIT_STATUS;
-                    if (aCT_IND != null) a.ActInd = aCT_IND;
-                    if (wQX_IND != null) a.WqxInd = wQX_IND;
-
-                    if (insInd) //insert case
-                    {
-                        a.CreateUserid = cREATE_USER.ToUpper();
-                        a.CreateDt = System.DateTime.Now;
-                        ctx.AddToT_WQX_MONLOC(a);
-                    }
-                    else
-                    {
-                        a.UpdateUserid = cREATE_USER.ToUpper();
-                        a.UpdateDt = System.DateTime.Now;
-                    }
-
-                    ctx.SaveChanges();
-
-                    return a.MonlocIdx;
+                    a = new TWqxMonloc();
+                    insInd = true;
                 }
-                catch (Exception ex)
+
+                if (oRG_ID != null) a.OrgId = oRG_ID;
+                if (mONLOC_ID != null) a.MonlocId = mONLOC_ID;
+                if (mONLOC_NAME != null) a.MonlocName = mONLOC_NAME;
+                if (mONLOC_TYPE != null) a.MonlocType = mONLOC_TYPE;
+                if (mONLOC_DESC != null) a.MonlocDesc = mONLOC_DESC;
+                if (hUC_EIGHT != null) a.HucEight = hUC_EIGHT;
+                if (HUC_TWELVE != null) a.HucTwelve = HUC_TWELVE;
+                if (tRIBAL_LAND_IND != null) a.TribalLandInd = tRIBAL_LAND_IND;
+                if (tRIBAL_LAND_NAME != null) a.TribalLandName = tRIBAL_LAND_NAME;
+                if (lATITUDE_MSR != null) a.LatitudeMsr = lATITUDE_MSR;
+                if (lONGITUDE_MSR != null) a.LongitudeMsr = lONGITUDE_MSR;
+                if (sOURCE_MAP_SCALE != null) a.SourceMapScale = sOURCE_MAP_SCALE;
+                if (hORIZ_ACCURACY != null) a.HorizAccuracy = hORIZ_ACCURACY;
+                if (hORIZ_ACCURACY_UNIT != null) a.HorizAccuracyUnit = hORIZ_ACCURACY_UNIT;
+                if (hORIZ_COLL_METHOD != null) a.HorizCollMethod = hORIZ_COLL_METHOD;
+                if (hORIZ_REF_DATUM != null) a.HorizRefDatum = hORIZ_REF_DATUM;
+                if (vERT_MEASURE != null) a.VertMeasure = vERT_MEASURE;
+                if (vERT_MEASURE_UNIT != null) a.VertMeasureUnit = vERT_MEASURE_UNIT;
+                if (vERT_COLL_METHOD != null) a.VertCollMethod = vERT_COLL_METHOD;
+                if (vERT_REF_DATUM != null) a.VertRefDatum = vERT_REF_DATUM;
+                if (cOUNTRY_CODE != null) a.CountryCode = cOUNTRY_CODE;
+                if (sTATE_CODE != null) a.StateCode = sTATE_CODE;
+                if (cOUNTY_CODE != null) a.CountyCode = cOUNTY_CODE;
+
+                if (wELL_TYPE != null) a.WellType = wELL_TYPE;
+                if (aQUIFER_NAME != null) a.AquiferName = aQUIFER_NAME;
+                if (fORMATION_TYPE != null) a.FormationType = fORMATION_TYPE;
+                if (wELLHOLE_DEPTH_MSR != null) a.WellholeDepthMsr = wELLHOLE_DEPTH_MSR;
+                if (wELLHOLE_DEPTH_MSR_UNIT != null) a.WellholeDepthMsrUnit = wELLHOLE_DEPTH_MSR_UNIT;
+                if (wQX_SUBMIT_STATUS != null) a.WqxSubmitStatus = wQX_SUBMIT_STATUS;
+                if (aCT_IND != null) a.ActInd = aCT_IND;
+                if (wQX_IND != null) a.WqxInd = wQX_IND;
+
+                if (insInd) //insert case
                 {
-                    return 0;
+                    a.CreateUserid = cREATE_USER.ToUpper();
+                    a.CreateDt = System.DateTime.Now;
+                    _db.TWqxMonloc.Add(a);
                 }
+                else
+                {
+                    a.UpdateUserid = cREATE_USER.ToUpper();
+                    a.UpdateDt = System.DateTime.Now;
+                    _db.TWqxMonloc.Update(a);
+                }
+
+                _db.SaveChanges();
+
+                return a.MonlocIdx;
+            }
+            catch (Exception ex)
+            {
+                return 0;
             }
         }
 
@@ -580,7 +579,7 @@ namespace OpwnWater2.DataAccess
             {
                 return (from a in _db.TWqxProject
                         join b in _db.TWqxUserOrgs on a.OrgId equals b.OrgId
-                        where b.USER_IDX == UserIDX
+                        where b.UserIdx == UserIDX
                         select a).Count();
             }
             catch (Exception ex)
@@ -594,7 +593,7 @@ namespace OpwnWater2.DataAccess
 
         // *************************** ACTIVITY **********************************
         // *********************************************************************
-        public static int InsertOrUpdateWQX_ACTIVITY(global::System.Int32? aCTIVITY_IDX, global::System.String oRG_ID, global::System.Int32? pROJECT_IDX, global::System.Int32? mONLOC_IDX, global::System.String aCTIVITY_ID,
+        public static int InsertOrUpdateWQX_ACTIVITY(IHttpContextAccessor ihttpContextAccessor, global::System.Int32? aCTIVITY_IDX, global::System.String oRG_ID, global::System.Int32? pROJECT_IDX, global::System.Int32? mONLOC_IDX, global::System.String aCTIVITY_ID,
             global::System.String aCT_TYPE, global::System.String aCT_MEDIA, global::System.String aCT_SUBMEDIA, global::System.DateTime? aCT_START_DT, global::System.DateTime? aCT_END_DT,
             global::System.String aCT_TIME_ZONE, global::System.String rELATIVE_DEPTH_NAME, global::System.String aCT_DEPTHHEIGHT_MSR, global::System.String aCT_DEPTHHEIGHT_MSR_UNIT,
             global::System.String tOP_DEPTHHEIGHT_MSR, global::System.String tOP_DEPTHHEIGHT_MSR_UNIT, global::System.String bOT_DEPTHHEIGHT_MSR, global::System.String bOT_DEPTHHEIGHT_MSR_UNIT,
@@ -634,7 +633,7 @@ namespace OpwnWater2.DataAccess
                 if (aCT_TIME_ZONE != null) a.ActTimeZone = aCT_TIME_ZONE;
                 //put in Timezone if missing
                 if (a.ActTimeZone == null)
-                    a.ActTimeZone = Utils.GetWQXTimeZoneByDate(a.ActStartDt);
+                    a.ActTimeZone = Utils.GetWQXTimeZoneByDate(a.ActStartDt, ihttpContextAccessor);
 
                 if (rELATIVE_DEPTH_NAME != null) a.RelativeDepthName = rELATIVE_DEPTH_NAME;
                 if (aCT_DEPTHHEIGHT_MSR != null) a.ActDepthheightMsr = aCT_DEPTHHEIGHT_MSR;
@@ -2293,12 +2292,13 @@ namespace OpwnWater2.DataAccess
             }
         }
 
-        public static int InsertWQX_IMPORT_TEMP_MONLOC_New(string uSER_ID, string oRG_ID, Dictionary<string, string> colVals)
+        //cofigFilePath = HttpContext.Current.Server.MapPath("~/App_Docs/ImportColumnsConfig.xml")
+        public static int InsertWQX_IMPORT_TEMP_MONLOC_New(string uSER_ID, string oRG_ID, Dictionary<string, string> colVals,string configFilePath)
         {
             try
             {
                 //get import config rules
-                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("M");
+                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("M", configFilePath);
 
                 TWqxImportTempMonloc a = new TWqxImportTempMonloc();
 
@@ -2657,12 +2657,13 @@ namespace OpwnWater2.DataAccess
 
         // *************************** IMPORT: ACTIVITY METRIC ******************************
         // *****************************************************************************
-        public static int InsertWQX_IMPORT_TEMP_ACTIVITY_METRIC(string uSER_ID, string oRG_ID, Dictionary<string, string> colVals)
+        //cofigFilePath = HttpContext.Current.Server.MapPath("~/App_Docs/ImportColumnsConfig.xml")
+        public static int InsertWQX_IMPORT_TEMP_ACTIVITY_METRIC(string uSER_ID, string oRG_ID, Dictionary<string, string> colVals,string configFilePath)
         {
             try
             {
                 //get import config rules
-                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("I");
+                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("I", configFilePath);
 
                 TWqxImportTempActivityMetric a = new TWqxImportTempActivityMetric();
 
@@ -2839,7 +2840,7 @@ namespace OpwnWater2.DataAccess
 
         // *************************** IMPORT: SAMPLE    ******************************
         // *****************************************************************************
-        public static int InsertOrUpdateWQX_IMPORT_TEMP_SAMPLE(global::System.Int32? tEMP_SAMPLE_IDX, string uSER_ID, global::System.String oRG_ID, global::System.Int32? pROJECT_IDX,
+        public static int InsertOrUpdateWQX_IMPORT_TEMP_SAMPLE(IHttpContextAccessor httpContextAccessor, global::System.Int32? tEMP_SAMPLE_IDX, string uSER_ID, global::System.String oRG_ID, global::System.Int32? pROJECT_IDX,
             string pROJECT_ID, global::System.Int32? mONLOC_IDX, string mONLOC_ID, global::System.Int32? aCTIVITY_IDX, global::System.String aCTIVITY_ID,
             global::System.String aCT_TYPE, global::System.String aCT_MEDIA, global::System.String aCT_SUBMEDIA, global::System.DateTime? aCT_START_DT, global::System.DateTime? aCT_END_DT,
             global::System.String aCT_TIME_ZONE, global::System.String rELATIVE_DEPTH_NAME, global::System.String aCT_DEPTHHEIGHT_MSR, global::System.String aCT_DEPTHHEIGHT_MSR_UNIT,
@@ -2973,7 +2974,7 @@ namespace OpwnWater2.DataAccess
                 else
                 {
                     //put in Timezone if missing
-                    a.ActTimeZone = Utils.GetWQXTimeZoneByDate(a.ActStartDt.ConvertOrDefault<DateTime>());
+                    a.ActTimeZone = Utils.GetWQXTimeZoneByDate(a.ActStartDt.ConvertOrDefault<DateTime>(), httpContextAccessor);
                 }
 
 
@@ -3051,7 +3052,7 @@ namespace OpwnWater2.DataAccess
                         a.BioSampComponent = bIO_SAMP_COMPONENT.Trim().SubStringPlus(0, 15);
                     }
 
-                    if (bIO_SAMP_COMPONENT_SEQ != null) a.BIO_SAMP_COMPONENT_SEQ = bIO_SAMP_COMPONENT_SEQ;
+                    if (bIO_SAMP_COMPONENT_SEQ != null) a.BioSampComponentSeq = bIO_SAMP_COMPONENT_SEQ;
 
                     if (!string.IsNullOrEmpty(bIO_REACH_LEN_MSR))
                     {
@@ -3140,7 +3141,7 @@ namespace OpwnWater2.DataAccess
 
                     //if IDX is populated but ID/Name/Ctx aren't then grab them
 
-                    TWqxRefSampColMethod scm = db_Ref.GetT_WQX_REF_SAMP_COL_METHOD_ByIDX(a.SAMP_COLL_METHOD_IDX);
+                    TWqxRefSampColMethod scm = db_Ref.GetT_WQX_REF_SAMP_COL_METHOD_ByIDX(a.SampCollMethodIdx);
                     if (scm != null)
                     {
                         a.SampCollMethodId = scm.SampCollMethodId;
@@ -3290,7 +3291,8 @@ namespace OpwnWater2.DataAccess
 
         }
 
-        public static int InsertUpdateWQX_IMPORT_TEMP_SAMPLE_New(string uSER_ID, string oRG_ID, int? pROJECT_IDX, string pROJECT_ID, Dictionary<string, string> colVals)
+        //cofigFilePath = HttpContext.Current.Server.MapPath("~/App_Docs/ImportColumnsConfig.xml")
+        public static int InsertUpdateWQX_IMPORT_TEMP_SAMPLE_New(string uSER_ID, string oRG_ID, int? pROJECT_IDX, string pROJECT_ID, Dictionary<string, string> colVals, string configFilePath, IHttpContextAccessor httpContextAccessor)
         {
             try
             {
@@ -3322,7 +3324,7 @@ namespace OpwnWater2.DataAccess
                 if (!string.IsNullOrEmpty(pROJECT_ID)) a.ProjectId = pROJECT_ID; else return 0;
 
                 //get import config rules
-                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("S");
+                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("S", configFilePath);
 
 
                 //validate mandatory fields
@@ -3358,14 +3360,14 @@ namespace OpwnWater2.DataAccess
 
                 //SET ACTIVITY TIMEZONE IF NOT SUPPLIED
                 if (string.IsNullOrEmpty(a.ActTimeZone))
-                    a.ActTimeZone = Utils.GetWQXTimeZoneByDate(a.ActStartDt.ConvertOrDefault<DateTime>());
+                    a.ActTimeZone = Utils.GetWQXTimeZoneByDate(a.ActStartDt.ConvertOrDefault<DateTime>(), httpContextAccessor);
 
                 //special sampling collection method handling
                 if (a.SampCollMethodIdx != null)
                 {
                     //if IDX is populated, grab ID/Name/Ctx 
 
-                    TWqxRefSampColMethod scm = db_Ref.GetT_WQX_REF_SAMP_COL_METHOD_ByIDX(a.SAMP_COLL_METHOD_IDX);
+                    TWqxRefSampColMethod scm = db_Ref.GetT_WQX_REF_SAMP_COL_METHOD_ByIDX(a.SampCollMethodIdx);
                     if (scm != null)
                     {
                         a.SampCollMethodId = scm.SampCollMethodId;
@@ -3381,7 +3383,7 @@ namespace OpwnWater2.DataAccess
 
                     if (!string.IsNullOrEmpty(a.SampCollMethodId))
                     {
-                        TWqxRefSampColMethod scm = db_Ref.GetT_WQX_REF_SAMP_COL_METHOD_ByIDandContext(a.SAMP_COLL_METHOD_ID, a.SAMP_COLL_METHOD_CTX);
+                        TWqxRefSampColMethod scm = db_Ref.GetT_WQX_REF_SAMP_COL_METHOD_ByIDandContext(a.SampCollMethodId, a.SampCollMethodCtx);
                         if (scm != null)
                             a.SampCollMethodIdx = scm.SampCollMethodIdx;
                         else  //no matching sample collection method lookup found
@@ -3409,7 +3411,7 @@ namespace OpwnWater2.DataAccess
                     {
                         //see if matching prep method exists
 
-                        TWqxRefSampPrep sp = db_Ref.GetT_WQX_REF_SAMP_PREP_ByIDandContext(a.SAMP_PREP_ID, a.SAMP_PREP_CTX);
+                        TWqxRefSampPrep sp = db_Ref.GetT_WQX_REF_SAMP_PREP_ByIDandContext(a.SampPrepId, a.SampPrepCtx);
                         if (sp != null)
                             a.SampPrepIdx = sp.SampPrepIdx;
                         else  //no matching sample prep method lookup found
@@ -3639,7 +3641,7 @@ namespace OpwnWater2.DataAccess
 
         // *************************** IMPORT: RESULT ******************************
         // *****************************************************************************
-        public static int InsertOrUpdateWQX_IMPORT_TEMP_RESULT(global::System.Int32? tEMP_RESULT_IDX, int tEMP_SAMPLE_IDX, global::System.Int32? rESULT_IDX, string dATA_LOGGER_LINE,
+        public static int InsertOrUpdateWQX_IMPORT_TEMP_RESULT(IHttpContextAccessor httpContextAccessor, global::System.Int32? tEMP_RESULT_IDX, int tEMP_SAMPLE_IDX, global::System.Int32? rESULT_IDX, string dATA_LOGGER_LINE,
             string rESULT_DETECT_CONDITION, global::System.String cHAR_NAME, string mETHOD_SPECIATION_NAME, string rESULT_SAMP_FRACTION, global::System.String rESULT_MSR, global::System.String rESULT_MSR_UNIT,
             string rESULT_MSR_QUAL, string rESULT_STATUS, string sTATISTIC_BASE_CODE, string rESULT_VALUE_TYPE, string wEIGHT_BASIS, string tIME_BASIS, string tEMP_BASIS, string pARTICAL_BASIS,
             string pRECISION_VALUE, string bIAS_VALUE, string cONFIDENCE_INTERVAL_VALUE, string uP_CONFIDENCE_LIMIT, string lOW_CONFIDENCE_LIMIT, string rESULT_COMMENT, string dEPTH_HEIGHT_MSR,
@@ -3942,7 +3944,7 @@ namespace OpwnWater2.DataAccess
                             a.AnalyticMethodIdx = rco.DefaultAnalMethodIdx;
                             if (rco.DefaultAnalMethodIdx != null)
                             {
-                                TWqxRefAnalMethod anal = db_Ref.GetT_WQX_REF_ANAL_METHODByIDX(rco.DEFAULT_ANAL_METHOD_IDX.ConvertOrDefault<int>());
+                                TWqxRefAnalMethod anal = db_Ref.GetT_WQX_REF_ANAL_METHODByIDX(rco.DefaultAnalMethodIdx.ConvertOrDefault<int>());
                                 if (anal != null)
                                 {
                                     a.AnalyticMethodId = anal.AnalyticMethodId;
@@ -4007,7 +4009,7 @@ namespace OpwnWater2.DataAccess
                 {
                     //put in Timezone if missing
                     if (lAB_ANALYSIS_START_DT != null || lAB_ANALYSIS_END_DT != null)
-                        a.LabAnalysisTimezone = Utils.GetWQXTimeZoneByDate(a.LAB_ANALYSIS_TIMEZONE.ConvertOrDefault<DateTime>());
+                        a.LabAnalysisTimezone = Utils.GetWQXTimeZoneByDate(a.LabAnalysisTimezone.ConvertOrDefault<DateTime>(), httpContextAccessor);
                 }
 
                 if (!string.IsNullOrEmpty(rESULT_LAB_COMMENT_CODE))
@@ -4136,7 +4138,8 @@ namespace OpwnWater2.DataAccess
             }
         }
 
-        public static int InsertWQX_IMPORT_TEMP_RESULT_New(int tEMP_SAMPLE_IDX, Dictionary<string, string> colVals, string orgID)
+        //cofigFilePath = HttpContext.Current.Server.MapPath("~/App_Docs/ImportColumnsConfig.xml")
+        public static int InsertWQX_IMPORT_TEMP_RESULT_New(int tEMP_SAMPLE_IDX, Dictionary<string, string> colVals, string orgID, string configFilePath, IHttpContextAccessor httpContextAccessor)
         {
             try
             {
@@ -4148,7 +4151,7 @@ namespace OpwnWater2.DataAccess
                 a.ImportStatusDesc = "";
 
                 //get import config rules
-                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("S");
+                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("S", configFilePath);
 
                 //******************* PRE VALIDATION *************************************
                 //special rule: set values of ND, etc
@@ -4332,7 +4335,7 @@ namespace OpwnWater2.DataAccess
 
                 //put in Timezone if missing
                 if (a.LabAnalysisStartDt != null || a.LabAnalysisEndDt != null)
-                    a.LabAnalysisTimezone = Utils.GetWQXTimeZoneByDate(a.LabAnalysisStartDt.ConvertOrDefault<DateTime>());
+                    a.LabAnalysisTimezone = Utils.GetWQXTimeZoneByDate(a.LabAnalysisStartDt.ConvertOrDefault<DateTime>(), httpContextAccessor);
 
 
                 //********** LAB SAMPLE PREP*************************
@@ -4571,17 +4574,16 @@ namespace OpwnWater2.DataAccess
 
         public static string SP_GenWQXXML_Single_Delete(string TypeText, int recordIDX)
         {
-            using (OpenEnvironmentEntities ctx = new OpenEnvironmentEntities())
-            {
-                try
-                {
-                    return ctx.GenWQXXML_Single_Delete(TypeText, recordIDX).First();
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
+            //TODO: STOREDPROCEDURE
+            return "";
+            //try
+            //{
+            //    return ctx.GenWQXXML_Single_Delete(TypeText, recordIDX).First();
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw ex;
+            //}
         }
 
         public static string SP_GenWQXXML_Org(string orgID)

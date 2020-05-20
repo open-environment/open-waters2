@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SendGrid.Helpers.Mail;
+using System;
 using System.Collections.Generic;
 using SendGrid;
 
@@ -22,8 +23,14 @@ namespace OpwnWater2.DataAccess
                 var myMessage = new SendGridMessage();
 
                 // Add message properties.
-                myMessage.From = new MailAddress(from);
-                myMessage.AddTo(to);
+                myMessage.From = new EmailAddress(from);
+                List<EmailAddress> emailAddresses = new List<EmailAddress>();
+                foreach(string t in to)
+                {
+                    EmailAddress emailAddress = new EmailAddress(t);
+                    emailAddresses.Add(emailAddress);
+                }
+                myMessage.AddTos(emailAddresses);
                 if (cc != null)
                 {
                     foreach (string cc1 in cc)
@@ -37,17 +44,18 @@ namespace OpwnWater2.DataAccess
 
                 myMessage.Subject = subj;
                 //myMessage.Html = "<p>" + body + "</p>";
-                myMessage.Text = body;
+                myMessage.HtmlContent = body;
                 //*********************************************************************************
 
 
                 //********************* SEND EMAIL ************************************************
                 var credentials = new NetworkCredential(smtpUser, smtpUserPwd);
                 // Create an Web transport for sending email.
-                var transportWeb = new Web(credentials);
+                //TODO: Handle this
+                //var transportWeb = new Web(credentials);
 
                 // Send the email.
-                transportWeb.Deliver(myMessage);
+                //transportWeb.Deliver(myMessage);
 
                 return true;
             }

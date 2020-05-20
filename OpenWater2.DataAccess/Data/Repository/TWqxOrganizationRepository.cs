@@ -24,7 +24,21 @@ namespace OpenWater2.DataAccess.Data.Repository
                  Value = i.OrgId
             });
         }
-
+        public List<TWqxOrganization> GetWQX_USER_ORGS_ByUserIDX(int UserIDX, bool excludePendingInd)
+        {
+            try
+            {
+                return (from a in _db.TWqxUserOrgs
+                        join b in _db.TWqxOrganization on a.OrgId equals b.OrgId
+                        where a.UserIdx == UserIDX
+                        && (excludePendingInd == true ? a.RoleCd != "P" : true)
+                        select b).ToList();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
         public void Update(TWqxOrganization wqxOrganization)
         {
             TWqxOrganization objFromDb = _db.TWqxOrganization.Where(i => i.OrgId == wqxOrganization.OrgId).FirstOrDefault();

@@ -8,6 +8,9 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
     {
         ITEpaOrgsRepository tEpaOrgsRepository { get;  }
         TWqxOrganizationRepository wqxOrganizationRepository { get;  }
+        TOeUsersRepository oeUsersRepostory { get;  }
+        TOeUserRolesRepository oeUserRolesRepository { get;  }
+        TOeAppSettingsRepository oeAppSettingsRepository { get;  }
         void Save();
     }
 }

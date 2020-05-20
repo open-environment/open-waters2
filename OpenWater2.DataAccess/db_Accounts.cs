@@ -182,7 +182,7 @@ namespace OpwnWater2.DataAccess
             }
         }
 
-        public static void SetOrgSessionID(string UserID, string url)
+        public static void SetOrgSessionID(string UserID, string url, IHttpContextAccessor httpContextAccessor)
         {
             TOeUsers u = GetT_OE_USERSByID(UserID);
             if (u != null)
@@ -194,16 +194,23 @@ namespace OpwnWater2.DataAccess
                     if (os.Count == 1)
                     {
                         UpdateT_OE_USERSDefaultOrg(u.UserIdx, os[0].OrgId);
-                        HttpContext.Current.Session["OrgID"] = os[0].OrgId;
+                        //HttpContext.Current.Session["OrgID"] = os[0].OrgId;
+                        httpContextAccessor.HttpContext.Session.SetString("OrgID", os[0].OrgId);
                     }
-                    else if (os.Count > 1)
-                        HttpContext.Current.Response.Redirect("~/App_Pages/Secure/SetOrg.aspx?ReturnUrl=" + url);
-                    else if (os.Count == 0)
-                        HttpContext.Current.Response.Redirect("~/App_Pages/Secure/WQXOrgNew.aspx");
+                    else if (os.Count > 1) {
+                        //TODO: Handle this
+                        //HttpContext.Current.Response.Redirect("~/App_Pages/Secure/SetOrg.aspx?ReturnUrl=" + url);
+                    }
+                    else if (os.Count == 0) {
+                        //TODO: Handle this
+                        //HttpContext.Current.Response.Redirect("~/App_Pages/Secure/WQXOrgNew.aspx");
+                    }
 
                 }
-                else
-                    HttpContext.Current.Session["OrgID"] = u.DefaultOrgId;
+                else {
+                    //HttpContext.Current.Session["OrgID"] = u.DefaultOrgId;
+                    httpContextAccessor.HttpContext.Session.SetString("OrgID", u.DefaultOrgId);
+                }
 
             }
         }

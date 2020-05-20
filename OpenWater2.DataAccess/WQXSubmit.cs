@@ -2,12 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Web.Services.Protocols;
-using OpenEnvironment.net.epacdxnode.test;
+//using System.Web.Services.Protocols;
+//using OpenEnvironment.net.epacdxnode.test;
 using System.Threading;
 using System.IO;
 using Ionic.Zip;
 using System.Xml.Linq;
+using OpenWater2.Models.Model;
+using javax.xml.soap;
+using NetworkNode2;
+using System.Threading.Tasks;
+using static NetworkNode2.NetworkNodePortType2Client;
+using Microsoft.AspNetCore.Http;
 
 namespace OpwnWater2.DataAccess
 {
@@ -25,10 +31,11 @@ namespace OpwnWater2.DataAccess
         /// </summary>
         public static void WQX_MasterAllOrgs()
         {
-            T_OE_APP_TASKS t = db_Ref.GetT_OE_APP_TASKS_ByName("WQXSubmit");
+
+            TOeAppTasks t = db_Ref.GetT_OE_APP_TASKS_ByName("WQXSubmit");
             if (t != null)
             {
-                if (t.TASK_STATUS == "STOPPED")
+                if (t.TaskStatus == "STOPPED")
                 {
                     //set status to RUNNING so tasks won't execute simultaneously
                     db_Ref.UpdateT_OE_APP_TASKS("WQXSubmit", "RUNNING", null, "SYSTEM");
@@ -64,29 +71,29 @@ namespace OpwnWater2.DataAccess
             if (AuthHelper(cred.userID, cred.credential, "Password", "default", cred.NodeURL) == "")
             {
                 DisableWQXForOrg(OrgID, "Login failed for supplied NAAS Username and Password for " + OrgID);
-                return;  
+                return;
             }
 
             //Loop through all pending monitoring locations (including both active and inactive) and submit one at a time
-            List<T_WQX_MONLOC> ms = db_WQX.GetWQX_MONLOC(false, OrgID, true);
-            foreach (T_WQX_MONLOC m in ms)
-                WQX_Submit_OneByOne("MLOC", m.MONLOC_IDX, cred.userID, cred.credential, cred.NodeURL, OrgID, m.ACT_IND);
+            List<TWqxMonloc> ms = db_WQX.GetWQX_MONLOC(false, OrgID, true);
+            foreach (TWqxMonloc m in ms)
+                WQX_Submit_OneByOne("MLOC", m.MonlocIdx, cred.userID, cred.credential, cred.NodeURL, OrgID, m.ActInd);
 
             //Loop through all pending projects and submit one at a time
-            List<T_WQX_PROJECT> ps = db_WQX.GetWQX_PROJECT(false, OrgID, true);
-            foreach (T_WQX_PROJECT p in ps)
-                WQX_Submit_OneByOne("PROJ", p.PROJECT_IDX, cred.userID, cred.credential, cred.NodeURL, OrgID, p.ACT_IND);
+            List<TWqxProject> ps = db_WQX.GetWQX_PROJECT(false, OrgID, true);
+            foreach (TWqxProject p in ps)
+                WQX_Submit_OneByOne("PROJ", p.ProjectIdx, cred.userID, cred.credential, cred.NodeURL, OrgID, p.ActInd);
 
             try
             {
                 //Loop through all pending activities and submit one at a time
-                List<T_WQX_ACTIVITY> as1 = db_WQX.GetWQX_ACTIVITY(false, OrgID, null, null, null, null, true, null);
-                foreach (T_WQX_ACTIVITY a in as1)
-                    WQX_Submit_OneByOne("ACT", a.ACTIVITY_IDX, cred.userID, cred.credential, cred.NodeURL, OrgID, a.ACT_IND);
+                List<TWqxActivity> as1 = db_WQX.GetWQX_ACTIVITY(false, OrgID, null, null, null, null, true, null);
+                foreach (TWqxActivity a in as1)
+                    WQX_Submit_OneByOne("ACT", a.ActivityIdx, cred.userID, cred.credential, cred.NodeURL, OrgID, a.ActInd);
             }
             catch (Exception ex)
             {
-                db_Ref.InsertT_OE_SYS_LOG("ERROR", "Exception during activity submit: " + ex.Message.SubStringPlus(1,200));
+                db_Ref.InsertT_OE_SYS_LOG("ERROR", "Exception during activity submit: " + ex.Message.SubStringPlus(1, 200));
             }
         }
 
@@ -112,7 +119,7 @@ namespace OpwnWater2.DataAccess
                 byte[] bytes = Utils.StrToByteArray(requestXml);
                 if (bytes == null) return;
 
-                StatusResponseType subStatus = SubmitHelper(NodeURL, token, "WQX", "default", bytes, "submit.xml", DocumentFormatType.XML, "1");
+                NetworkNode2.StatusResponseType subStatus = SubmitHelper(NodeURL, token, "WQX", "default", bytes, "submit.xml", NetworkNode2.DocumentFormatType.XML, "1");
                 if (subStatus != null)
                 {
                     //*******GET STATUS********************************************************************************************************
@@ -122,7 +129,7 @@ namespace OpwnWater2.DataAccess
                     {
                         i += 1;
                         Thread.Sleep(10000);
-                        StatusResponseType gsResp = GetStatusHelper(NodeURL, token, subStatus.transactionId);
+                        NetworkNode2.StatusResponseType gsResp = GetStatusHelper(NodeURL, token, subStatus.transactionId);
                         if (gsResp != null)
                         {
                             status = gsResp.status.ToString();
@@ -148,8 +155,8 @@ namespace OpwnWater2.DataAccess
 
                         int iCount = 0;
                         //*******DOWNLOAD ERROR REPORT ****************************************************************************
-                        NodeDocumentType[] dlResp = DownloadHelper(NodeURL, token, "WQX", subStatus.transactionId);
-                        foreach (NodeDocumentType ndt in dlResp)
+                        NetworkNode2.NodeDocumentType[] dlResp = DownloadHelper(NodeURL, token, "WQX", subStatus.transactionId);
+                        foreach (NetworkNode2.NodeDocumentType ndt in dlResp)
                         {
                             if (ndt.documentName.Contains("Validation") || ndt.documentName.Contains("Processing"))
                             {
@@ -177,74 +184,110 @@ namespace OpwnWater2.DataAccess
                 //    execption1 = sExept.Message;
             }
 
-        }        
-        
+        }
+
         /// <summary>
         /// Calls Exchange Network authenticate method
         /// </summary>
         /// <returns>Security token if valid or empty string if failed</returns>
         internal static string AuthHelper(string userID, string credential, string authMethod, string domain, string NodeURL)
         {
-            NetworkNode2 nn = new NetworkNode2();
-            nn.Url = NodeURL;
-            Authenticate auth1 = new Authenticate();
+            EndpointConfiguration endpointConfiguration = new EndpointConfiguration();
+            NetworkNode2.NetworkNodePortType2Client nn = new NetworkNodePortType2Client(endpointConfiguration, NodeURL);
+            //nn.InnerChannel.RemoteAddress.Uri = new Uri(NodeURL);
+            NetworkNode2.Authenticate auth1 = new NetworkNode2.Authenticate();
             auth1.userId = userID;
             auth1.credential = credential;
             auth1.authenticationMethod = authMethod;
             auth1.domain = domain;
+            NetworkNode2.AuthenticateRequest authenticateRequest = new NetworkNode2.AuthenticateRequest
+            {
+                Authenticate = new NetworkNode2.Authenticate
+                {
+                    userId = userID,
+                    credential = credential,
+                    authenticationMethod = authMethod,
+                    domain = domain
+                }
+            };
             try
             {
-                AuthenticateResponse resp = nn.Authenticate(auth1);
-                return resp.securityToken;
+                //AuthenticateResponse resp = nn.Authenticate(auth1);
+
+                AuthenticateResponse1 resp = nn.Authenticate(authenticateRequest);
+                return resp.AuthenticateResponse.securityToken;
             }
-            catch (SoapException sExept)
+            catch (SOAPException sExept)
             {
                 db_Ref.InsertT_OE_SYS_LOG("ERROR", sExept.Message.SubStringPlus(0, 1999));   //logging an authentication failure
                 return "";
             }
         }
 
-        internal static StatusResponseType SubmitHelper(string NodeURL, string secToken, string dataFlow, string flowOperation, byte[] doc, string docName, DocumentFormatType docFormat, string docID)
+        internal static NetworkNode2.StatusResponseType SubmitHelper(string NodeURL, string secToken, string dataFlow, string flowOperation, byte[] doc, string docName, NetworkNode2.DocumentFormatType docFormat, string docID)
         {
             try
             {
-                AttachmentType att1 = new AttachmentType();
+                NetworkNode2.AttachmentType att1 = new NetworkNode2.AttachmentType();
                 att1.Value = doc;
-                NodeDocumentType doc1 = new NodeDocumentType();
+                NetworkNode2.NodeDocumentType doc1 = new NodeDocumentType();
                 doc1.documentName = docName;
                 doc1.documentFormat = docFormat;
                 doc1.documentId = docID;
                 doc1.documentContent = att1;
                 NodeDocumentType[] docArray = new NodeDocumentType[1];
                 docArray[0] = doc1;
-                Submit sub1 = new Submit();
-                sub1.securityToken = secToken;
-                sub1.transactionId = "";
-                sub1.dataflow = dataFlow;
-                sub1.flowOperation = flowOperation;
-                sub1.documents = docArray;
-                NetworkNode2 nn = new NetworkNode2();
-                nn.SoapVersion = SoapProtocolVersion.Soap12;
-                nn.Url = NodeURL;
-                return nn.Submit(sub1);
+                //Submit sub1 = new Submit();
+                //sub1.securityToken = secToken;
+                //sub1.transactionId = "";
+                //sub1.dataflow = dataFlow;
+                //sub1.flowOperation = flowOperation;
+                //sub1.documents = docArray;
+                //NetworkNode2 nn = new NetworkNode2();
+                //nn.SoapVersion = SoapProtocolVersion.Soap12;
+                //nn.Url = NodeURL;
+                //return nn.Submit(sub1);
+                NetworkNodePortType2Client nn = new NetworkNodePortType2Client(new EndpointConfiguration(), NodeURL);
+                SubmitRequest submitRequest = new SubmitRequest
+                {
+                    Submit = new Submit
+                    {
+                        securityToken = secToken,
+                        transactionId = "",
+                        dataflow = dataFlow,
+                        flowOperation = flowOperation,
+                        documents = docArray
+                    }
+                };
+                return nn.Submit(submitRequest).SubmitResponse1;
             }
-            catch (SoapException sExept)
+            catch (SOAPException sExept)
             {
                 db_Ref.InsertT_OE_SYS_LOG("WQX", sExept.Message.SubStringPlus(0, 1999));
                 return null;
             }
         }
 
-        internal static StatusResponseType GetStatusHelper(string NodeURL, string secToken, string transID)
+        internal static NetworkNode2.StatusResponseType GetStatusHelper(string NodeURL, string secToken, string transID)
         {
             try
             {
-                NetworkNode2 nn = new NetworkNode2();
-                nn.Url = NodeURL;
-                GetStatus gs1 = new GetStatus();
-                gs1.securityToken = secToken;
-                gs1.transactionId = transID;
-                return nn.GetStatus(gs1);
+                //NetworkNode2 nn = new NetworkNode2();
+                //nn.Url = NodeURL;
+                //GetStatus gs1 = new GetStatus();
+                //gs1.securityToken = secToken;
+                //gs1.transactionId = transID;
+                //return nn.GetStatus(gs1);
+                NetworkNodePortType2Client nn = new NetworkNodePortType2Client();
+                GetStatusRequest getStatusRequest = new GetStatusRequest
+                {
+                    GetStatus = new GetStatus
+                    {
+                        securityToken = secToken,
+                        transactionId = transID
+                    }
+                };
+                return nn.GetStatus(getStatusRequest).GetStatusResponse1;
             }
             catch
             {
@@ -252,17 +295,28 @@ namespace OpwnWater2.DataAccess
             }
         }
 
-        internal static NodeDocumentType[] DownloadHelper(string NodeURL, string secToken, string dataFlow, string transID)
+        internal static NetworkNode2.NodeDocumentType[] DownloadHelper(string NodeURL, string secToken, string dataFlow, string transID)
         {
             try
             {
-                NetworkNode2 nn = new NetworkNode2();
-                nn.Url = NodeURL;
-                Download dl1 = new Download();
-                dl1.securityToken = secToken;
-                dl1.dataflow = dataFlow;
-                dl1.transactionId = transID;
-                return nn.Download(dl1);
+                //NetworkNode2 nn = new NetworkNode2();
+                //nn.Url = NodeURL;
+                //Download dl1 = new Download();
+                //dl1.securityToken = secToken;
+                //dl1.dataflow = dataFlow;
+                //dl1.transactionId = transID;
+                //return nn.Download(dl1);
+                NetworkNodePortType2Client nn = new NetworkNodePortType2Client(new EndpointConfiguration(), NodeURL);
+                DownloadRequest downloadRequest = new DownloadRequest
+                {
+                    Download = new Download
+                    {
+                        securityToken = secToken,
+                        dataflow = dataFlow,
+                        transactionId = transID
+                    }
+                };
+                return nn.Download(downloadRequest).DownloadResponse1;
             }
             catch
             {
@@ -271,36 +325,50 @@ namespace OpwnWater2.DataAccess
 
         }
 
-        internal static ResultSetType QueryHelper(string NodeURL, string secToken, string dataFlow, string request, int? rowID, int? maxRows, List<ParameterType> pars)
+        internal static NetworkNode2.ResultSetType QueryHelper(string NodeURL, string secToken, string dataFlow, string request, int? rowID, int? maxRows, List<ParameterType> pars)
         {
             try
             {
-                NetworkNode2 nn = new NetworkNode2();
-                nn.Url = NodeURL;
-                nn.SoapVersion = SoapProtocolVersion.Soap12;
+                NetworkNodePortType2Client nn = new NetworkNodePortType2Client(new EndpointConfiguration(), NodeURL);
+                //NetworkNode2 nn = new NetworkNode2();
+                //nn.Url = NodeURL;
+                //nn.SoapVersion = SoapProtocolVersion.Soap12;
 
-                Query q1 = new Query();
-                q1.securityToken = secToken;
-                q1.dataflow = dataFlow;
-                q1.request = request;
-                q1.rowId = (rowID ?? 0).ToString();
-                q1.maxRows = (maxRows ?? -1).ToString();
-
-                ParameterType[] ps = new ParameterType[pars.Count];
+                NetworkNode2.ParameterType[] ps = new NetworkNode2.ParameterType[pars.Count];
                 int i = 0;
                 System.Xml.XmlQualifiedName parType = new System.Xml.XmlQualifiedName("string", "http://www.w3.org/2001/XMLSchema");
-                foreach (ParameterType par in pars)
+                foreach (NetworkNode2.ParameterType par in pars)
                 {
-                    if (par.parameterEncoding == null) par.parameterEncoding = EncodingType.None;
+                    if (par.parameterEncoding == null) par.parameterEncoding = NetworkNode2.EncodingType.None;
                     ps[i] = par;
                     i++;
                 }
+                QueryRequest queryRequest = new QueryRequest
+                {
+                    Query = new Query
+                    {
+                        securityToken = secToken,
+                        dataflow = dataFlow,
+                        request = request,
+                        rowId = (rowID ?? -1).ToString(),
+                        maxRows = (maxRows ?? -1).ToString(),
+                        parameters = ps
+                    }
+                };
+                //Query q1 = new Query();
+                //q1.securityToken = secToken;
+                //q1.dataflow = dataFlow;
+                //q1.request = request;
+                //q1.rowId = (rowID ?? 0).ToString();
+                //q1.maxRows = (maxRows ?? -1).ToString();
 
-                q1.parameters = ps;
+                //q1.parameters = ps;
 
-                return nn.Query(q1);
+                //return nn.Query(q1);
+                QueryResponse queryResponse = nn.Query(queryRequest);
+                return queryResponse.QueryResponse1;
             }
-            catch (SoapException sExept)
+            catch (SOAPException sExept)
             {
                 db_Ref.InsertT_OE_SYS_LOG("ERROR", sExept.Message.SubStringPlus(0, 1999));   //logging an authentication failure
 
@@ -309,9 +377,9 @@ namespace OpwnWater2.DataAccess
                 {
                     ResultSetType rs = new ResultSetType();
                     rs.rowId = "-99";
-                    return rs; 
+                    return rs;
                 }
-                
+
                 return null;
             }
         }
@@ -320,14 +388,9 @@ namespace OpwnWater2.DataAccess
         {
             try
             {
-                NetworkNode2 nn = new NetworkNode2();
-                nn.Url = NodeURL;
-                nn.SoapVersion = SoapProtocolVersion.Soap12;
-
-                Solicit s1 = new Solicit();
-                s1.securityToken = secToken;
-                s1.dataflow = dataFlow;
-                s1.request = request;
+                //NetworkNode2 nn = new NetworkNode2();
+                //nn.Url = NodeURL;
+                //nn.SoapVersion = SoapProtocolVersion.Soap12;
 
                 ParameterType[] ps = new ParameterType[pars.Count];
                 int i = 0;
@@ -338,12 +401,28 @@ namespace OpwnWater2.DataAccess
                     ps[i] = par;
                     i++;
                 }
+                SolicitRequest solicitRequest = new SolicitRequest
+                {
+                    Solicit = new Solicit
+                    {
+                        securityToken = secToken,
+                        dataflow = dataFlow,
+                        request = request,
+                        parameters = ps
+                    }
+                };
+                NetworkNodePortType2Client n = new NetworkNodePortType2Client();
+                SolicitResponse response = n.Solicit(solicitRequest);
+                return response.SolicitResponse1;
+                //Solicit s1 = new Solicit();
+                //s1.securityToken = secToken;
+                //s1.dataflow = dataFlow;
+                //s1.request = request;
+                //s1.parameters = ps;
+                //return nn.Solicit(s1);
 
-                s1.parameters = ps;
-
-                return nn.Solicit(s1);
             }
-            catch (SoapException sExept)
+            catch (SOAPException sExept)
             {
                 db_Ref.InsertT_OE_SYS_LOG("WQX", sExept.Message.SubStringPlus(0, 1999));
                 return null;
@@ -378,13 +457,13 @@ namespace OpwnWater2.DataAccess
             {
                 cred.NodeURL = db_Ref.GetT_OE_APP_SETTING("CDX Submission URL");
 
-                T_WQX_ORGANIZATION org = db_WQX.GetWQX_ORGANIZATION_ByID(OrgID);
+                TWqxOrganization org = db_WQX.GetWQX_ORGANIZATION_ByID(OrgID);
                 if (org != null)
                 {
-                    if (string.IsNullOrEmpty(org.CDX_SUBMITTER_ID) == false && string.IsNullOrEmpty(org.CDX_SUBMITTER_PWD_HASH) == false)
+                    if (string.IsNullOrEmpty(org.CdxSubmitterId) == false && string.IsNullOrEmpty(org.CdxSubmitterPwdHash) == false)
                     {
-                        cred.userID = org.CDX_SUBMITTER_ID;
-                        cred.credential = new SimpleAES().Decrypt(System.Web.HttpUtility.UrlDecode(org.CDX_SUBMITTER_PWD_HASH).Replace(" ", "+"));
+                        cred.userID = org.CdxSubmitterId;
+                        cred.credential = new SimpleAES().Decrypt(System.Web.HttpUtility.UrlDecode(org.CdxSubmitterPwdHash).Replace(" ", "+"));
                     }
                     else
                     {
@@ -404,30 +483,30 @@ namespace OpwnWater2.DataAccess
             db_WQX.InsertOrUpdateT_WQX_ORGANIZATION(OrgID, null, null, null, null, null, null, null, null, null, null, false, null, null);
             db_Ref.InsertT_OE_SYS_LOG("WQX_ORG_STOP", LogMsg);
 
-            List<T_OE_USERS> users = db_WQX.GetWQX_USER_ORGS_AdminsByOrg(OrgID);
-            foreach (T_OE_USERS user in users)
-                Utils.SendEmail(null, user.EMAIL.Split(';').ToList(), null, null, "Open Waters Submit Failure", "Automated submission for " + OrgID + " has been disabled due to a submission failure. Failure details are: " + LogMsg, null);
+            List<TOeUsers> users = db_WQX.GetWQX_USER_ORGS_AdminsByOrg(OrgID);
+            foreach (TOeUsers user in users)
+                Utils.SendEmail(null, user.Email.Split(';').ToList(), null, null, "Open Waters Submit Failure", "Automated submission for " + OrgID + " has been disabled due to a submission failure. Failure details are: " + LogMsg, null);
         }
 
 
         //********************* GETTING DATA FROM WQX ********************************************************************
-        public static bool ImportActivityMaster()
+        public static bool ImportActivityMaster(IHttpContextAccessor httpContextAccessor)
         {
             //don't attempt any imports if another user is currently having their's processed
             if (db_Ref.GetWQX_IMPORT_LOG_ProcessingCount() > 0)
                 return true;
 
             //GET LISTING OF ALL "NEW" ACTIVITY IMPORT RECORDS FROM LOG
-            T_WQX_IMPORT_LOG i = db_Ref.GetWQX_IMPORT_LOG_NewActivity();
+            TWqxImportLog i = db_Ref.GetWQX_IMPORT_LOG_NewActivity();
             if (i != null)
             {
-                ImportActivity(i.ORG_ID, i.IMPORT_ID, i.CREATE_USERID);
+                ImportActivity(i.OrgId, i.ImportId, i.CreateUserid, httpContextAccessor);
             }
 
             return true;
         }
 
-        public static bool ImportActivity(string OrgID, int? ImportID, string UserID)
+        public static bool ImportActivity(string OrgID, int? ImportID, string UserID, IHttpContextAccessor httpContextAccessor)
         {
             //*******UPDATE IMPORT LOG TO SIGNIFY THAT IMPORT HAS BEGUN
             db_Ref.InsertUpdateWQX_IMPORT_LOG(ImportID, null, null, null, 0, "Processing", "1", "Import started", null, "SYSTEM");
@@ -440,14 +519,14 @@ namespace OpwnWater2.DataAccess
             //*******SOLICIT*****************************************
             if (token.Length > 0)
             {
-                List<net.epacdxnode.test.ParameterType> pars = new List<net.epacdxnode.test.ParameterType>();
+                List<ParameterType> pars = new List<ParameterType>();
 
-                net.epacdxnode.test.ParameterType p = new net.epacdxnode.test.ParameterType();
+                ParameterType p = new ParameterType();
                 p.parameterName = "organizationIdentifier";
                 p.Value = OrgID;
                 pars.Add(p);
 
-                net.epacdxnode.test.StatusResponseType solResp = WQXSubmit.SolicitHelper(cred.NodeURL, token, "WQX", "WQX.GetResultByParameters_v2.1", null, null, pars);
+                StatusResponseType solResp = WQXSubmit.SolicitHelper(cred.NodeURL, token, "WQX", "WQX.GetResultByParameters_v2.1", null, null, pars);
                 if (solResp == null)
                 {
                     db_Ref.InsertUpdateWQX_IMPORT_LOG(ImportID, null, null, null, 0, "Failed", "100", "Failed - retrieving data from EPA timed out", null, "SYSTEM");
@@ -566,12 +645,12 @@ namespace OpwnWater2.DataAccess
                         DateTime? startDate = string.IsNullOrEmpty(activity.StartDate) ? null : (activity.StartDate + " " + activity.StartTime).ConvertOrDefault<DateTime?>();
                         DateTime? endDate = string.IsNullOrEmpty(activity.EndDate) ? null : (activity.EndDate + " " + activity.EndTime).ConvertOrDefault<DateTime?>();
 
-                        int TempImportSampID = db_WQX.InsertOrUpdateWQX_IMPORT_TEMP_SAMPLE(null, UserID, OrgID, null, activity.ProjectIdentifier, null, activity.MonitoringLocationIdentifier,
+                        int TempImportSampID = db_WQX.InsertOrUpdateWQX_IMPORT_TEMP_SAMPLE(httpContextAccessor, null, UserID, OrgID, null, activity.ProjectIdentifier, null, activity.MonitoringLocationIdentifier,
                             null, activity.ID, activity.ActivityTypeVal, activity.ActivityMediaVal, activity.ActivitySubMediaVal, startDate, endDate, activity.StartTimeZone,
-                            activity.RelDepthName, activity.ActDepth, activity.ActDepthUnit, activity.ActTopDepth, activity.ActTopDepthUnit, activity.ActBotDepth, activity.ActBotDepthUnit, 
-                            activity.ActivityDepthAltitudeReferencePointText, activity.ActivityCommentText, activity.AssemblageSampledName, activity.CollectionDuration, 
+                            activity.RelDepthName, activity.ActDepth, activity.ActDepthUnit, activity.ActTopDepth, activity.ActTopDepthUnit, activity.ActBotDepth, activity.ActBotDepthUnit,
+                            activity.ActivityDepthAltitudeReferencePointText, activity.ActivityCommentText, activity.AssemblageSampledName, activity.CollectionDuration,
                             activity.CollectionDurationUnit, activity.SamplingComponentName, activity.SamplingComponentPlaceInSeriesNumeric.ConvertOrDefault<int?>(),
-                            activity.ReachLengthMeasure, activity.ReachLengthMeasureUnit, activity.ReachWidthMeasure, activity.ReachWidthMeasureUnit, 
+                            activity.ReachLengthMeasure, activity.ReachLengthMeasureUnit, activity.ReachWidthMeasure, activity.ReachWidthMeasureUnit,
                             activity.PassCount.ConvertOrDefault<int?>(), activity.NetTypeName, activity.NetSurfaceAreaMeasure, activity.NetSurfaceAreaMeasureUnit, activity.NetMeshSizeMeasure,
                             activity.NetMeshSizeMeasureUnit, activity.BoatSpeedMeasure, activity.BoatSpeedMeasureUnit, activity.CurrentSpeedMeasure, activity.CurrentSpeedMeasureUnit,
                             activity.ToxicityTestType, null, activity.SampleCollectionMethodID,
@@ -610,10 +689,10 @@ namespace OpwnWater2.DataAccess
                                                LowerConfidenceLimitValue = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}DataQuality").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}DataQuality").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}LowerConfidenceLimitValue") ?? String.Empty : "",
                                                ResultCommentText = (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultDescription").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}ResultCommentText") ?? String.Empty,
                                                //BIOLOGICAL
-                                               BiologicalIntentName = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault() != null ?  (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalIntentName") ?? String.Empty : String.Empty,
-                                               BiologicalIndividualIdentifier = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault() != null ?  (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalIndividualIdentifier") ?? String.Empty : String.Empty,
-                                               SubjectTaxonomicName = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault() != null ?  (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}SubjectTaxonomicName") ?? String.Empty : String.Empty,
-                                               UnidentifiedSpeciesIdentifier = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault() != null ?  (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}UnidentifiedSpeciesIdentifier") ?? String.Empty : String.Empty,
+                                               BiologicalIntentName = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalIntentName") ?? String.Empty : String.Empty,
+                                               BiologicalIndividualIdentifier = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalIndividualIdentifier") ?? String.Empty : String.Empty,
+                                               SubjectTaxonomicName = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}SubjectTaxonomicName") ?? String.Empty : String.Empty,
+                                               UnidentifiedSpeciesIdentifier = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}UnidentifiedSpeciesIdentifier") ?? String.Empty : String.Empty,
                                                SampleTissueAnatomyName = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}BiologicalResultDescription").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}SampleTissueAnatomyName") ?? String.Empty : String.Empty,
 
                                                FrequencyClassDescriptorCode = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}FrequencyClassInformation").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}FrequencyClassInformation").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}FrequencyClassDescriptorCode") ?? String.Empty : String.Empty,
@@ -622,17 +701,17 @@ namespace OpwnWater2.DataAccess
                                                FrequencyClassDescriptorUpper = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}FrequencyClassInformation").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}FrequencyClassInformation").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}UpperClassBoundValue") ?? String.Empty : String.Empty,
 
                                                //LABORATORY ANALYSIS
-                                               ResultAnalyticalMethodID = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault() != null ?  (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}MethodIdentifier") ?? String.Empty : String.Empty,
-                                               ResultAnalyticalMethodCTX = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault() != null ?   (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}MethodIdentifierContext") ?? String.Empty : String.Empty,
-                                               ResultAnalyticalMethodName = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault() != null ?  (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}MethodName") ?? String.Empty : String.Empty,
-                                               LaboratoryName =  result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultLabInformation").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultLabInformation").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}LaboratoryName") ?? String.Empty : String.Empty,
+                                               ResultAnalyticalMethodID = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}MethodIdentifier") ?? String.Empty : String.Empty,
+                                               ResultAnalyticalMethodCTX = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}MethodIdentifierContext") ?? String.Empty : String.Empty,
+                                               ResultAnalyticalMethodName = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultAnalyticalMethod").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}MethodName") ?? String.Empty : String.Empty,
+                                               LaboratoryName = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultLabInformation").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultLabInformation").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}LaboratoryName") ?? String.Empty : String.Empty,
                                                AnalysisStartDate = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultLabInformation").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultLabInformation").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}AnalysisStartDate") ?? String.Empty : String.Empty,
                                                AnalysisEndDate = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultLabInformation").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultLabInformation").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}AnalysisEndDate") ?? String.Empty : String.Empty,
                                                ResultLaboratoryCommentCode = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultLabInformation").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultLabInformation").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}ResultLaboratoryCommentCode") ?? String.Empty : String.Empty,
 
                                                MethodDetectionLevel = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultDetectionQuantitationLimit").FirstOrDefault() != null ? (string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultDetectionQuantitationLimit").FirstOrDefault().Element("{http://www.exchangenetwork.net/schema/wqx/2}DetectionQuantitationLimitTypeName") ?? String.Empty : String.Empty,
                                                MethodDetectionLevel2 = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultDetectionQuantitationLimit").FirstOrDefault(ID2 => ID2.Element("{http://www.exchangenetwork.net/schema/wqx/2}DetectionQuantitationLimitTypeName").Value == "Method Detection Level") != null ?
-                                                   ((string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultDetectionQuantitationLimit").FirstOrDefault(ID3 => ID3.Element("{http://www.exchangenetwork.net/schema/wqx/2}DetectionQuantitationLimitTypeName").Value == "Method Detection Level").Descendants("{http://www.exchangenetwork.net/schema/wqx/2}MeasureValue").FirstOrDefault() ?? String.Empty) 
+                                                   ((string)result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultDetectionQuantitationLimit").FirstOrDefault(ID3 => ID3.Element("{http://www.exchangenetwork.net/schema/wqx/2}DetectionQuantitationLimitTypeName").Value == "Method Detection Level").Descendants("{http://www.exchangenetwork.net/schema/wqx/2}MeasureValue").FirstOrDefault() ?? String.Empty)
                                                    : String.Empty,
 
                                                LabReportingLevel = result.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}ResultDetectionQuantitationLimit").FirstOrDefault(ID2 => ID2.Element("{http://www.exchangenetwork.net/schema/wqx/2}DetectionQuantitationLimitTypeName").Value == "Laboratory Reporting Level") != null ?
@@ -660,15 +739,15 @@ namespace OpwnWater2.DataAccess
                             {
                                 foreach (var result in results)
                                 {
-                                    db_WQX.InsertOrUpdateWQX_IMPORT_TEMP_RESULT(null, TempImportSampID, null, result.LoggerLine, result.ResultDetectionConditionText, result.CharName, result.MethodSpec,
+                                    db_WQX.InsertOrUpdateWQX_IMPORT_TEMP_RESULT(httpContextAccessor, null, TempImportSampID, null, result.LoggerLine, result.ResultDetectionConditionText, result.CharName, result.MethodSpec,
                                         result.SampFrac, result.MsrVal, result.MsrValUnit, result.MsrQualCode, result.ResultStatusIdentifier, result.StatisticalBaseCode,
                                         result.ResultValueTypeName, result.ResultWeightBasisText, result.ResultTimeBasisText, result.ResultTemperatureBasisText,
                                         result.ResultParticleSizeBasisText, result.PrecisionVal, result.BiasVal, result.ConfidenceIntervalValue, result.UpperConfidenceLimitValue,
-                                        result.LowerConfidenceLimitValue, result.ResultCommentText, null, null, null, result.BiologicalIntentName, result.BiologicalIndividualIdentifier, 
+                                        result.LowerConfidenceLimitValue, result.ResultCommentText, null, null, null, result.BiologicalIntentName, result.BiologicalIndividualIdentifier,
                                         result.SubjectTaxonomicName, result.UnidentifiedSpeciesIdentifier, result.SampleTissueAnatomyName, null, null, null,
-                                        null, null, null, null, null, null, null, null, null, result.FrequencyClassDescriptorCode, result.FrequencyClassDescriptorUnit, result.FrequencyClassDescriptorUpper, 
-                                        result.FrequencyClassDescriptorLower, null, result.ResultAnalyticalMethodID, result.ResultAnalyticalMethodCTX, 
-                                        result.ResultAnalyticalMethodName, null, result.LaboratoryName, 
+                                        null, null, null, null, null, null, null, null, null, result.FrequencyClassDescriptorCode, result.FrequencyClassDescriptorUnit, result.FrequencyClassDescriptorUpper,
+                                        result.FrequencyClassDescriptorLower, null, result.ResultAnalyticalMethodID, result.ResultAnalyticalMethodCTX,
+                                        result.ResultAnalyticalMethodName, null, result.LaboratoryName,
                                         result.AnalysisStartDate.ConvertOrDefault<DateTime?>(), result.AnalysisEndDate.ConvertOrDefault<DateTime?>(),
                                         null, result.ResultLaboratoryCommentCode, result.MethodDetectionLevel2,
                                         result.LabReportingLevel, result.PQL, result.LowerQuantLimit, result.UpperQuantLimit, null, null, result.SampPrepMethodID, result.SampPrepMethodCTX,
