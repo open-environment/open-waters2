@@ -62,10 +62,10 @@ namespace Open_Water2.WebApi.Controllers
         }
         [HttpPost]
         [Route("auth/sign-out")]
-        public StatusCodeResult LogOut([FromQuery]string email)
+        public StatusCodeResult LogOut()
         {
             //this.HttpContext.Response.StatusCode = 200;
-            return new StatusCodeResult(200);
+            return new StatusCodeResult(204);
         }
         public class LoginAuthParams
         {
