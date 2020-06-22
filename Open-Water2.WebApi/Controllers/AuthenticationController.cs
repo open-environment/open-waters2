@@ -35,7 +35,8 @@ namespace Open_Water2.WebApi.Controllers
             }
             this.HttpContext.Response.StatusCode = 200;
 
-            return Ok(new { token = user.token });           
+            return Ok(new { data = new { token = user.token, session = user.Session } });
+            
         }
 
         [HttpPost]
@@ -71,6 +72,7 @@ namespace Open_Water2.WebApi.Controllers
         {
             public string email { get; set; }
             public string password { get; set; }
+            public string username { get; set; }
         }
     }
 }

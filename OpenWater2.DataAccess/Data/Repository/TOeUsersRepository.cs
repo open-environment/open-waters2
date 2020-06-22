@@ -21,6 +21,18 @@ namespace OpenWater2.DataAccess.Data.Repository
             throw new NotImplementedException();
         }
 
+        public TOeUsers GetT_OE_USERSByID(string id)
+        {
+            try
+            {
+                return _db.TOeUsers.FirstOrDefault(usr => usr.UserId.ToUpper() == id.ToUpper());
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public List<TOeUsers> GetUserByRole(int roleID)
         {
             try
@@ -59,6 +71,60 @@ namespace OpenWater2.DataAccess.Data.Repository
             objFromDb.ModifyUserid = oeUsers.ModifyUserid;
             objFromDb.ModifyDt = oeUsers.ModifyDt;
             _db.TOeUsers.Update(objFromDb);
+        }
+
+        public int UpdateT_OE_USERS(int idx, string newPWD_HASH, string newPWD_SALT, string newFNAME, string newLNAME, string newEMAIL, bool? newACT_IND, bool? newINIT_PWD_FLG, DateTime? newEFF_DATE, DateTime? newLAST_LOGIN_DT, string newPHONE, string newPHONE_EXT, string newMODIFY_USR)
+        {
+            try
+            {
+                TOeUsers row = new TOeUsers();
+                row = (from c in _db.TOeUsers where c.UserIdx == idx select c).First();
+
+                if (newPWD_HASH != null)
+                    row.PwdHash = newPWD_HASH;
+
+                if (newPWD_SALT != null)
+                    row.PwdSalt = newPWD_SALT;
+
+                if (newFNAME != null)
+                    row.Fname = newFNAME;
+
+                if (newLNAME != null)
+                    row.Lname = newLNAME;
+
+                if (newEMAIL != null)
+                    row.Email = newEMAIL;
+
+                if (newACT_IND != null)
+                    row.ActInd = (bool)newACT_IND;
+
+                if (newINIT_PWD_FLG != null)
+                    row.InitalPwdFlag = (bool)newINIT_PWD_FLG;
+
+                if (newEFF_DATE != null)
+                    row.EffectiveDt = (DateTime)newEFF_DATE;
+
+                if (newLAST_LOGIN_DT != null)
+                    row.LastloginDt = (DateTime)newLAST_LOGIN_DT;
+
+                if (newPHONE != null)
+                    row.Phone = newPHONE;
+
+                if (newPHONE_EXT != null)
+                    row.PhoneExt = newPHONE_EXT;
+
+                if (newMODIFY_USR != null)
+                    row.ModifyUserid = newMODIFY_USR;
+
+                row.ModifyDt = System.DateTime.Now;
+
+                _db.SaveChanges();
+                return row.UserIdx;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
         }
     }
 }

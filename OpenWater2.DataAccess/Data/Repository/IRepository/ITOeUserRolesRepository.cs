@@ -10,5 +10,8 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
     {
         IEnumerable<SelectListItem> GetTOeUserRolesForDropDown();
         void Update(TOeUserRoles oeUserRoles);
+
+        public bool IsUserInRole(string userName, string roleName, TOeUsers user);
+        public List<TOeRoles> GetT_OE_ROLESInUser(int userIDX);
     }
 }

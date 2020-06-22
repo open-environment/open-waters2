@@ -7,10 +7,15 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
     public interface IUnitOfWork : IDisposable
     {
         ITEpaOrgsRepository tEpaOrgsRepository { get;  }
-        TWqxOrganizationRepository wqxOrganizationRepository { get;  }
-        TOeUsersRepository oeUsersRepostory { get;  }
-        TOeUserRolesRepository oeUserRolesRepository { get;  }
-        TOeAppSettingsRepository oeAppSettingsRepository { get;  }
+        ITWqxOrganizationRepository wqxOrganizationRepository { get;  }
+        ITOeUsersRepository oeUsersRepostory { get;  }
+        ITOeUserRolesRepository oeUserRolesRepository { get;  }
+        ITOeAppSettingsRepository oeAppSettingsRepository { get;  }
+        ITWqxMonLocRepository tWqxMonLocRepository { get;  }
+        ITWqxProjectRepository tWqxProjectRepository { get;  }
+        ITWqxRefDataRepository tWqxRefDataRepository { get;  }
+        ITWqxUserOrgsRepository UserOrgsRepository { get;  }
+        ITWqxActivityRepository tWqxActivityRepository { get;  }
         void Save();
     }
 }

@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
+using OpenWater2.DataAccess.Data;
+using OpenWater2.DataAccess.Data.Repository;
+using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
+using OpwnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +16,7 @@ using System.Linq;
 using System.Xml.Linq;
 
 
-namespace OpwnWater2.DataAccess
+namespace OpewnWater2.DataAccess
 {
     public class ConfigInfoType
     {
@@ -405,7 +409,7 @@ namespace OpwnWater2.DataAccess
         /// Replace any of the contained controls with literals 
         /// </summary> 
         /// <param name="control"></param> 
-        
+
         //TODO: Web.UI not supported in core, need to fix
         //private static void PrepareControlForExport(Control control)
         //{
@@ -476,8 +480,63 @@ namespace OpwnWater2.DataAccess
         //    }
         //}
 
+        public static List<UserOrgDisplay> GetAdminTaskData(string userName, string OrgID, IUnitOfWork unitOfWork, TOeUsers user)
+        {
+            string thisOrg = unitOfWork.oeUserRolesRepository.IsUserInRole(userName,"ADMINS", user) ? null : OrgID;
+            return unitOfWork.UserOrgsRepository.GetT_OE_USERSPending(thisOrg);
+        }
+        public static SessionVars GetPostLoginUser(string UserID, IUnitOfWork unitOfWork)
+        {
+            SessionVars sessionVars = new SessionVars();
+            TOeUsers u = unitOfWork.oeUsersRepostory.GetT_OE_USERSByID(UserID);
+            if (u != null)
+            {
+                //if user only belongs to 1 org, update the default org id
+                if (u.DefaultOrgId == null)
+                {
+                    List<TWqxOrganization> os = unitOfWork.UserOrgsRepository.GetWQX_USER_ORGS_ByUserIDX(u.UserIdx, false);
+                    if (os.Count == 1)
+                    {
+                        sessionVars.OrgID = os[0].OrgId;
 
+                        //HttpContext.Current.Session["OrgID"] = os[0].OrgId; //added 1/6/2014
+                    }
+                }
 
+                if (u.InitalPwdFlag == false)
+                {
+                    //db_Accounts.UpdateT_OE_USERS(u.UserIdx, null, null, null, null, null, null, null, null, System.DateTime.Now, null, null, "system");
+                    unitOfWork.oeUsersRepostory.UpdateT_OE_USERS(u.UserIdx, null, null, null, null, null, null, null, null, System.DateTime.Now, null, null, "system");
+
+                    //set important session variables
+                    sessionVars.UserIDX= u.UserIdx.ToString();
+                    sessionVars.OrgID = u.DefaultOrgId;
+                    sessionVars.MLOC_HUC_EIGHT = false;
+                    sessionVars.MLOC_HUC_TWELVE = false;
+                    sessionVars.MLOC_TRIBAL_LAND = false;
+                    sessionVars.MLOC_SOURCE_MAP_SCALE = false;
+                    sessionVars.MLOC_HORIZ_COLL_METHOD = true;
+                    sessionVars.MLOC_HORIZ_REF_DATUM = true;
+                    sessionVars.MLOC_VERT_MEASURE = false;
+                    sessionVars.MLOC_COUNTRY_CODE = true;
+                    sessionVars.MLOC_STATE_CODE = true;
+                    sessionVars.MLOC_COUNTY_CODE = true;
+                    sessionVars.MLOC_WELL_DATA = false;
+                    sessionVars.MLOC_WELL_TYPE = false;
+                    sessionVars.MLOC_AQUIFER_NAME = false;
+                    sessionVars.MLOC_FORMATION_TYPE = false;
+                    sessionVars.MLOC_WELLHOLE_DEPTH = false;
+                    sessionVars.PROJ_SAMP_DESIGN_TYPE_CD = false;
+                    sessionVars.PROJ_QAPP_APPROVAL = false;
+                    sessionVars.SAMP_ACT_END_DT = false;
+                    sessionVars.SAMP_COLL_METHOD = false;
+                    sessionVars.SAMP_COLL_EQUIP = false;
+                    sessionVars.SAMP_PREP = false;
+                    sessionVars.SAMP_DEPTH = false;
+                }
+            }
+            return sessionVars;
+        }
         public static void PostLoginUser(string UserID, IHttpContextAccessor httpcontextaccessor)
         {
 
