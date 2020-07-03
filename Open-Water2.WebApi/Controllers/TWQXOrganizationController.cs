@@ -76,6 +76,12 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.UserOrgsRepository.InsertT_WQX_USER_ORGS(oRG_ID, uSER_IDX, rOLE_CD, cREATE_USER);
             return Ok(result);
         }
+        [HttpPost("api/org/deleteTWqxUserOrgs")]
+        public IActionResult DeleteT_WQX_USER_ORGS([FromQuery] string orgId, int userIdx)
+        {
+            var result = _unitOfWork.wqxOrganizationRepository.DeleteT_WQX_USER_ORGS(orgId, userIdx);
+            return Ok(result);
+        }
         [HttpGet("api/org/GetAdminTaskData")]
         public IActionResult GetAdminTaskData([FromQuery]string userName, string OrgID)
         {
@@ -90,5 +96,36 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.wqxOrganizationRepository.ApproveRejectT_WQX_USER_ORGS(orgID, userIDX, ApproveRejectCode);
             return Ok(result);
         }
+        [HttpGet("api/org/getTWqxRefData")]
+        public IActionResult GetT_WQX_REF_DATA([FromQuery] string table, Boolean actInd, Boolean usedInd)
+        {
+            var result = _unitOfWork.wqxOrganizationRepository.GetT_WQX_REF_DATA(table, actInd, usedInd);
+            return Ok(result);
+        }
+        [HttpGet("api/org/getTOeUsersInOrganization")]
+        public IActionResult GetT_OE_USERSInOrganization([FromQuery] string orgID)
+        {
+            var result = _unitOfWork.wqxOrganizationRepository.GetT_OE_USERSInOrganization(orgID);
+            return Ok(result);
+        }
+        [HttpGet("api/org/getTOeUsersNotInOrganization")]
+        public IActionResult GetT_OE_USERSNotInOrganization([FromQuery] string orgID)
+        {
+            var result = _unitOfWork.wqxOrganizationRepository.GetT_OE_USERSNotInOrganization(orgID);
+            return Ok(result);
+        }
+        [HttpGet("api/org/connectTest")]
+        public IActionResult ConnectTest([FromQuery] string orgID, string typ)
+        {
+            var result = _unitOfWork.wqxOrganizationRepository.ConnectTest(orgID, typ);
+            return Ok(result);
+        }
+        [HttpGet("api/org/GetWqxImportTranslatebyOrg")]
+        public IActionResult GetWQX_IMPORT_TRANSLATE_byOrg([FromQuery] string orgID)
+        {
+            var result = _unitOfWork.wqxOrganizationRepository.GetWQX_IMPORT_TRANSLATE_byOrg(orgID);
+            return Ok(result);
+        }
+        
     }
 }

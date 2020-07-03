@@ -200,5 +200,176 @@ namespace OpenWater2.DataAccess.Data.Repository
                 return 0;
             }
         }
+
+        public List<TWqxRefData> GetT_WQX_REF_DATA(string tABLE, bool ActInd, bool UsedInd)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefData
+                        where (ActInd ? a.ActInd == true : true)
+                        && (UsedInd ? a.UsedInd == true : true)
+                        && a.Table == tABLE
+                        orderby a.Value
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<UserOrgDisplay> GetT_OE_USERSInOrganization(string OrgID)
+        {
+            try
+            {
+                return (from u in _db.TOeUsers
+                        join uo in _db.TWqxUserOrgs on u.UserIdx equals uo.UserIdx
+                        where uo.OrgId == OrgID
+                        //orderby u.USER_ID
+                        select new UserOrgDisplay
+                        {
+                            USER_IDX = u.UserIdx,
+                            USER_ID = u.UserId,
+                            USER_NAME = u.Fname + " " + u.Lname,
+                            ORG_ID = uo.OrgId,
+                            ROLE_CD = uo.RoleCd
+                        }).ToList();
+            }
+
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TOeUsers> GetT_OE_USERSNotInOrganization(string OrgID)
+        {
+            try
+            {
+                //first get all users 
+                var allUsers = (from itemA in _db.TOeUsers select itemA);
+
+                //next get all users in role
+                var UsersInRole = (from itemA in _db.TOeUsers
+                                   join itemB in _db.TWqxUserOrgs on itemA.UserIdx equals itemB.UserIdx
+                                   where itemB.OrgId == OrgID
+                                   select itemA);
+
+                //then get exclusions
+                var usersNotInRole = allUsers.Except(UsersInRole);
+
+                return usersNotInRole.OrderBy(a => a.UserId).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public ConnectTestResult ConnectTest(string orgID, string typ)
+        {
+            ConnectTestResult connectTestResult = new ConnectTestResult();
+            connectTestResult.typ = typ;
+            try
+            {
+                //AUTHENTICATION TEST*********************************************
+                CDXCredentials cred = WQXSubmit.GetCDXSubmitCredentials2(orgID);
+                string token = WQXSubmit.AuthHelper(cred.userID, cred.credential, "Password", "default", cred.NodeURL);
+                if (token.Length > 0)
+                {
+                    //spnAuth.Attributes["class"] = "signup_header_check";
+                    //lblAuthResult.Text = "Authentication passed.";
+                    //lblCDXSubmitInd.CssClass = "fldPass";
+                    //lblCDXSubmitInd.Text = "This Organization is able to submit to EPA.";
+                    connectTestResult.lblAuthResult = "Authentication passed.";
+                    connectTestResult.lblCDXSubmitInd = "This Organization is able to submit to EPA.";
+
+                    //SUBMIT TEST*********************************************
+                    //List<net.epacdxnode.test.ParameterType> pars = new List<net.epacdxnode.test.ParameterType>();
+
+                    //net.epacdxnode.test.ParameterType p = new net.epacdxnode.test.ParameterType();
+                    //p.parameterName = "organizationIdentifier";
+                    //p.Value = Session["OrgID"].ToString();
+                    //pars.Add(p);
+
+                    //net.epacdxnode.test.ParameterType p2 = new net.epacdxnode.test.ParameterType();
+                    //p2.parameterName = "monitoringLocationIdentifier";
+                    //p2.Value = "";
+                    //pars.Add(p2);
+
+                    //OpenEnvironment.net.epacdxnode.test.ResultSetType rs = WQXSubmit.QueryHelper(cred.NodeURL, token, "WQX", "WQX.GetMonitoringLocationByParameters_v2.1", null, null, pars);
+
+                    //if (rs.rowId == "-99")
+                    if (1 == 1)
+                    {
+                        //THE NAAS ACCOUNT DOES NOT HAVE RIGHTS TO SUBMIT FOR THIS ORGANIZATION*********************************************
+                        //spnSubmit.Attributes["class"] = "signup_header_cross";
+                        if(typ == "LOCAL")
+                        {
+                            connectTestResult.lblSubmitResult = "The NAAS account you supplied is not authorized to submit for this organization. Please contact the STORET Helpdesk to request access.";
+                        } else
+                        {
+                            connectTestResult.lblSubmitResult = "Open Waters is not authorized to submit for your organization. Please contact the STORET Helpdesk to request access.";
+                        }
+                        //if (typ == "LOCAL")
+                        //    lblSubmitResult.Text = "The NAAS account you supplied is not authorized to submit for this organization. Please contact the STORET Helpdesk to request access.";
+                        //else
+                        //    lblSubmitResult.Text = "Open Waters is not authorized to submit for your organization. Please contact the STORET Helpdesk to request access.";
+
+                        //lblCDXSubmitInd.CssClass = "fldErr";
+                        //lblCDXSubmitInd.Text = "This Organization is unable to submit to EPA. Please correct this below.";
+                        //db_WQX.InsertOrUpdateT_WQX_ORGANIZATION(Session["OrgID"].ToString(), null, null, null, null, null, null, null, null, null, null, false, null, User.Identity.Name);
+                    }
+                    else
+                    {
+                        //spnSubmit.Attributes["class"] = "signup_header_check";
+                        //lblSubmitResult.Text = "Submit test passed.";
+                        //lblCDXSubmitInd.CssClass = "fldPass";
+                        //lblCDXSubmitInd.Text = "This Organization is able to submit to EPA.";
+                        connectTestResult.lblSubmitResult = "Submit test passed.";
+                        connectTestResult.lblCDXSubmitInd = "This Organization is able to submit to EPA.";
+                        //BOTH AUTHENTICATION AND SUBMIT PASSES - UPDATE ORG SUBMIT IND*********************************************
+                        //db_WQX.InsertOrUpdateT_WQX_ORGANIZATION(Session["OrgID"].ToString(), null, null, null, null, null, null, null, null, null, null, true, null, User.Identity.Name);
+                    }
+                }
+                else  //failed authentication
+                {
+                    //spnAuth.Attributes["class"] = "signup_header_cross";
+                    //lblAuthResult.Text = "Unable to authenticate to EPA-CDX. Please double-check your username and password.";
+
+                    //spnSubmit.Attributes["class"] = "signup_header_crossbw";
+                    //lblSubmitResult.Text = "Cannot test until authentication is resolved.";
+                    //lblCDXSubmitInd.CssClass = "fldErr";
+                    //lblCDXSubmitInd.Text = "This Organization is unable to submit to EPA. Please correct this below.";
+                    connectTestResult.lblAuthResult = "Unable to authenticate to EPA-CDX. Please double-check your username and password.";
+                    connectTestResult.lblSubmitResult = "Cannot test until authentication is resolved.";
+                    connectTestResult.lblCDXSubmitInd = "This Organization is unable to submit to EPA. Please correct this below.";
+
+                    //db_WQX.InsertOrUpdateT_WQX_ORGANIZATION(Session["OrgID"].ToString(), null, null, null, null, null, null, null, null, null, null, false, null, User.Identity.Name);
+                }
+
+                //pnlCDXResults.Visible = true;
+            }
+            catch (Exception ex)
+            {
+                connectTestResult.msg = ex.Message;
+            }
+            return connectTestResult;
+        }
+
+        public List<TWqxImportTranslate> GetWQX_IMPORT_TRANSLATE_byOrg(string OrgID)
+        {
+            try
+            {
+                return (from a in _db.TWqxImportTranslate
+                        where a.OrgId == OrgID
+                        orderby a.ColName, a.DataFrom
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
     }
 }

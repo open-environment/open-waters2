@@ -2,10 +2,12 @@
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
 using OpewnWater2.DataAccess;
+using OpwnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -15,6 +17,63 @@ namespace OpenWater2.DataAccess.Data.Repository
         public TWqxRefDataRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
+        }
+
+        public int DeleteT_WQX_IMPORT_TRANSLATE(int TranslateID)
+        {
+            try
+            {
+                TWqxImportTranslate wqxImportTranslate = _db.TWqxImportTranslate.Where(i => i.TranslateIdx == TranslateID).FirstOrDefault();
+                if(wqxImportTranslate != null)
+                {
+                    _db.TWqxImportTranslate.Remove(wqxImportTranslate);
+                    _db.SaveChanges();
+                    return 1;
+                }
+                return 0;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        public int DeleteT_WQX_REF_CHAR_ORG(string orgName, string charName)
+        {
+            try
+            {
+                TWqxRefCharOrg r = new TWqxRefCharOrg();
+                r = (from c in _db.TWqxRefCharOrg
+                     where c.OrgId == orgName
+                     && c.CharName == charName
+                     select c).FirstOrDefault();
+                _db.TWqxRefCharOrg.Remove(r);
+                _db.SaveChanges();
+                return 1;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        public int DeleteT_WQX_REF_TAXA_ORG(string orgName, string charName)
+        {
+            try
+            {
+                TWqxRefTaxaOrg r = new TWqxRefTaxaOrg();
+                r = (from c in _db.TWqxRefTaxaOrg
+                     where c.OrgId == orgName
+                     && c.BioSubjectTaxonomy == charName
+                     select c).FirstOrDefault();
+                _db.TWqxRefTaxaOrg.Remove(r);
+                _db.SaveChanges();
+                return 1;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         public List<TWqxRefAnalMethod> GetAllT_WQX_REF_ANAL_METHOD()
@@ -37,6 +96,25 @@ namespace OpenWater2.DataAccess.Data.Repository
             return _db.TWqxRefSampPrep.ToList();
         }
 
+        public List<AnalMethodDisplay> GetT_WQX_REF_ANAL_METHOD(bool ActInd)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefAnalMethod
+                        where (ActInd ? a.ActInd == true : true)
+                        orderby a.AnalyticMethodCtx, a.AnalyticMethodId
+                        select new AnalMethodDisplay
+                        {
+                            ANALYTIC_METHOD_IDX = a.AnalyticMethodIdx,
+                            AnalMethodDisplayName = a.AnalyticMethodCtx + " - " + a.AnalyticMethodId
+                        }).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public TWqxRefAnalMethod GetT_WQX_REF_ANAL_METHODByIDandContext(string ID, string Context)
         {
             try
@@ -45,6 +123,96 @@ namespace OpenWater2.DataAccess.Data.Repository
                         where a.AnalyticMethodId == ID
                         && a.AnalyticMethodCtx == Context
                         select a).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxRefCharacteristic> GetT_WQX_REF_CHARACTERISTIC(bool ActInd, bool onlyUsedInd)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefCharacteristic
+                        where (ActInd ? a.ActInd == true : true)
+                        && (onlyUsedInd ? a.UsedInd == true : true)
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxRefCharOrg> GetT_WQX_REF_CHAR_ORG(string orgName)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefCharOrg
+                            .Include("DefaultAnalMethodIdxNavigation")
+                        where a.OrgId == orgName
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public TWqxRefCharOrg GetT_WQX_REF_CHAR_ORGByName(string orgName, string charName)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefCharOrg
+                        where a.OrgId == orgName
+                        && a.CharName == charName
+                        select a).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxRefData> GetT_WQX_REF_DATA(string tABLE, bool ActInd, bool UsedInd)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefData
+                        where (ActInd ? a.ActInd == true : true)
+                        && (UsedInd ? a.UsedInd == true : true)
+                        && a.Table == tABLE
+                        orderby a.Value
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxRefDefaultTimeZone> GetT_WQX_REF_DEFAULT_TIME_ZONE()
+        {
+            try
+            {
+                return (from a in _db.TWqxRefDefaultTimeZone
+                        orderby a.TimeZoneName descending
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxRefTaxaOrg> GetT_WQX_REF_TAXA_ORG(string orgName)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefTaxaOrg
+                        where a.OrgId == orgName
+                        select a).ToList();
             }
             catch (Exception ex)
             {
@@ -130,6 +298,49 @@ namespace OpenWater2.DataAccess.Data.Repository
                 {
                     a.UsedInd = false;
                     _db.TWqxRefCharacteristic.Add(a);
+                }
+                _db.SaveChanges();
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+
+        public int InsertOrUpdateT_WQX_REF_CHAR_ORG(string charName, string orgName, string createUserId, string defaultDetectLimit, string defaultUnit, int? defaultAnalMethodIdx, string defaultSampFraction, string defaultResultStatus, string defaultResultTypeValue, string defaultLowerQuantLimit, string defaultUpperQuantLimit)
+        {
+            try
+            {
+                Boolean insInd = true;
+                TWqxRefCharOrg a = new TWqxRefCharOrg();
+
+                if (_db.TWqxRefCharOrg.Any(o => o.CharName == charName && o.OrgId == orgName))
+                {
+                    //update case
+                    a = (from c in _db.TWqxRefCharOrg
+                         where c.CharName == charName
+                         && c.OrgId == orgName
+                         select c).FirstOrDefault();
+                    insInd = false;
+                }
+
+                a.CharName = charName;
+                a.OrgId = orgName;
+                if (defaultDetectLimit != null) a.DefaultDetectLimit = defaultDetectLimit;
+                if (defaultLowerQuantLimit != null) a.DefaultLowerQuantLimit = defaultLowerQuantLimit;
+                if (defaultUpperQuantLimit != null) a.DefaultUpperQuantLimit = defaultUpperQuantLimit;
+                if (defaultUnit != null) a.DefaultUnit = defaultUnit;
+                if (defaultAnalMethodIdx != null) a.DefaultAnalMethodIdx = defaultAnalMethodIdx;
+                if (defaultSampFraction != null) a.DefaultSampFraction = defaultSampFraction;
+                if (defaultResultStatus != null) a.DefaultResultStatus = defaultResultStatus;
+                if (defaultResultTypeValue != null) a.DefaultResultValueType = defaultResultTypeValue;
+
+                if (insInd) //insert case
+                {
+                    a.CreateDt = System.DateTime.Now;
+                    a.CreateUserid = createUserId;
+                    _db.TWqxRefCharOrg.Add(a);
                 }
                 _db.SaveChanges();
                 return 1;
@@ -287,6 +498,81 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public int InsertOrUpdateT_WQX_REF_TAXA_ORG(string bIO_SUBJECT_TAXAONOMY, string oRG_NAME, string cREATE_USER_ID)
+        {
+            try
+            {
+                Boolean insInd = true;
+                TWqxRefTaxaOrg a = new TWqxRefTaxaOrg();
+
+                if (_db.TWqxRefTaxaOrg.Any(o => o.BioSubjectTaxonomy == bIO_SUBJECT_TAXAONOMY && o.OrgId == oRG_NAME))
+                {
+                    //update case
+                    a = (from c in _db.TWqxRefTaxaOrg
+                         where c.BioSubjectTaxonomy == bIO_SUBJECT_TAXAONOMY
+                         && c.OrgId == oRG_NAME
+                         select c).FirstOrDefault();
+                    insInd = false;
+                }
+
+                a.BioSubjectTaxonomy = bIO_SUBJECT_TAXAONOMY;
+                a.OrgId = oRG_NAME;
+
+                if (insInd) //insert case
+                {
+                    a.CreateDt = System.DateTime.Now;
+                    a.CreateUserid = cREATE_USER_ID;
+                    _db.TWqxRefTaxaOrg.Add(a);
+                }
+                _db.SaveChanges();
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+
+        public int InsertOrUpdateWQX_IMPORT_TRANSLATE(int? tRANSLATE_IDX, string oRG_ID, string cOL_NAME, string dATA_FROM, string dATA_TO, string cREATE_USER = "system")
+        {
+            Boolean insInd = false;
+            try
+            {
+                TWqxImportTranslate a = null;
+
+                if (tRANSLATE_IDX != null)
+                    a = (from c in _db.TWqxImportTranslate
+                         where c.TranslateIdx == tRANSLATE_IDX
+                         select c).FirstOrDefault();
+
+                if (a == null) //insert case
+                {
+                    insInd = true;
+                    a = new TWqxImportTranslate();
+                }
+
+                if (oRG_ID != null) a.OrgId = oRG_ID;
+                if (cOL_NAME != null) a.ColName = cOL_NAME;
+                if (dATA_FROM != null) a.DataFrom = dATA_FROM;
+                if (dATA_TO != null) a.DataTo = dATA_TO;
+
+                if (insInd) //insert case
+                {
+                    a.CreateDt = DateTime.Now;
+                    a.CreateUserid = cREATE_USER;
+                    _db.TWqxImportTranslate.Add(a);
+                }
+
+                _db.SaveChanges();
+
+                return a.TranslateIdx;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+
         public int UpdateT_WQX_REF_DATAByIDX(int IDX, string vALUE, string tEXT, bool ActInd)
         {
             try
@@ -309,48 +595,6 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
-        //public IEnumerable<SelectListItem> GetTWqxUserOrgsForDropDown()
-        //{
-        //    return _db.TWqxOrganization.Select(i => new SelectListItem()
-        //    {
-        //         Text = i.OrgFormalName,
-        //         Value = i.OrgId
-        //    });
-        //}
-        //public List<TWqxOrganization> GetWQX_USER_ORGS_ByUserIDX(int UserIDX, bool excludePendingInd)
-        //{
-        //    try
-        //    {
-        //        return (from a in _db.TWqxUserOrgs
-        //                join b in _db.TWqxOrganization on a.OrgId equals b.OrgId
-        //                where a.UserIdx == UserIDX
-        //                && (excludePendingInd == true ? a.RoleCd != "P" : true)
-        //                select b).ToList();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return null;
-        //    }
-        //}
-        //public List<VWqxAllOrgs> GetV_WQX_ALL_ORGS()
-        //{
-        //    try
-        //    {
-        //        return (from a in _db.VWqxAllOrgs
-        //                orderby a.OrgFormalName
-        //                select a).ToList();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return null;
-        //    }
-        //}
-        //public void Update(TWqxOrganization wqxOrganization)
-        //{
-        //    TWqxOrganization objFromDb = _db.TWqxOrganization.Where(i => i.OrgId == wqxOrganization.OrgId).FirstOrDefault();
-        //    objFromDb.OrgFormalName = wqxOrganization.OrgFormalName;
-        //    //TODO: implement rest of the properties
-        //    _db.SaveChanges();
-        //}
+        
     }
 }

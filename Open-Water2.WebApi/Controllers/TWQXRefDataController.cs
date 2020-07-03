@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
+using System.Xml.Linq;
 
 namespace Open_Water2.WebApi.Controllers
 {
@@ -14,9 +17,11 @@ namespace Open_Water2.WebApi.Controllers
     public class TWQXRefDataController : Controller
     {
         IUnitOfWork _unitOfWork;
-        public TWQXRefDataController(IUnitOfWork unitOfWork)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public TWQXRefDataController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
             _unitOfWork = unitOfWork;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet("api/refdata/GetAllTWQXRefData")]
@@ -82,5 +87,96 @@ namespace Open_Water2.WebApi.Controllers
             aCT_IND, sAMP_FRAC_REQ, pICK_LIST);
             return Ok(result);
         }
+        [HttpGet("api/refdata/getTWqxRefDefaultTimeZone")]
+        public IActionResult GetT_WQX_REF_DEFAULT_TIME_ZONE()
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_DEFAULT_TIME_ZONE();
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/GetTWqxRefCharacteristic")]
+        public IActionResult GetT_WQX_REF_CHARACTERISTIC([FromQuery] Boolean ActInd, Boolean onlyUsedInd)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_CHARACTERISTIC(ActInd, onlyUsedInd);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/GetTWqxRefData")]
+        public IActionResult GetT_WQX_REF_DATA([FromQuery] string table, Boolean actInd, Boolean usedInd)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_DATA(table, actInd, usedInd);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/GetTWqxRefAnalMethod")]
+        public IActionResult GetT_WQX_REF_ANAL_METHOD([FromQuery] Boolean actInd)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_ANAL_METHOD(actInd);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/GetTWqxRefTaxaOrg")]
+        public IActionResult GetT_WQX_REF_TAXA_ORG([FromQuery] string orgName)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_TAXA_ORG(orgName);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/GetTWqxRefCharOrgByName")]
+        public IActionResult GetT_WQX_REF_CHAR_ORGByName([FromQuery] string orgName, string charName)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_CHAR_ORGByName(orgName, charName);
+            return Ok(result);
+        }
+        [HttpDelete("api/refdata/deleteWqxRefCharOrg")]
+        public IActionResult DeleteT_WQX_REF_CHAR_ORG([FromQuery] string orgName, string charName)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.DeleteT_WQX_REF_CHAR_ORG(orgName, charName);
+            return Ok(result);
+        }
+        [HttpPost("api/refdata/insertOrUpdateTWqxRefTaxaOrg")]
+        public IActionResult InsertOrUpdateT_WQX_REF_TAXA_ORG([FromQuery] string bioSubjectTaxanomy, string orgName, string createUserId)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_TAXA_ORG(bioSubjectTaxanomy, orgName, createUserId);
+            return Ok(result);
+        }
+        [HttpDelete("api/refdata/deleteTWqxRefTaxaOrg")]
+        public IActionResult DeleteT_WQX_REF_TAXA_ORG([FromQuery] string orgName, string charName)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.DeleteT_WQX_REF_TAXA_ORG(orgName, charName);
+            return Ok(result);
+        }
+        [HttpDelete("api/refdata/deleteTWqxImportTranslate")]
+        public IActionResult DeleteT_WQX_IMPORT_TRANSLATE([FromQuery] int TranslateID)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.DeleteT_WQX_IMPORT_TRANSLATE(TranslateID);
+            return Ok(result);
+        }
+        [HttpPost("api/refdata/insertOrUpdateWqxImportTranslate")]
+        public IActionResult InsertOrUpdateWQX_IMPORT_TRANSLATE([FromQuery] int? translateIdx, string orgId, string colName, string dataFrom, string dataTo, string createUser = "system")
+        {
+            if (translateIdx == 0) translateIdx = null;
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateWQX_IMPORT_TRANSLATE(translateIdx, orgId, colName, dataFrom, dataTo, createUser);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/getAllColumnBasic")]
+        public IActionResult GetAllColumnBasic([FromQuery] string importType)
+        {
+            var filePath = String.Format(@"{0}\xml\ImportColumnsConfig.xml", _webHostEnvironment.WebRootPath);
+            var xml = XDocument.Load(filePath);
+            var result = (from c in xml.Root.Descendants("Field")
+                    .Where(i => i.Attribute("Level").Value == importType)
+                    select c.Attribute("FieldName").Value
+                    ).ToList();
+            return Ok(result);
+        }
+        [HttpPost("api/refdata/InsertOrUpdateTWqxRefCharOrg")]
+        public IActionResult InsertOrUpdateT_WQX_REF_CHAR_ORG(string charName, string orgName, string createUserId, string defaultDetectLimit, string defaultUnit, int? defaultAnalMethodIdx, string defaultSampFraction, string defaultResultStatus, string defaultResultTypeValue, string defaultLowerQuantLimit, string defaultUpperQuantLimit)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_CHAR_ORG(charName, orgName, createUserId, defaultDetectLimit, defaultUnit, defaultAnalMethodIdx, defaultSampFraction, defaultResultStatus, defaultResultTypeValue, defaultLowerQuantLimit, defaultUpperQuantLimit);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/GetTWqxRefCharOrg")]
+        public IActionResult GetT_WQX_REF_CHAR_ORG([FromQuery] string orgName)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_CHAR_ORG(orgName);
+            return Ok(result);
+        }
+        
     }
 }

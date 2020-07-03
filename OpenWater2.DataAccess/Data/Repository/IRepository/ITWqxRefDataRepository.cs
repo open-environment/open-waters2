@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using OpenWater2.Models.Model;
+using OpwnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -26,6 +27,24 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public List<TWqxRefCharacteristic> GetAllT_WQX_REF_CHARACTERISTIC();
         public List<TWqxRefAnalMethod> GetAllT_WQX_REF_ANAL_METHOD();
         public List<TWqxRefSampPrep> GetAllT_WQX_REF_SAMP_PREP();
+        public List<TWqxRefDefaultTimeZone> GetT_WQX_REF_DEFAULT_TIME_ZONE();
+        public List<TWqxRefCharacteristic> GetT_WQX_REF_CHARACTERISTIC(Boolean ActInd, Boolean onlyUsedInd);
+        public List<TWqxRefData> GetT_WQX_REF_DATA(string tABLE, Boolean ActInd, Boolean UsedInd);
+
+        public List<AnalMethodDisplay> GetT_WQX_REF_ANAL_METHOD(Boolean ActInd);
+        public List<TWqxRefCharOrg> GetT_WQX_REF_CHAR_ORG(string orgName);
+        public List<TWqxRefTaxaOrg> GetT_WQX_REF_TAXA_ORG(string orgName);
+        public TWqxRefCharOrg GetT_WQX_REF_CHAR_ORGByName(string orgName, string charName);
+        public int InsertOrUpdateT_WQX_REF_CHAR_ORG(global::System.String cHAR_NAME, global::System.String oRG_NAME, global::System.String cREATE_USER_ID,
+            string dEFAULT_DETECT_LIMIT, string dEFAULT_UNIT, int? dEFAULT_ANAL_METHOD_IDX, string dEFAULT_SAMP_FRACTION, string dEFAULT_RESULT_STATUS,
+            string dEFAULT_RESULT_VALUE_TYPE, string dEFAULT_LOWER_QUANT_LIMIT, string dEFAULT_UPPER_QUANT_LIMIT);
+        public int DeleteT_WQX_REF_CHAR_ORG(string orgName, string charName);
+        public int InsertOrUpdateT_WQX_REF_TAXA_ORG(string bioSubjectTaxanomy, string orgName, string createUserId);
+        public int DeleteT_WQX_REF_TAXA_ORG(string orgName, string charName);
+        public int DeleteT_WQX_IMPORT_TRANSLATE(int TranslateID);
+
+        public int InsertOrUpdateWQX_IMPORT_TRANSLATE(int? tRANSLATE_IDX, string oRG_ID, string cOL_NAME, string dATA_FROM, string dATA_TO, string cREATE_USER = "system");
+
     }
     
 }

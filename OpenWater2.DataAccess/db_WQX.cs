@@ -188,7 +188,14 @@ namespace OpwnWater2.DataAccess
         public string ORG_ID { get; set; }
         public string ROLE_CD { get; set; }
     }
-
+    public class ConnectTestResult
+    {
+        public string lblAuthResult { get; set; }
+        public string lblSubmitResult { get; set; }
+        public string lblCDXSubmitInd { get; set; }
+        public string msg { get; set; }
+        public string typ { get; set; }
+    }
     public class db_WQX
     {
         private static ApplicationDbContext _db;
