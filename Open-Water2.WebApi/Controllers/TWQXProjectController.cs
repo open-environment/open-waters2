@@ -62,5 +62,12 @@ namespace Open_Water2.WebApi.Controllers
             qAPP_APPROVAL_AGENCY, wQX_SUBMIT_STATUS, wQX_SUBMIT_DT, aCT_IND, wQX_IND, cREATE_USER);
             return Ok(result);
         }
+
+        [HttpGet("api/project/getWqxProject")]
+        public IActionResult GetWQX_PROJECT([FromQuery] bool ActInd, string OrgID, bool? WQXPending)
+        {
+            var result = _unitOfWork.tWqxProjectRepository.GetWQX_PROJECT(ActInd, OrgID, WQXPending);
+            return Ok(result);
+        }
     }
 }

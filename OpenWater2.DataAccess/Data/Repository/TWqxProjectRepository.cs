@@ -40,6 +40,24 @@ namespace OpenWater2.DataAccess.Data.Repository
             });
         }
 
+        public List<TWqxProject> GetWQX_PROJECT(bool ActInd, string OrgID, bool? WQXPending)
+        {
+            try
+            {
+                return (from a in _db.TWqxProject
+                        where (ActInd ? a.ActInd == true : true)
+                        && a.OrgId == OrgID
+                        && (!WQXPending.HasValue ? true : a.WqxSubmitStatus == "U")
+                        && (!WQXPending.HasValue ? true : a.WqxInd == true)
+                        orderby a.ProjectId
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public TWqxProject GetWQX_PROJECT_ByID(int ProjectIDX)
         {
             return _db.TWqxProject.Where(p => p.ProjectIdx == ProjectIDX).FirstOrDefault();
