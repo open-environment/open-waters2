@@ -44,6 +44,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public int DeleteT_WQX_IMPORT_TRANSLATE(int TranslateID);
 
         public int InsertOrUpdateWQX_IMPORT_TRANSLATE(int? tRANSLATE_IDX, string oRG_ID, string cOL_NAME, string dATA_FROM, string dATA_TO, string cREATE_USER = "system");
+        public List<TWqxRefCounty> GetT_WQX_REF_COUNTY(string StateCode);
 
     }
     

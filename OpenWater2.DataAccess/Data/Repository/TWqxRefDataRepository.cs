@@ -175,6 +175,21 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public List<TWqxRefCounty> GetT_WQX_REF_COUNTY(string StateCode)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefCounty
+                        where a.StateCode == StateCode
+                        orderby a.CountyName
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public List<TWqxRefData> GetT_WQX_REF_DATA(string tABLE, bool ActInd, bool UsedInd)
         {
             try

@@ -177,6 +177,12 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_CHAR_ORG(orgName);
             return Ok(result);
         }
+        [HttpGet("api/refdata/GetTWqxRefCounty")]
+        public IActionResult GetT_WQX_REF_COUNTY([FromQuery] string stateCode)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_COUNTY(stateCode);
+            return Ok(result);
+        }
         
     }
 }
