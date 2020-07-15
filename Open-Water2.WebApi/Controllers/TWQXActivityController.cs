@@ -36,5 +36,19 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxActivityRepository.GetWQX_ACTIVITY_MyOrgCount(UserIDX);
             return Ok(result);
         }
+
+        [HttpGet("api/activity/getWqxActivityDisplay")]
+        public IActionResult GetWQX_ACTIVITYDisplay([FromQuery] bool ActInd, string OrgID, int? MonLocIDX, DateTime? startDt, DateTime? endDt, string ActType, bool WQXPending, int? ProjectIDX, string WQXStatus)
+        {
+            var result = _unitOfWork.tWqxActivityRepository.GetWQX_ACTIVITYDisplay(ActInd, OrgID, MonLocIDX, startDt, endDt, ActType, WQXPending, ProjectIDX, WQXStatus);
+            return Ok(result);
+        }
+
+        [HttpDelete("api/activity/deleteTWqxActivity")]
+        public IActionResult DeleteT_WQX_ACTIVITY([FromQuery] int ActivityIDX, string UserID)
+        {
+            var result = _unitOfWork.tWqxActivityRepository.DeleteT_WQX_ACTIVITY(ActivityIDX, UserID);
+            return Ok(result);
+        }
     }
 }
