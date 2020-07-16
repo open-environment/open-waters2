@@ -126,6 +126,12 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.wqxOrganizationRepository.GetWQX_IMPORT_TRANSLATE_byOrg(orgID);
             return Ok(result);
         }
-        
+        [HttpGet("api/org/canUserEditOrg")]
+        public IActionResult CanUserEditOrg([FromQuery] int UserIDX, string OrgID)
+        {
+            var result = _unitOfWork.wqxOrganizationRepository.CanUserEditOrg(UserIDX, OrgID);
+            return Ok(result);
+        }
+
     }
 }

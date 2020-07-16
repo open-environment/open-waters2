@@ -235,5 +235,21 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
+
+        public List<TWqxMonloc> GetWQX_MONLOC_ByOrgID(string OrgID)
+        {
+            try
+            {
+                return (from a in _db.TWqxMonloc
+                        where (a.ActInd == true)
+                        && (a.OrgId == OrgID)
+                        orderby a.MonlocId
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
     }
 }

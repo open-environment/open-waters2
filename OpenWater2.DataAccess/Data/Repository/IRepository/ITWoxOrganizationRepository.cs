@@ -26,6 +26,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public List<TOeUsers> GetT_OE_USERSNotInOrganization(string OrgID);
         public ConnectTestResult ConnectTest(string orgID, string typ);
         public List<TWqxImportTranslate> GetWQX_IMPORT_TRANSLATE_byOrg(string OrgID);
+        public bool CanUserEditOrg(int UserIDX, string OrgID);
 
     }
 }

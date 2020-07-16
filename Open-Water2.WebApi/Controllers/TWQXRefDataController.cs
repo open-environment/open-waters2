@@ -183,6 +183,24 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_COUNTY(stateCode);
             return Ok(result);
         }
-        
+        [HttpGet("api/refdata/getTWqxRefDataCount")]
+        public IActionResult GetT_WQX_REF_DATA_Count()
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_DATA_Count();
+            return Ok(result);
+        }
+
+        [HttpGet("api/refdata/GetTWqxRefCharOrgCount")]
+        public IActionResult GetT_WQX_REF_CHAR_ORG_Count(string orgName)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_CHAR_ORG_Count(orgName);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/GetTWqxRefSampColMethodByContext")]
+        public IActionResult GetT_WQX_REF_SAMP_COL_METHOD_ByContext(string Context)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_SAMP_COL_METHOD_ByContext(Context);
+            return Ok(result);
+        }
     }
 }

@@ -175,6 +175,20 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public int GetT_WQX_REF_CHAR_ORG_Count(string orgName)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefCharOrg
+                        where a.OrgId == orgName
+                        select a).Count();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public List<TWqxRefCounty> GetT_WQX_REF_COUNTY(string StateCode)
         {
             try
@@ -207,12 +221,39 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public int GetT_WQX_REF_DATA_Count()
+        {
+            try
+            {
+                return (from a in _db.TWqxRefData
+                        select a).Count();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public List<TWqxRefDefaultTimeZone> GetT_WQX_REF_DEFAULT_TIME_ZONE()
         {
             try
             {
                 return (from a in _db.TWqxRefDefaultTimeZone
                         orderby a.TimeZoneName descending
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxRefSampColMethod> GetT_WQX_REF_SAMP_COL_METHOD_ByContext(string Context)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefSampColMethod
+                        where a.SampCollMethodCtx == Context
                         select a).ToList();
             }
             catch (Exception ex)

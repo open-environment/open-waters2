@@ -371,5 +371,24 @@ namespace OpenWater2.DataAccess.Data.Repository
                 return null;
             }
         }
+
+        public bool CanUserEditOrg(int UserIDX, string OrgID)
+        {
+            try
+            {
+                var xxx = (from a in _db.TWqxUserOrgs
+                           where a.UserIdx == UserIDX
+                           && a.OrgId == OrgID
+                           && (a.RoleCd == "A" || a.RoleCd == "U")
+                           select a).Count();
+
+                return xxx > 0;
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
     }
 }

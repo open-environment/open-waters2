@@ -25,5 +25,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
             string cOUNTRY_CODE, string sTATE_CODE, string cOUNTY_CODE, string wELL_TYPE, string aQUIFER_NAME,
             string fORMATION_TYPE, string wELLHOLE_DEPTH_MSR, string wELLHOLE_DEPTH_MSR_UNIT, string wQX_SUBMIT_STATUS,
             DateTime? wQXUpdateDate, Boolean? aCT_IND, Boolean? wQX_IND, String cREATE_USER = "system");
+
+        public List<TWqxMonloc> GetWQX_MONLOC_ByOrgID(string OrgID);
     }
 }

@@ -73,5 +73,12 @@ namespace Open_Water2.WebApi.Controllers
              wQXUpdateDate, aCT_IND, wQX_IND, cREATE_USER);
             return Ok(result);
         }
+
+        [HttpGet("api/monloc/getWqxMonlocByOrgId")]
+        public IActionResult GetWQX_MONLOC_ByOrgID([FromQuery] string OrgID)
+        {
+            var result = _unitOfWork.tWqxMonLocRepository.GetWQX_MONLOC_ByOrgID(OrgID);
+            return Ok(result);
+        }
     }
 }

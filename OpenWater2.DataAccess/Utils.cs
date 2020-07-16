@@ -337,6 +337,59 @@ namespace OpewnWater2.DataAccess
                 return "";
             }
         }
+        public static string GetWQXTimeZoneByDate(DateTime dt, string OrgID)
+        {
+            string OrgId_TZ = string.Empty;
+            string OrgId_TZ_S = string.Empty;
+            string OrgId_TZ_D = string.Empty;
+            try
+            {
+                if (OrgID == "")
+                {
+                    //no default time zone found in session, need to retrieve from database
+                    string TimeZoneID = "";
+
+                    TWqxOrganization org = db_WQX.GetWQX_ORGANIZATION_ByID(OrgID);
+                    if (org != null)
+                    {
+                        if ((org.DefaultTimezone ?? "") != "")
+                            TimeZoneID = org.DefaultTimezone;
+                        else
+                            TimeZoneID = db_Ref.GetT_OE_APP_SETTING("Default Timezone");
+                    }
+
+                    TWqxRefDefaultTimeZone tz = db_Ref.GetT_WQX_REF_DEFAULT_TIME_ZONE_ByName(TimeZoneID);
+                    if (tz != null)
+                    {
+                        //HttpContext.Current.Session[OrgID + "_TZ"] = tz.OfficialTimeZoneName;
+                        //httpcontextaccessor.HttpContext.Session.SetString("OrgID" + "_TZ", tz.OfficialTimeZoneName);
+                        OrgId_TZ = tz.OfficialTimeZoneName;
+                        //HttpContext.Current.Session[OrgID + "_TZ_S"] = tz.WqxCodeStandard;
+                        //httpcontextaccessor.HttpContext.Session.SetString("OrgID" + "_TZ_S", tz.WqxCodeStandard);
+                        OrgId_TZ_S = tz.WqxCodeStandard;
+                        //HttpContext.Current.Session[OrgID + "_TZ_D"] = tz.WqxCodeDaylight;
+                        //httpcontextaccessor.HttpContext.Session.SetString("OrgID" + "_TZ_D", tz.WqxCodeDaylight);
+                        OrgId_TZ_D = tz.WqxCodeDaylight;
+                    }
+                }
+
+                //TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById(HttpContext.Current.Session[OrgID + "_TZ"].ToString());
+                //TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById(httpcontextaccessor.HttpContext.Session.GetString("OrgID" + "_TZ"));
+                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById(OrgId_TZ);
+                if (tzi.IsDaylightSavingTime(dt))
+                    //return HttpContext.Current.Session[OrgID + "_TZ_S"].ToString();
+                    //return httpcontextaccessor.HttpContext.Session.GetString("OrgID" + "_TZ_S");
+                    return OrgId_TZ_S;
+                else
+                    //return HttpContext.Current.Session[OrgID + "_TZ_D"].ToString();
+                    //return httpcontextaccessor.HttpContext.Session.GetString("OrgID" + "_TZ_D");
+                    return OrgId_TZ_D;
+            }
+            catch
+            {
+                return "";
+            }
+        }
 
         /// <summary>
         /// Returns the lookup value from a dictionary if found, otherwise returns default value based on datatype
