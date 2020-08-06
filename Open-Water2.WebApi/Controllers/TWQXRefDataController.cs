@@ -202,5 +202,51 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_SAMP_COL_METHOD_ByContext(Context);
             return Ok(result);
         }
+
+        [HttpGet("api/refdata/getTWqxRefCharacteristicByOrg")]
+        public IActionResult GetT_WQX_REF_CHARACTERISTIC_ByOrg([FromQuery] string OrgID, Boolean RBPInd)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_CHARACTERISTIC_ByOrg(OrgID, RBPInd);
+            return Ok(result);
+        }
+        [HttpPost("api/refdata/insertOrUpdateTWqxResult")]
+        public IActionResult InsertOrUpdateT_WQX_RESULT([FromQuery] global::System.Int32? rESULT_IDX, global::System.Int32 aCTIVITY_IDX, global::System.String rESULT_DETECT_CONDITION,
+            global::System.String cHAR_NAME, global::System.String rESULT_SAMP_FRACTION, global::System.String rESULT_MSR, global::System.String rESULT_MSR_UNIT,
+            global::System.String rESULT_STATUS, global::System.String rESULT_VALUE_TYPE, global::System.String rESULT_COMMENT,
+            global::System.String bIO_INTENT_NAME, global::System.String bIO_INDIVIDUAL_ID, global::System.String bIO_TAXONOMY, global::System.String bIO_SAMPLE_TISSUE_ANATOMY,
+            global::System.Int32? aNALYTIC_METHOD_IDX, int? lAB_IDX, DateTime? lAB_ANALYSIS_START_DT, global::System.String dETECTION_LIMIT, global::System.String pQL,
+            global::System.String lOWER_QUANT_LIMIT, global::System.String uPPER_QUANT_LIMIT, int? lAB_SAMP_PREP_IDX, DateTime? lAB_SAMP_PREP_START_DT, string dILUTION_FACTOR,
+            string fREQ_CLASS_CODE, string fREQ_CLASS_UNIT,
+            String cREATE_USER = "system")
+        {
+            if (lAB_IDX == 0) lAB_IDX = null;
+            if (aNALYTIC_METHOD_IDX == 0) aNALYTIC_METHOD_IDX = null;
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_RESULT(rESULT_IDX, aCTIVITY_IDX, rESULT_DETECT_CONDITION,
+            cHAR_NAME, rESULT_SAMP_FRACTION, rESULT_MSR, rESULT_MSR_UNIT,
+            rESULT_STATUS, rESULT_VALUE_TYPE, rESULT_COMMENT,
+            bIO_INTENT_NAME, bIO_INDIVIDUAL_ID, bIO_TAXONOMY, bIO_SAMPLE_TISSUE_ANATOMY,
+            aNALYTIC_METHOD_IDX, lAB_IDX, lAB_ANALYSIS_START_DT, dETECTION_LIMIT, pQL,
+            lOWER_QUANT_LIMIT, uPPER_QUANT_LIMIT, lAB_SAMP_PREP_IDX, lAB_SAMP_PREP_START_DT, dILUTION_FACTOR,
+            fREQ_CLASS_CODE, fREQ_CLASS_UNIT, cREATE_USER);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/getTWqxRefTaxaByOrg")]
+        public IActionResult GetT_WQX_REF_TAXA_ByOrg([FromQuery] string OrgID)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_TAXA_ByOrg(OrgID);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/getTWqxRefCharLimitsByNameUnit")]
+        public IActionResult GetT_WQX_REF_CHAR_LIMITS_ByNameUnit([FromQuery] string CharName, string UnitName)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_CHAR_LIMITS_ByNameUnit(CharName, UnitName);
+            return Ok(result);
+        }
+        [HttpDelete("api/refdata/deleteTWqxResult")]
+        public IActionResult DeleteT_WQX_RESULT([FromQuery] int ResultIdx)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.DeleteT_WQX_RESULT(ResultIdx);
+            return Ok(result);
+        }
     }
 }

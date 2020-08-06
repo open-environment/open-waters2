@@ -21,6 +21,8 @@ namespace Open_Water2.WebApi.Controllers
         [HttpGet("api/activity/getAllActivities")]
         public IActionResult GetWQX_Activities([FromQuery]bool ActInd, string OrgID, int? MonLocIDX, DateTime? startDt, DateTime? endDt, string ActType, bool WQXPending, int? ProjectIDX)
         {
+            if (MonLocIDX == 0) MonLocIDX = null;
+            if (ProjectIDX == 0) ProjectIDX = null;
             var result = _unitOfWork.tWqxActivityRepository.GetWQX_ACTIVITY(ActInd, OrgID, MonLocIDX, startDt, endDt, ActType, WQXPending, ProjectIDX);
             return Ok(result);
         }
@@ -69,6 +71,7 @@ namespace Open_Water2.WebApi.Controllers
             global::System.String sAMP_PREP_STORAGE_DESC, global::System.String wQX_SUBMIT_STATUS, Boolean? aCT_IND, Boolean? wQX_IND, String cREATE_USER = "system", string eNTRY_TYPE = "C")
         {
             if (aCTIVITY_IDX == null || aCTIVITY_IDX <= 0) aCTIVITY_IDX = null;
+            if (bIO_PASS_COUNT == 0) bIO_PASS_COUNT = null;
             var result = _unitOfWork.tWqxActivityRepository.InsertOrUpdateWQX_ACTIVITY(aCTIVITY_IDX,  oRG_ID, pROJECT_IDX, mONLOC_IDX,  aCTIVITY_ID,
             aCT_TYPE,  aCT_MEDIA,  aCT_SUBMEDIA, aCT_START_DT, aCT_END_DT,
             aCT_TIME_ZONE,  rELATIVE_DEPTH_NAME,  aCT_DEPTHHEIGHT_MSR,  aCT_DEPTHHEIGHT_MSR_UNIT,
@@ -98,5 +101,17 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
 
+        [HttpGet("api/activity/getTWqxResult")]
+        public IActionResult GetT_WQX_RESULT([FromQuery] int ActivityIDX)
+        {
+            var result = _unitOfWork.tWqxActivityRepository.GetT_WQX_RESULT(ActivityIDX);
+            return Ok(result);
+        }
+        [HttpPut("api/activity/updateWqxActivityWqxStatus")]
+        public IActionResult UpdateWQX_ACTIVITY_WQXStatus([FromQuery] global::System.Int32? aCTIVITY_IDX, global::System.String wQX_SUBMIT_STATUS, Boolean? aCT_IND, Boolean? wQX_IND, String cREATE_USER = "system")
+        {
+            var result = _unitOfWork.tWqxActivityRepository.UpdateWQX_ACTIVITY_WQXStatus(aCTIVITY_IDX,wQX_SUBMIT_STATUS,aCT_IND,wQX_IND,cREATE_USER);
+            return Ok(result);
+        }
     }
 }

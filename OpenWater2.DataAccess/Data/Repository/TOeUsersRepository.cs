@@ -32,7 +32,17 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
-
+        public TOeUsers GetT_OE_USERSByIDX(int userIdx)
+        {
+            try
+            {
+                return _db.TOeUsers.FirstOrDefault(usr => usr.UserIdx == userIdx);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         public List<TOeUsers> GetUserByRole(int roleID)
         {
             try

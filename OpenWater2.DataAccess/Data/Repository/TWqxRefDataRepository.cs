@@ -76,6 +76,26 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public int DeleteT_WQX_RESULT(int ResultIDX)
+        {
+            try
+            {
+                TWqxResult r = new TWqxResult();
+                r = (from c in _db.TWqxResult where c.ResultIdx == ResultIDX select c).FirstOrDefault();
+                if(r != null)
+                {
+                    _db.TWqxResult.Remove(r);
+                    _db.SaveChanges();
+                    return 1;
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+            return 0;
+        }
+
         public List<TWqxRefAnalMethod> GetAllT_WQX_REF_ANAL_METHOD()
         {
             return _db.TWqxRefAnalMethod.ToList();
@@ -138,6 +158,38 @@ namespace OpenWater2.DataAccess.Data.Repository
                         where (ActInd ? a.ActInd == true : true)
                         && (onlyUsedInd ? a.UsedInd == true : true)
                         select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxRefCharacteristic> GetT_WQX_REF_CHARACTERISTIC_ByOrg(string OrgID, bool RBPInd)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefCharacteristic
+                        join b in _db.TWqxRefCharOrg on a.CharName equals b.CharName
+                        where b.OrgId == OrgID
+                        && (RBPInd == true ? a.CharName.Contains("RBP") : true)
+                        && (RBPInd == false ? !a.CharName.Contains("RBP") : true)
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public TWqxRefCharLimits GetT_WQX_REF_CHAR_LIMITS_ByNameUnit(string CharName, string UnitName)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefCharLimits
+                        where a.CharName == CharName
+                        && a.UnitName == UnitName
+                        select a).FirstOrDefault();
             }
             catch (Exception ex)
             {
@@ -254,6 +306,22 @@ namespace OpenWater2.DataAccess.Data.Repository
             {
                 return (from a in _db.TWqxRefSampColMethod
                         where a.SampCollMethodCtx == Context
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxRefData> GetT_WQX_REF_TAXA_ByOrg(string OrgID)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefData
+                        join b in _db.TWqxRefTaxaOrg on a.Value equals b.BioSubjectTaxonomy
+                        where b.OrgId == OrgID
+                        && a.Table == "Taxon"
                         select a).ToList();
             }
             catch (Exception ex)
@@ -582,6 +650,67 @@ namespace OpenWater2.DataAccess.Data.Repository
                 }
                 _db.SaveChanges();
                 return 1;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+
+        public int InsertOrUpdateT_WQX_RESULT(int? rESULT_IDX, int aCTIVITY_IDX, string rESULT_DETECT_CONDITION, string cHAR_NAME, string rESULT_SAMP_FRACTION, string rESULT_MSR, string rESULT_MSR_UNIT, string rESULT_STATUS, string rESULT_VALUE_TYPE, string rESULT_COMMENT, string bIO_INTENT_NAME, string bIO_INDIVIDUAL_ID, string bIO_TAXONOMY, string bIO_SAMPLE_TISSUE_ANATOMY, int? aNALYTIC_METHOD_IDX, int? lAB_IDX, DateTime? lAB_ANALYSIS_START_DT, string dETECTION_LIMIT, string pQL, string lOWER_QUANT_LIMIT, string uPPER_QUANT_LIMIT, int? lAB_SAMP_PREP_IDX, DateTime? lAB_SAMP_PREP_START_DT, string dILUTION_FACTOR, string fREQ_CLASS_CODE, string fREQ_CLASS_UNIT, string cREATE_USER = "system")
+        {
+            Boolean insInd = false;
+            try
+            {
+                TWqxResult a = new TWqxResult();
+
+                if (rESULT_IDX != null)
+                    a = (from c in _db.TWqxResult
+                         where c.ResultIdx == rESULT_IDX
+                         select c).FirstOrDefault();
+
+                if (a == null)
+                    a = new TWqxResult();
+
+                if (a.ResultIdx == 0) //insert case
+                    insInd = true;
+
+                a.ActivityIdx = aCTIVITY_IDX;
+
+                if (rESULT_DETECT_CONDITION != null) a.ResultDetectCondition = rESULT_DETECT_CONDITION;
+                if (cHAR_NAME != null) a.CharName = cHAR_NAME;
+
+                if (rESULT_SAMP_FRACTION != null) a.ResultSampFraction = rESULT_SAMP_FRACTION;
+                if (rESULT_MSR != null) a.ResultMsr = rESULT_MSR;
+                if (rESULT_MSR_UNIT != null) a.ResultMsrUnit = rESULT_MSR_UNIT;
+                if (rESULT_STATUS != null) a.ResultStatus = rESULT_STATUS;
+                if (rESULT_VALUE_TYPE != null) a.ResultValueType = rESULT_VALUE_TYPE;
+                if (rESULT_COMMENT != null) a.ResultComment = rESULT_COMMENT;
+                if (bIO_INTENT_NAME != null) a.BioIntentName = bIO_INTENT_NAME;
+                if (bIO_INDIVIDUAL_ID != null) a.BioIndividualId = bIO_INDIVIDUAL_ID;
+                if (bIO_TAXONOMY != null) a.BioSubjectTaxonomy = bIO_TAXONOMY;
+                if (bIO_SAMPLE_TISSUE_ANATOMY != null) a.BioSampleTissueAnatomy = bIO_SAMPLE_TISSUE_ANATOMY;
+                if (aNALYTIC_METHOD_IDX != null) a.AnalyticMethodIdx = aNALYTIC_METHOD_IDX;
+                if (lAB_IDX != null) a.LabIdx = lAB_IDX;
+                if (lAB_ANALYSIS_START_DT != null) a.LabAnalysisStartDt = lAB_ANALYSIS_START_DT;
+                if (dETECTION_LIMIT != null) a.DetectionLimit = dETECTION_LIMIT;
+                if (pQL != null) a.Pql = pQL;
+                if (lOWER_QUANT_LIMIT != null) a.LowerQuantLimit = lOWER_QUANT_LIMIT;
+                if (uPPER_QUANT_LIMIT != null) a.UpperQuantLimit = uPPER_QUANT_LIMIT;
+                if (lAB_SAMP_PREP_IDX != null) a.LabSampPrepIdx = lAB_SAMP_PREP_IDX;
+                if (lAB_SAMP_PREP_START_DT != null) a.LabSampPrepStartDt = lAB_SAMP_PREP_START_DT;
+                if (dILUTION_FACTOR != null) a.DilutionFactor = dILUTION_FACTOR;
+                if (fREQ_CLASS_CODE != null) a.FreqClassCode = fREQ_CLASS_CODE;
+                if (fREQ_CLASS_UNIT != null) a.FreqClassUnit = fREQ_CLASS_UNIT;
+                //set freq class unit to count if not provided
+                if (fREQ_CLASS_UNIT == null && fREQ_CLASS_CODE != null) fREQ_CLASS_UNIT = "count";
+
+                if (insInd) //insert case
+                    _db.TWqxResult.Add(a);
+
+                _db.SaveChanges();
+
+                return a.ResultIdx;
             }
             catch (Exception ex)
             {

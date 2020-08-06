@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using OpenWater2.DataAccess.Data;
 using OpenWater2.DataAccess.Data.Repository;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
@@ -590,6 +592,29 @@ namespace OpewnWater2.DataAccess
             }
             return sessionVars;
         }
+        public static SessionVars GetPostLoginUserByUserIdx(int? userIdx, IUnitOfWork unitOfWork, IWebHostEnvironment env, ILogger _logger)
+        {
+            string msg = "GetPostLoginUserByUserIdx called..userIdx:" + userIdx;
+            _logger.LogInformation(msg);
+            try
+            {
+                TOeUsers u = unitOfWork.oeUsersRepostory.GetT_OE_USERSByIDX((int)userIdx);
+                if (u != null)
+                {
+                    msg = "GetPostLoginUser called UserId.." + u.UserId;
+                    _logger.LogInformation(msg);
+                    return GetPostLoginUser(u.UserId, unitOfWork);
+                }
+                msg = "GetT_OE_USERSByIDX returned null..";
+                _logger.LogInformation(msg);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex.StackTrace.ToString());
+                throw ex;
+            }
+            return null;
+        }
         public static void PostLoginUser(string UserID, IHttpContextAccessor httpcontextaccessor)
         {
 
@@ -790,6 +815,18 @@ namespace OpewnWater2.DataAccess
                     ).ToList();
         }
 
+        public static void WriteLog(string msg, IWebHostEnvironment env)
+        {
+            string path = env.ContentRootPath + "\\requests.txt";
+            try
+            {
+                using (StreamWriter writer = System.IO.File.AppendText(path))
+                {
+                    writer.WriteLine(DateTime.Now.ToLongTimeString() + ":" + msg);
+                }
+            }
+            catch { }
+        }
     }
 
 }

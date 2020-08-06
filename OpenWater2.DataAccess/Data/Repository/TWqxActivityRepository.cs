@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -327,6 +328,22 @@ namespace OpenWater2.DataAccess.Data.Repository
                 return (from a in _db.TWqxActivity
                         where a.ActivityIdx == ActivityIDX
                         select a).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxResult> GetT_WQX_RESULT(int ActivityIDX)
+        {
+            try
+            {
+                return (from a in _db.TWqxResult
+                        .Include("AnalyticMethodIdxNavigation")
+                        where a.ActivityIdx == ActivityIDX
+                        orderby a.CharName ascending
+                        select a).ToList();
             }
             catch (Exception ex)
             {

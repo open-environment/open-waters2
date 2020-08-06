@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using com.sun.tools.doclets.formats.html.markup;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Open_Water2.WebApi.Services;
@@ -17,24 +19,39 @@ namespace Open_Water2.WebApi.Controllers
     public class AuthenticationController : Controller
     {
         private readonly IUserService _userService;
-
-        public AuthenticationController(IUserService userService)
+        private readonly IWebHostEnvironment _env;
+        private readonly ILogger _logger;
+        public AuthenticationController(IUserService userService,
+            IWebHostEnvironment env,
+            ILoggerFactory logFactory)
         {
             _userService = userService;
+            _env = env;
+            _logger = logFactory.CreateLogger<UserService>();
         }
+        
         [AllowAnonymous]
+        [EnableCors("MyPolicy")]
         [HttpPost]
         [Route("auth/login")]
         //public IActionResult login([FromQuery]LoginAuthParams loginAuthParams)
         public IActionResult login([FromBody]LoginAuthParams loginAuthParams)
         {
+            string msg = "Login action in OpenWater2 called..";
+            Helpers.HelperUtils.WriteLog(msg, _env);
+            _logger.LogInformation("Login action in OpenWater2 called..");
             var user = _userService.Authenticate(loginAuthParams.email, loginAuthParams.password);
-            if(user == null)
+            msg = "clling Authenticate..";
+            Helpers.HelperUtils.WriteLog(msg, _env);
+            if (user == null)
             {
+                msg = "user is null..";
+                Helpers.HelperUtils.WriteLog(msg, _env);
                 return new JsonResult(JsonConvert.SerializeObject(new { error = "Invalid username or password." }));
             }
             this.HttpContext.Response.StatusCode = 200;
-
+            msg = "Returning ok response..";
+            Helpers.HelperUtils.WriteLog(msg, _env);
             return Ok(new { data = new { token = user.token, session = user.Session } });
             
         }

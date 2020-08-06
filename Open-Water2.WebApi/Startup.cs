@@ -20,6 +20,7 @@ using Open_Water2.WebApi.Services;
 using OpenWater2.DataAccess.Data;
 using OpenWater2.DataAccess.Data.Repository;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
+using System.Web.Http.Cors;
 
 namespace Open_Water2.WebApi
 {
@@ -35,6 +36,7 @@ namespace Open_Water2.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.AddControllers().AddNewtonsoftJson(options =>
             options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -67,34 +69,40 @@ namespace Open_Water2.WebApi
                     ValidateAudience = false
                 };
             });
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.SetIsOriginAllowed(_ => true)
+                       .AllowAnyMethod()
+                       .AllowAnyHeader()
+                       .AllowCredentials();
+            }));
 
             services.AddScoped<IUserService, UserService>();
             //JWT Changes Ends
 
             services.AddScoped<ApplicationDbContext, ApplicationDbContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
-            {
-                builder.AllowAnyOrigin()
-                       .AllowAnyMethod()
-                       .AllowAnyHeader();
-            }));
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, 
+                              IWebHostEnvironment env,
+                              ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
             
+            //app.UseCors(options => options.SetIsOriginAllowed(x => _ = true).AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+            //app.UseOptions();
+            
+            app.UseHttpsRedirection();
+            app.UseRouting();
+
             app.UseCors("MyPolicy");
 
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
-            
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -102,6 +110,7 @@ namespace Open_Water2.WebApi
             {
                 endpoints.MapControllers();
             });
+            loggerFactory.AddFile("Logs/mylog-{Date}.txt");
         }
     }
 }
