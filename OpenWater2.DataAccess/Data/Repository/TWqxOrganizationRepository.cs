@@ -88,7 +88,10 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
-
+        public int InsertOrUpdateT_WQX_ORGANIZATION(string oRG_ID, string oRG_NAME)
+        {
+            return InsertOrUpdateT_WQX_ORGANIZATION(oRG_ID, oRG_NAME, "", "", "", "", "", "", "", "", "", null, "");
+        }
         public int InsertOrUpdateT_WQX_ORGANIZATION(string oRG_ID, string oRG_NAME, string oRG_DESC, string tRIBAL_CODE, string eLECTRONIC_ADDRESS, string eLECTRONICADDRESSTYPE, string tELEPHONE_NUM, string tELEPHONE_NUM_TYPE, string TELEPHONE_EXT, string cDX_SUBMITTER_ID, string cDX_SUBMITTER_PWD, bool? cDX_SUBMIT_IND, string dEFAULT_TIMEZONE, string cREATE_USER = "system", string mAIL_ADDRESS = null, string mAIL_ADD_CITY = null, string mAIL_ADD_STATE = null, string mAIL_ADD_ZIP = null)
         {
             Boolean insInd = false;
@@ -388,6 +391,20 @@ namespace OpenWater2.DataAccess.Data.Repository
             catch (Exception ex)
             {
                 return false;
+            }
+        }
+
+        public List<TWqxOrganization> GetWQX_ORGANIZATION()
+        {
+            try
+            {
+                return (from a in _db.TWqxOrganization
+                        orderby a.OrgFormalName
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
     }

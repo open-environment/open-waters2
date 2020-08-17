@@ -87,8 +87,7 @@ namespace Open_Water2.WebApi
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, 
-                              IWebHostEnvironment env,
-                              ILoggerFactory loggerFactory)
+                              IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -110,7 +109,7 @@ namespace Open_Water2.WebApi
             {
                 endpoints.MapControllers();
             });
-            loggerFactory.AddFile("Logs/mylog-{Date}.txt");
+            //loggerFactory.AddFile("Logs/mylog-{Date}.txt",LogLevel.Debug);
         }
     }
 }

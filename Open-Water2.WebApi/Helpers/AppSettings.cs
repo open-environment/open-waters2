@@ -9,5 +9,6 @@ namespace Open_Water2.WebApi.Helpers
     {
         public string Secret { get; set; }
         public string SvcPortalJWTLoginEndPoint { get; set; }
+        public string SvcPortalGetNewUserData { get; set; }
     }
 }

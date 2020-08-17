@@ -12,13 +12,19 @@ namespace Open_Water2.WebApi.Entities
         {
             if (Session == null) Session = new SessionVars();
         }
-        public User(string firstName, string lastName, string userName, string password, string token)
+        public User(string firstName, 
+            string lastName, 
+            string userName, 
+            string password, 
+            string token,
+            int? userIdx)
         {
             FirstName = firstName;
             LastName = lastName;
             UserName = userName;
             Password = password;
             this.token = token;
+            UserIdx = userIdx;
         }
         public int Id { get; set; }
         public string FirstName { get; set; }
@@ -26,7 +32,7 @@ namespace Open_Water2.WebApi.Entities
         public string UserName { get; set; }
         public string Password { get; set; }
         public string token { get; set; }
-        public int? userIdx { get; set; }
+        public int? UserIdx { get; set; }
         public SessionVars Session { get; set; }
     }
 }

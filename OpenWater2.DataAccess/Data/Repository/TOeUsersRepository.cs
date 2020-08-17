@@ -43,6 +43,19 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
+
+        public TOeUsers GetT_VCCB_USERByEmail(string email)
+        {
+            try
+            {
+                return _db.TOeUsers.FirstOrDefault(usr => usr.Email.ToUpper() == email.ToUpper());
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public List<TOeUsers> GetUserByRole(int roleID)
         {
             try

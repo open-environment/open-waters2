@@ -260,7 +260,127 @@ namespace Open_Water2.WebApi.Helpers
                 }
 
                 //return new MembershipUser("CustMembershipProvider", username, createUser, email, passwordQuestion, null, isApproved, false, System.DateTime.Now, System.DateTime.Now, System.DateTime.Now, System.DateTime.Now, System.DateTime.Now);
-                return new User(newUser.Fname, newUser.Lname, username, password, "");
+                return new User(newUser.Fname, newUser.Lname, username, password, "", newUser.UserIdx);
+
+            }
+            catch (Exception exp)
+            {
+                throw exp;
+            }
+
+        }
+        public User ExtCreateUser(string username, 
+                                  string password, 
+                                  string email, 
+                                  string fname,
+                                  string lname,
+                                  string role,
+                                  string passwordQuestion, 
+                                  string passwordAnswer, 
+                                  bool isApproved, 
+                                  object providerUserKey, 
+                                  out MembershipCreateStatus status)
+        {
+            status = MembershipCreateStatus.Success;
+
+            //******************************** BEGIN VALIDATION ********************************************************
+            //Validate Username Length
+            if (!Utils.ValidateParameter(ref username, true, true, true, 25))
+            {
+                status = MembershipCreateStatus.InvalidUserName;
+                return null;
+            }
+
+            //T_OE_USERS u = db_Accounts.GetT_OE_USERSByID(username);
+            TOeUsers u = _unitOfWork.oeUsersRepostory.GetFirstOrDefault(x => x.UserId == username);
+            if (u != null)
+            {
+                //Duplicate username found -return error                
+                status = MembershipCreateStatus.DuplicateUserName;
+                return null;
+            }
+
+            if (Utils.IsEmail(email) == false)
+            {
+                status = MembershipCreateStatus.InvalidEmail;
+                return null;
+            }
+            //******************************** END VALIDATION ***********************************************************
+
+
+            try
+            {
+                //Generate password and hash it
+                password = RandomString(10);
+                string salt = GenerateSalt();
+                string hashpass = HashPassword(password, MembershipPasswordFormat.Hashed, salt);
+
+                //create user record
+                //int createUser = db_Accounts.CreateT_OE_USERS(username, hashpass, salt, "", "", email, true, true, null, null, null, "system");
+                TOeUsers newUser = new TOeUsers
+                {
+                    UserId = username,
+                    PwdHash = hashpass,
+                    PwdSalt = salt,
+                    Email = email,
+                    Fname = fname,
+                    Lname = lname,
+                    ActInd = true,
+                    InitalPwdFlag = true,
+                    CreateUserid = "system"
+                };
+                _unitOfWork.oeUsersRepostory.Add(newUser);
+                _unitOfWork.Save();
+                int createUser = newUser.UserIdx;
+                //Add user to PUBLIC Role
+                //db_Accounts.CreateT_VCCB_USER_ROLE(3, createUser, "system");
+                int _role = 1;
+                if (role.Equals("admin")) _role = 2;
+                TOeUserRoles newUserRole = new TOeUserRoles
+                {
+                    UserIdx = newUser.UserIdx,
+                    RoleIdx = _role,
+                    CreateUserid = "system"
+                };
+                _unitOfWork.oeUserRolesRepository.Add(newUserRole);
+                _unitOfWork.Save();
+
+                ValidateUser(username, password);
+                //encrypt username for email
+                /*string encryptOauth = new SimpleAES().Encrypt(password + "||" + username);
+                encryptOauth = System.Web.HttpUtility.UrlEncode(encryptOauth);*/
+                
+                //send verification email to user
+                /*                string message = "Welcome to Open Waters. Open Waters allows you to manage your water quality data and synchronize it with EPA-WQX.  "
+                                    + "\r\n\r\n Your username is: " + username
+                                    + "\r\n\r\n You must activate your account by clicking the following link: "
+                                    + "\r\n\r\n " + db_Ref.GetT_OE_APP_SETTING("Public App Path") + "Account/Verify.aspx?oauthcrd=" + encryptOauth
+                                    + "\r\n\r\n After verifying your account you will be prompted to enter a permanent password.";
+
+
+                                bool EmailStatus = Utils.SendEmail(null, email.Split(';').ToList(), null, null, "Confirm Your Open Waters Account", message, null);
+                                if (EmailStatus == false)
+                                {
+                                    status = MembershipCreateStatus.InvalidEmail;
+                                    //db_Accounts.DeleteT_OE_USERS(createUser);
+                                    _unitOfWork.oeUserRolesRepository.Remove(newUserRole);
+                                    _unitOfWork.Save();
+                                }
+                */
+                //if enabled, send email to admin notifying of account creation
+
+                /*if (_unitOfWork.oeAppSettingsRepository.GetAppSetting("Notify Register") == "Y")
+                {
+                    //T_OE_USERS adm = db_Accounts.GetT_OE_USERSInRole(2).FirstOrDefault();
+                    TOeUsers adm = _unitOfWork.oeUsersRepostory.GetUserByRole(2).FirstOrDefault();
+                    if (adm != null)
+                    {
+                        Utils.SendEmail(null, adm.Email.Split(';').ToList(), null, null, "Notification: Open Waters Account", "An Open Waters account has just been created by " + username + " (" + email + ")", null);
+                    }
+                }*/
+
+                //return new MembershipUser("CustMembershipProvider", username, createUser, email, passwordQuestion, null, isApproved, false, System.DateTime.Now, System.DateTime.Now, System.DateTime.Now, System.DateTime.Now, System.DateTime.Now);
+                return new User(newUser.Fname, newUser.Lname, username, password, "", newUser.UserIdx);
 
             }
             catch (Exception exp)

@@ -34,6 +34,12 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.wqxOrganizationRepository.GetWQX_USER_ORGS_ByUserIDX(userIDX, excludePendingInd);
             return Ok(result);
         }
+        [HttpGet("api/org/getWQXOrganization")]
+        public IActionResult GetWQX_ORGANIZATION()
+        {
+            var result = _unitOfWork.wqxOrganizationRepository.GetWQX_ORGANIZATION();
+            return Ok(result);
+        }
         [HttpGet("api/org/getVWQXAllOrgs")]
         public IActionResult GetV_WQX_ALL_ORGS()
         {
