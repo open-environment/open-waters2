@@ -747,7 +747,7 @@ namespace OpewnWater2.DataAccess
 
 
         //******************* XML IMPORT CONFIG FILE HANDLING**********************************
-        
+
         //TODO: HttpContext to be fixed
         //public static Dictionary<string, int> GetColumnMapping(string ImportType, string[] headerCols)
         //{
@@ -779,7 +779,35 @@ namespace OpewnWater2.DataAccess
         //    return colMapping;
         //}
 
+        public static Dictionary<string, int> GetColumnMapping(string ImportType, string[] headerCols, string configFilePath)
+        {
+            // Loading configuration file listing all data import columns
+            var xml = XDocument.Load(configFilePath);
 
+            // Query list of all columns for the type
+            var allFields = (from c in xml.Root.Descendants("Alias")
+                          .Where(i => i.Parent.Attribute("Level").Value == ImportType)
+                             select new
+                             {
+                                 Name = c.Parent.Attribute("FieldName").Value,
+                                 Alias = c.Value.ToUpper()
+                             }).ToList();
+
+            //list of fields supplied by user
+            var headerColList = headerCols.Select((value, index) => new { value, index }).ToList();
+
+            //return matches with index
+            var colMapping = (from f in allFields
+                              join h in headerColList
+                              on f.Alias.Trim() equals h.value.ToUpper().Trim()
+                              select new
+                              {
+                                  _Name = f.Name.Trim(),
+                                  _Col = h.index
+                              }).ToDictionary(x => x._Name, x => x._Col.ConvertOrDefault<int>());
+
+            return colMapping;
+        }
 
         //******************* DATA IMPORT HELPERS ********************************************
         public static List<ConfigInfoType> GetAllColumnInfo(string ImportType, string configFilePath)
@@ -827,6 +855,7 @@ namespace OpewnWater2.DataAccess
             }
             catch { }
         }
+
     }
 
 }

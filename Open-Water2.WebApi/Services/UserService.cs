@@ -56,6 +56,7 @@ namespace Open_Water2.WebApi.Services
             try
             {
                 var client = new RestClient(_appSettings.SvcPortalJWTLoginEndPoint);
+                _logger.LogInformation("Rest client endpoint: " + _appSettings.SvcPortalJWTLoginEndPoint);
                 client.Timeout = -1;
                 var request = new RestRequest(Method.POST);
                 request.AddHeader("Content-Type", "application/json");
@@ -69,13 +70,6 @@ namespace Open_Water2.WebApi.Services
                     _logger.LogInformation("Response return OK...");
                     _logger.LogInformation("1...");
                     var dbUser = JsonConvert.DeserializeObject<JWTLoginModel>(response.Content);
-                    //var user = _users.SingleOrDefault(x => x.UserName == username && x.Password == password);
-                    /*var dbUser = _unitOfWork.oeUsersRepostory.GetFirstOrDefault(x => x.Email == username);
-                    if (dbUser == null)
-                        return null;
-                    bool isValid = new CustomMembership(_unitOfWork).ValidateUser(username, password);
-                    if (isValid == false)
-                        return null;*/
                     TOeUsers user = _unitOfWork.oeUsersRepostory.GetT_VCCB_USERByEmail(username);
                     data = new User()
                     {
@@ -85,6 +79,7 @@ namespace Open_Water2.WebApi.Services
                         LastName = dbUser.lastName,
                         Id = user.UserIdx,
                         UserIdx = user.UserIdx,
+                        isAdmin = dbUser.isAdmin,
                     };
                     
                     _logger.LogInformation("2...");
@@ -94,72 +89,51 @@ namespace Open_Water2.WebApi.Services
                     bool isAddOrgId = true;
                     
                     _logger.LogInformation("3...");
-                    //SessionVars sessionVars = OpewnWater2.DataAccess.Utils.GetPostLoginUserByUserIdx(dbUser.openWaterUserIdx, _unitOfWork, _env, _logger);
                     SessionVars sessionVars = OpewnWater2.DataAccess.Utils.GetPostLoginUserByUserIdx(user.UserIdx, _unitOfWork, _env, _logger);
-                    //SessionVars sessionVars = OpewnWater2.DataAccess.Utils.GetPostLoginUser(dbUser.UserId, _unitOfWork);
                     if (sessionVars == null) isAddSessionVars = false;
                     var orgDisplayType = dbUser.orgUsers.Where(ou => ou.ORG_ID == sessionVars.OrgID).FirstOrDefault();
-                    if (orgDisplayType == null) isAddOrgId = false;
+                    //if (orgDisplayType == null) isAddOrgId = false;
                     var tokenDescriptor = new SecurityTokenDescriptor();
                     System.Security.Claims.ClaimsIdentity Subject = new System.Security.Claims.ClaimsIdentity();
                     
                     _logger.LogInformation("4...");
-                    Claim[] claims = new Claim[27];
+                    Claim[] claims = new Claim[6];
                     claims[0] = new Claim("userIdx", user.UserIdx.ToString());
                     claims[1] = new Claim("name", dbUser.firstName);
                     claims[2] = new Claim("picture", @"https://ui-avatars.com/api/?size=32");
-                    if (isAddSessionVars == true)
+                    claims[3] = new Claim("isAdmin", dbUser.isAdmin == true ? "true" : "false");
+                    if (isAddOrgId == true)
                     {
                         _logger.LogInformation("5...");
-                        claims.Append(new Claim("UserIDX", user.UserIdx.ToString()));
-                        if (isAddOrgId == true)
-                        {
-                            _logger.LogInformation("6...");
-                            claims[3] = new Claim("OrgID", sessionVars.OrgID);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("7...");
-                            claims[3] = new Claim("OrgID", "-1");
-                        }
-                        _logger.LogInformation("8...");
-                        claims[4] = new Claim("MLOC_HUC_EIGHT", sessionVars.MLOC_HUC_EIGHT.ToString());
-                        claims[5] = new Claim("MLOC_HUC_TWELVE", sessionVars.MLOC_HUC_TWELVE.ToString());
-                        claims[6] = new Claim("MLOC_TRIBAL_LAND", sessionVars.MLOC_TRIBAL_LAND.ToString());
-                        claims[7] = new Claim("MLOC_SOURCE_MAP_SCALE", sessionVars.MLOC_SOURCE_MAP_SCALE.ToString());
-                        claims[8] = new Claim("MLOC_HORIZ_COLL_METHOD", sessionVars.MLOC_HORIZ_COLL_METHOD.ToString());
-                        claims[9] = new Claim("MLOC_HORIZ_REF_DATUM", sessionVars.MLOC_HORIZ_REF_DATUM.ToString());
-                        claims[10] = new Claim("MLOC_VERT_MEASURE", sessionVars.MLOC_VERT_MEASURE.ToString());
-                        claims[11] = new Claim("MLOC_COUNTRY_CODE", sessionVars.MLOC_COUNTRY_CODE.ToString());
-                        claims[12] = new Claim("MLOC_STATE_CODE", sessionVars.MLOC_STATE_CODE.ToString());
-                        claims[13] = new Claim("MLOC_COUNTY_CODE", sessionVars.MLOC_COUNTY_CODE.ToString());
-                        claims[14] = new Claim("MLOC_WELL_DATA", sessionVars.MLOC_WELL_DATA.ToString());
-                        claims[15] = new Claim("MLOC_WELL_TYPE", sessionVars.MLOC_WELL_TYPE.ToString());
-                        claims[16] = new Claim("MLOC_AQUIFER_NAME", sessionVars.MLOC_AQUIFER_NAME.ToString());
-                        claims[17] = new Claim("MLOC_FORMATION_TYPE", sessionVars.MLOC_FORMATION_TYPE.ToString());
-                        claims[18] = new Claim("MLOC_WELLHOLE_DEPTH", sessionVars.MLOC_WELLHOLE_DEPTH.ToString());
-                        claims[19] = new Claim("PROJ_SAMP_DESIGN_TYPE_CD", sessionVars.PROJ_SAMP_DESIGN_TYPE_CD.ToString());
-                        claims[20] = new Claim("PROJ_QAPP_APPROVAL", sessionVars.PROJ_QAPP_APPROVAL.ToString());
-                        claims[21] = new Claim("SAMP_ACT_END_DT", sessionVars.SAMP_ACT_END_DT.ToString());
-                        claims[22] = new Claim("SAMP_COLL_METHOD", sessionVars.SAMP_COLL_METHOD.ToString());
-                        claims[23] = new Claim("SAMP_COLL_EQUIP", sessionVars.SAMP_COLL_EQUIP.ToString());
-                        claims[24] = new Claim("SAMP_PREP", sessionVars.SAMP_PREP.ToString());
-                        claims[25] = new Claim("SAMP_DEPTH", sessionVars.SAMP_DEPTH.ToString());
-                        claims[26] = new Claim("sessionVars", JsonConvert.SerializeObject(sessionVars));
+                        claims[4] = new Claim("OrgID", sessionVars.OrgID);
                     }
-                    _logger.LogInformation("9...");
+                    else
+                    {
+                        _logger.LogInformation("6...");
+                        claims[4] = new Claim("OrgID", "-1");
+                    }
+                    if (isAddSessionVars == true)
+                    {
+                        _logger.LogInformation("7...");
+                        claims[5] = new Claim("sessionVars", JsonConvert.SerializeObject(sessionVars));
+                    }
+                    _logger.LogInformation("8...");
                     Subject.AddClaims(claims);
                     tokenDescriptor.Subject = Subject;
                     tokenDescriptor.Expires = DateTime.UtcNow.AddDays(7);
                     tokenDescriptor.Issuer = "Issuer";
                     tokenDescriptor.SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
-                    _logger.LogInformation("10...");
+                    _logger.LogInformation("9...");
                     var token = tokenHandler.CreateToken(tokenDescriptor);
-                    _logger.LogInformation("11...");
+                    _logger.LogInformation("10...");
                     data.token = tokenHandler.WriteToken(token);                   
                     _logger.LogInformation("returning data with token..." + data.token);
-                    //data.Session = OpewnWater2.DataAccess.Utils.GetPostLoginUser(dbUser.UserId, _unitOfWork);
                     return data.WithoutPassword();
+                }
+                else
+                {
+                    _logger.LogInformation("Response with status code OK not returned...");
+                    _logger.LogInformation(response.StatusCode.ToString());
                 }
                 
             }

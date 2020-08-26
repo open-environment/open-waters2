@@ -59,7 +59,8 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
             String cREATE_USER = "system");
         public List<TWqxRefData> GetT_WQX_REF_TAXA_ByOrg(string OrgID);
         public TWqxRefCharLimits GetT_WQX_REF_CHAR_LIMITS_ByNameUnit(string CharName, string UnitName);
-
+        public bool GetT_WQX_REF_DATA_ByKey(string table, string value);
+        public TWqxRefCounty GetT_WQX_REF_COUNTY_ByCountyNameAndState(string stateName, string countyName);
         public int DeleteT_WQX_RESULT(int ResultIDX);
 
     }

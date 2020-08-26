@@ -350,5 +350,20 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
+
+        public TWqxActivity GetWQX_ACTIVITY_ByUnique(string OrgID, string ActivityID)
+        {
+            try
+            {
+                return (from a in _db.TWqxActivity
+                        where a.ActivityId == ActivityID
+                        && a.OrgId == OrgID
+                        select a).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

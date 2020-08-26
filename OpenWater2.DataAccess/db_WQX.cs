@@ -92,6 +92,7 @@ namespace OpwnWater2.DataAccess
         public string DILUTION_FACTOR { get; set; }
         public string IMPORT_STATUS_CD { get; set; }
         public string IMPORT_STATUS_DESC { get; set; }
+
     }
 
     public class CharDisplay

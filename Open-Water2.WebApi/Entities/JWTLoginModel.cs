@@ -18,6 +18,7 @@ namespace Open_Water2.WebApi.Entities
         public List<string> roles { get; set; }
         public bool isLockedOut { get; set; }
         public int? openWaterUserIdx { get; set; }
+        public bool isAdmin { get; set; }
         public List<UserOrgDisplayType> orgUsers { get; set; }
 
         public JWTLoginModel()

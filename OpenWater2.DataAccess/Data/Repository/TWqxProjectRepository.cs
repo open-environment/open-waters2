@@ -63,6 +63,21 @@ namespace OpenWater2.DataAccess.Data.Repository
             return _db.TWqxProject.Where(p => p.ProjectIdx == ProjectIDX).FirstOrDefault();
         }
 
+        public TWqxProject GetWQX_PROJECT_ByIDString(string ProjectID, string OrgID)
+        {
+            try
+            {
+                return (from a in _db.TWqxProject
+                        where a.ProjectId == ProjectID
+                        && a.OrgId == OrgID
+                        select a).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public int GetWQX_PROJECT_MyOrgCount(int UserIDX)
         {
             try

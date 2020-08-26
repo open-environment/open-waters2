@@ -17,6 +17,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public int GetWQX_ACTIVITYByMonLocID(int monLocIDX);
         public TWqxUserOrgs GetWQX_USER_ORGS_ByUserIDX_OrgID(int UserIDX, string OrgID);
         public int GetWQX_MONLOC_MyOrgCount(int UserIDX);
+        public TWqxMonloc GetWQX_MONLOC_ByIDString(string orgID, string MonLocID);
         public int InsertOrUpdateWQX_MONLOC(int? mONLOC_IDX, string oRG_ID, string mONLOC_ID, string mONLOC_NAME,
             string mONLOC_TYPE, string mONLOC_DESC, string hUC_EIGHT, string HUC_TWELVE, string tRIBAL_LAND_IND,
             string tRIBAL_LAND_NAME, string lATITUDE_MSR, string lONGITUDE_MSR, Int32? sOURCE_MAP_SCALE,

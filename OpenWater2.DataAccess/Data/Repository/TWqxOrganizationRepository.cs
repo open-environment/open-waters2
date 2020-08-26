@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Logging;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
 using OpwnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Text;
 
@@ -12,9 +15,12 @@ namespace OpenWater2.DataAccess.Data.Repository
     public class TWqxOrganizationRepository : Repository<TWqxOrganization>, ITWqxOrganizationRepository
     {
         private readonly ApplicationDbContext _db;
-        public TWqxOrganizationRepository(ApplicationDbContext db) : base(db)
+        private readonly ILogger _logger;
+        public TWqxOrganizationRepository(ApplicationDbContext db,
+            ILoggerFactory logFactory) : base(db)
         {
             _db = db;
+            _logger = logFactory.CreateLogger<TWqxOrganizationRepository>();
         }
 
         public IEnumerable<SelectListItem> GetTWqxUserOrgsForDropDown()
@@ -151,8 +157,33 @@ namespace OpenWater2.DataAccess.Data.Repository
 
                 return 1;
             }
-            catch (Exception ex)
+            catch (DbEntityValidationException ex)
             {
+                foreach (DbEntityValidationResult item in ex.EntityValidationErrors)
+                {
+                    // Get entry
+
+                    DbEntityEntry entry = item.Entry;
+                    string entityTypeName = entry.Entity.GetType().Name;
+
+                    // Display or log error messages
+
+                    foreach (DbValidationError subItem in item.ValidationErrors)
+                    {
+                        string message = string.Format("Error '{0}' occurred in {1} at {2}",
+                                 subItem.ErrorMessage, entityTypeName, subItem.PropertyName);
+                        Console.WriteLine(message);
+                    }
+                }
+                return 0;
+            }
+            catch (Exception ex2)
+            {
+                _logger.LogInformation("Exception in InsertOrUpdateT_WQX_ORGANIZATION..");
+                _logger.LogInformation(ex2.StackTrace);
+                _logger.LogInformation("====================");
+                _logger.LogInformation(ex2.InnerException.Message);
+                string msg = ex2.InnerException.StackTrace;
                 return 0;
             }
         }

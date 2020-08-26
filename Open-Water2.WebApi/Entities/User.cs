@@ -33,6 +33,7 @@ namespace Open_Water2.WebApi.Entities
         public string Password { get; set; }
         public string token { get; set; }
         public int? UserIdx { get; set; }
+        public bool isAdmin { get; set; }
         public SessionVars Session { get; set; }
     }
 }

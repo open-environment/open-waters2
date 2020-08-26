@@ -256,6 +256,25 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public TWqxRefCounty GetT_WQX_REF_COUNTY_ByCountyNameAndState(string stateName, string countyName)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefCounty
+                        join b in _db.TWqxRefData on a.StateCode equals b.Value
+                        where (a.ActInd == true)
+                        && b.Table == "State"
+                        && b.Text.ToUpper() == stateName.ToUpper()
+                        && a.CountyName.ToUpper() == countyName.ToUpper()
+                        select a).FirstOrDefault();
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
         public List<TWqxRefData> GetT_WQX_REF_DATA(string tABLE, bool ActInd, bool UsedInd)
         {
             try
@@ -270,6 +289,29 @@ namespace OpenWater2.DataAccess.Data.Repository
             catch (Exception ex)
             {
                 throw ex;
+            }
+        }
+
+        public bool GetT_WQX_REF_DATA_ByKey(string table, string value)
+        {
+            try
+            {
+                int iCount = (from a in _db.TWqxRefData
+                              where (a.ActInd == true)
+                              && a.Table == table
+                              && a.Value == value
+                              orderby a.Text
+                              select a).Count();
+
+                if (iCount == 0)
+                    return false;
+                else
+                    return true;
+
+            }
+            catch (Exception ex)
+            {
+                return false;
             }
         }
 

@@ -8,16 +8,24 @@ using Microsoft.Extensions.Options;
 using IdentityServer4.EntityFramework.Options;
 using Microsoft.Data.Sqlite;
 using TestSupport.EfHelpers;
+using Microsoft.Extensions.Logging;
 
 namespace Open_Waters2.Tests
 {
     public class UnitTest1
     {
+        
         public class Test1
         {
+            private readonly ILoggerFactory _loggerFactory;
+            public Test1(ILoggerFactory loggerFactory)
+            {
+                _loggerFactory = loggerFactory;
+            }
             [Fact]
             public void TestMethod1()
             {
+                
                 //This creates the SQLite connection string to in-memory database
                 var connectionStringBuilder = new SqliteConnectionStringBuilder
                 { DataSource = ":memory:" };
@@ -51,7 +59,7 @@ namespace Open_Waters2.Tests
                 {
                     _db2.Database.EnsureCreated();
                     
-                    UnitOfWork unitOfWork = new UnitOfWork(_db2);
+                    UnitOfWork unitOfWork = new UnitOfWork(_db2, _loggerFactory);
                     var result = unitOfWork.wqxOrganizationRepository.GetAll();
                 }
                 

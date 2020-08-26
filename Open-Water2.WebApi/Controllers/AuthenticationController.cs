@@ -30,7 +30,7 @@ namespace Open_Water2.WebApi.Controllers
         private readonly ILogger _logger;
         IUnitOfWork _unitOfWork;
         private readonly AppSettings _appSettings;
-        
+
         public AuthenticationController(IUserService userService,
             IWebHostEnvironment env,
             ILoggerFactory logFactory,
@@ -43,35 +43,29 @@ namespace Open_Water2.WebApi.Controllers
             _unitOfWork = unitOfWork;
             _appSettings = appSettings.Value;
         }
-        
+
         [AllowAnonymous]
         [EnableCors("MyPolicy")]
         [HttpPost]
         [Route("auth/login")]
-        //public IActionResult login([FromQuery]LoginAuthParams loginAuthParams)
-        public IActionResult login([FromBody]LoginAuthParams loginAuthParams)
+        public IActionResult login([FromBody] LoginAuthParams loginAuthParams)
         {
-            string logMsg = "Login action in OpenWater2 called..";
-            _logger.LogInformation(logMsg);
+            _logger.LogInformation("Login action in OpenWater2 called..");
+            _logger.LogInformation("clling Authenticate Method..");
             var user = _userService.Authenticate(loginAuthParams.email, loginAuthParams.password);
-            logMsg = "clling Authenticate..";
-            _logger.LogInformation(logMsg);
             if (user == null)
             {
-                logMsg = "user is null..";
-                _logger.LogInformation(logMsg);
+                _logger.LogInformation("User is null..returning error message...");
                 return new JsonResult(JsonConvert.SerializeObject(new { error = "Invalid username or password." }));
             }
             this.HttpContext.Response.StatusCode = 200;
-            logMsg = "Returning ok response..";
-            _logger.LogInformation(logMsg);
+            _logger.LogInformation("Returning Ok response..");
             return Ok(new { data = new { token = user.token, session = user.Session } });
-            
         }
 
         [HttpPost]
         [Route("auth/sign-up")]
-        public JsonResult Register([FromQuery]string email, string password, string fullname, string confirmPassword)
+        public JsonResult Register([FromQuery] string email, string password, string fullname, string confirmPassword)
         {
             this.HttpContext.Response.StatusCode = 200;
             return new JsonResult(JsonConvert.SerializeObject(new { token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1ODQ5Nzk4NzcsImV4cCI6MTYxNjUxNTg3NywiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.kTv1wYt6KaRRARDMZeDZg4MxTSca5LVwXBqRcHWYAbg" }));
@@ -79,14 +73,14 @@ namespace Open_Water2.WebApi.Controllers
 
         [HttpPost]
         [Route("auth/request-pass")]
-        public StatusCodeResult RequestPassword([FromQuery]string email)
+        public StatusCodeResult RequestPassword([FromQuery] string email)
         {
             //this.HttpContext.Response.StatusCode = 200;
             return new StatusCodeResult(200);
         }
         [HttpPost]
         [Route("auth/reset-pass")]
-        public StatusCodeResult ResetPassword([FromQuery]string email)
+        public StatusCodeResult ResetPassword([FromQuery] string email)
         {
             //this.HttpContext.Response.StatusCode = 200;
             return new StatusCodeResult(200);
@@ -103,63 +97,54 @@ namespace Open_Water2.WebApi.Controllers
         [HttpGet("api/auth/CheckUserAuthentication")]
         public IActionResult CheckUserAuthentication([FromQuery] string payload)
         {
-            string logMsg = "CheckUserAuthentication..";
-            _logger.LogInformation(logMsg);
+            _logger.LogInformation("CheckUserAuthentication action called..");
             ExtLoginUser actResult = null;
             string pl = System.Web.HttpUtility.UrlDecode(payload);
-            logMsg = "pl: " + pl;
-            _logger.LogInformation(logMsg);
+            _logger.LogInformation("Decoded payload: " + pl);
             byte[] decodedBytes = Convert.FromBase64String(pl);
             string plStr = System.Text.Encoding.Unicode.GetString(decodedBytes);
-            logMsg = "plStr: " + plStr;
-            _logger.LogInformation(logMsg);
+            _logger.LogInformation("Payload converted from Base64: " + plStr);
             var plParts = plStr.Split("###");
             var userName = plParts[0];
             var encryptedPassword = plParts[1];
             var userid = plParts[2];
-            var decrptedPassword = Helpers.HelperUtils.Decrypt(encryptedPassword);
-            logMsg = "decrptedPassword: " + decrptedPassword;
-            _logger.LogInformation(logMsg);
-            //var user = _userService.Authenticate(userName, decrptedPassword);
-
+            var decreptedPassword = Helpers.HelperUtils.Decrypt(encryptedPassword);
+            _logger.LogInformation(String.Format("Payload splitted: [username: {0}] [decreptedPassword:{1}] [userid:{2}] ", userName, decreptedPassword, userid));
             //check if user exist
             TOeUsers user = _unitOfWork.oeUsersRepostory.GetT_VCCB_USERByEmail(userName);
-            if(user != null)
+            if (user != null)
             {
-                logMsg = "user exist...";
-                _logger.LogInformation(logMsg);
+                _logger.LogInformation("User with given username found...");
                 actResult = new ExtLoginUser
                 {
                     userexist = true,
                     username = userName,
-                    password = decrptedPassword,
+                    password = decreptedPassword,
                     useridx = user.UserIdx,
                 };
             }
             else
             {
-                logMsg = "user does not exist...";
-                _logger.LogInformation(logMsg);
+                _logger.LogInformation("User with given username does not exist...");
                 actResult = new ExtLoginUser
                 {
                     userexist = false,
                     userid = userid,
                 };
             }
-            logMsg = "returning results...";
-            _logger.LogInformation(logMsg);
+            _logger.LogInformation("Returning Result...");
             return Ok(actResult);
         }
         [AllowAnonymous]
         [HttpGet("api/auth/CreateAndGetNewUserData")]
         public IActionResult CreateAndGetNewUserData([FromQuery] string userid)
         {
+            _logger.LogInformation("CreateAndGetNewUserData action called..");
             ExtLoginUser actResult = new ExtLoginUser();
             actResult.errMsg = "";
             JWTLoginModel jWTLoginModel = new JWTLoginModel();
-            string logMsg = "CreateAndGetNewUserData..";
-            _logger.LogInformation(logMsg);
             var client = new RestClient(_appSettings.SvcPortalGetNewUserData);
+            _logger.LogInformation("Endpoint for Rest call from AppSettings:" + _appSettings.SvcPortalGetNewUserData);
             client.Timeout = -1;
             var request = new RestRequest(Method.POST);
             request.AddHeader("Content-Type", "application/json");
@@ -170,46 +155,50 @@ namespace Open_Water2.WebApi.Controllers
             _logger.LogInformation("Rest client called...");
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
+                _logger.LogInformation("Rest client returned with success...");
                 jWTLoginModel = JsonConvert.DeserializeObject<JWTLoginModel>(response.Content);
+                _logger.LogInformation("Returned conent converted to object...");
                 string role = "user";
-                if (jWTLoginModel.roles.Contains("OpenWatersAdmin")) role = "admin";
-                _logger.LogInformation("Role:" + role);
+                if (jWTLoginModel.orgUsers[0].STATUS_IND == "1") role = "admin";
+                _logger.LogInformation("Decide role of user:" + role);
                 MembershipCreateStatus status;
                 CustomMembership c = new CustomMembership(_unitOfWork);
+                _logger.LogInformation("Creating new user...");
                 User u = c.ExtCreateUser(Helpers.HelperUtils.RandomString(24), "", jWTLoginModel.email, jWTLoginModel.firstName, jWTLoginModel.lastName, role, null, null, true, null, out status);
-                if(status == MembershipCreateStatus.Success)
+                if (status == MembershipCreateStatus.Success)
                 {
-                    _logger.LogInformation("User created...");
-                    _logger.LogInformation("Add organizations...");
+                    _logger.LogInformation("New user created...");
+                    _logger.LogInformation("Sync organizations...");
                     foreach (var orgUser in jWTLoginModel.orgUsers)
                     {
                         TWqxOrganization o = _unitOfWork.wqxOrganizationRepository.GetWQX_ORGANIZATION_ByID(orgUser.ORG_ID);
-                        if(o == null)
+                        if (o == null)
                         {
                             int isOrgAdded = _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATION(orgUser.ORG_ID, orgUser.ORG_NAME);
-                            if(isOrgAdded == 1)
+                            if (isOrgAdded == 1)
                             {
                                 _logger.LogInformation("New organization added..." + orgUser.ORG_NAME);
-                                
+
                                 //Add User-Org relation
                                 //Get all organizations for the user
                                 List<TWqxOrganization> orgs = _unitOfWork.UserOrgsRepository.GetWQX_USER_ORGS_ByUserIDX(u.UserIdx == null ? 0 : (int)u.UserIdx, false);
                                 //Check if current organization is in the list
                                 var org = orgs.Where(o => o.OrgId == orgUser.ORG_ID).FirstOrDefault();
-                                if(org == null)
+                                if (org == null)
                                 {
                                     //If not, add new organization relation
                                     _unitOfWork.UserOrgsRepository.InsertT_WQX_USER_ORGS(orgUser.ORG_ID, u.UserIdx == null ? 0 : (int)u.UserIdx, "U");
+                                    _logger.LogInformation("User-Organization relation is added...");
                                 }
                             }
                         }
                     }
-                    if(jWTLoginModel.orgUsers.Count > 0)
+                    if (jWTLoginModel.orgUsers.Count > 0)
                     {
                         _logger.LogInformation("Set default organization...");
                         var DefaultOrgId = jWTLoginModel.orgUsers[0].ORG_ID;
                         var _user = _unitOfWork.oeUsersRepostory.GetT_OE_USERSByIDX(u.UserIdx == null ? 0 : (int)u.UserIdx);
-                        if(u != null)
+                        if (u != null)
                         {
                             _user.DefaultOrgId = DefaultOrgId;
                             _unitOfWork.oeUsersRepostory.Update(_user);
