@@ -540,22 +540,35 @@ namespace OpewnWater2.DataAccess
             string thisOrg = unitOfWork.oeUserRolesRepository.IsUserInRole(userName,"ADMINS", user) ? null : OrgID;
             return unitOfWork.UserOrgsRepository.GetT_OE_USERSPending(thisOrg);
         }
-        public static SessionVars GetPostLoginUser(string UserID, IUnitOfWork unitOfWork)
+        public static SessionVars GetPostLoginUser(string UserID, IUnitOfWork unitOfWork, ILogger _logger)
         {
+            _logger.LogInformation("GetPostLoginUser called..");
             SessionVars sessionVars = new SessionVars();
             TOeUsers u = unitOfWork.oeUsersRepostory.GetT_OE_USERSByID(UserID);
             if (u != null)
             {
+                _logger.LogInformation("User found..");
                 //if user only belongs to 1 org, update the default org id
                 if (u.DefaultOrgId == null)
                 {
+                    _logger.LogInformation("DefaultOrgId is null..");
                     List<TWqxOrganization> os = unitOfWork.UserOrgsRepository.GetWQX_USER_ORGS_ByUserIDX(u.UserIdx, false);
-                    if (os.Count == 1)
+                    if (os.Count > 0)
                     {
+                        _logger.LogInformation("Setting first OrgID to session vars..");
                         sessionVars.OrgID = os[0].OrgId;
 
                         //HttpContext.Current.Session["OrgID"] = os[0].OrgId; //added 1/6/2014
                     }
+                    else
+                    {
+                        _logger.LogInformation("No organization Id found..");
+                        throw new Exception("Default organization could not be set...");
+                    }
+                }else
+                {
+                    _logger.LogInformation("DefaultOrgId found, setting to sessionvars orgid..");
+                    sessionVars.OrgID = u.DefaultOrgId;
                 }
 
                 if (u.InitalPwdFlag == false)
@@ -603,7 +616,7 @@ namespace OpewnWater2.DataAccess
                 {
                     msg = "GetPostLoginUser called UserId.." + u.UserId;
                     _logger.LogInformation(msg);
-                    return GetPostLoginUser(u.UserId, unitOfWork);
+                    return GetPostLoginUser(u.UserId, unitOfWork, _logger);
                 }
                 msg = "GetT_OE_USERSByIDX returned null..";
                 _logger.LogInformation(msg);

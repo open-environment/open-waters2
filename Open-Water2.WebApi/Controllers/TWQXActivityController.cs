@@ -51,9 +51,9 @@ namespace Open_Water2.WebApi.Controllers
         }
 
         [HttpDelete("api/activity/deleteTWqxActivity")]
-        public IActionResult DeleteT_WQX_ACTIVITY([FromQuery] int ActivityIDX, string UserID)
+        public IActionResult DeleteT_WQX_ACTIVITY([FromQuery] int ActivityIDX, int userIdx)
         {
-            var result = _unitOfWork.tWqxActivityRepository.DeleteT_WQX_ACTIVITY(ActivityIDX, UserID);
+            var result = _unitOfWork.tWqxActivityRepository.DeleteT_WQX_ACTIVITY(ActivityIDX, userIdx);
             return Ok(result);
         }
         [HttpPost("api/activity/insertOrUpdateWqxActivity")]

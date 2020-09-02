@@ -17,7 +17,24 @@ namespace OpenWater2.DataAccess.Data.Repository
         {
             _db = db;
         }
-
+        public int DeleteT_WQX_ACTIVITY(int ActivityIDX, int userIdx)
+        {
+            int actResult = 0;
+            try
+            {
+                TOeUsers user = _db.TOeUsers.Where(u => u.UserIdx == userIdx).FirstOrDefault();
+                if(user == null)
+                {
+                    return actResult;
+                }
+                return DeleteT_WQX_ACTIVITY(ActivityIDX, user.UserId);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return actResult;
+        }
         public int DeleteT_WQX_ACTIVITY(int ActivityIDX, string UserID)
         {
             try

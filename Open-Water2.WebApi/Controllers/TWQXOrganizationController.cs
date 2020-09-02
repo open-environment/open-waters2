@@ -89,11 +89,15 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
         [HttpGet("api/org/GetAdminTaskData")]
-        public IActionResult GetAdminTaskData([FromQuery]string userName, string OrgID)
+        public IActionResult GetAdminTaskData([FromQuery]int userIdx, string OrgID)
         {
-            TOeUsers _user = _unitOfWork.oeUsersRepostory.GetT_OE_USERSByID(userName);
-            bool isAdmin = _unitOfWork.oeUserRolesRepository.IsUserInRole(userName, "Admin", _user);
-            var result = Utils.GetAdminTaskData(userName, OrgID, _unitOfWork, _user);
+            TOeUsers _user = _unitOfWork.oeUsersRepostory.GetT_OE_USERSByIDX(userIdx);
+            if(_user == null)
+            {
+                return Ok(null);
+            }
+            bool isAdmin = _unitOfWork.oeUserRolesRepository.IsUserInRole(_user.UserId, "Admin", _user);
+            var result = Utils.GetAdminTaskData(_user.UserId, OrgID, _unitOfWork, _user);
             return Ok(result);
         }
         [HttpPost("api/org/ApproveRejectTWqxUserOrgs")]

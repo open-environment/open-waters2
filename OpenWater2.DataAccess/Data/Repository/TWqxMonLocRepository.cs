@@ -266,5 +266,24 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
+
+        public int DeleteT_WQX_MONLOC(int monLocIDX, int userIdx)
+        {
+            int actResult = 0;
+            try
+            {
+                TOeUsers user = _db.TOeUsers.Where(u => u.UserIdx == userIdx).FirstOrDefault();
+                if(user == null)
+                {
+                    return actResult;
+                }
+                return DeleteT_WQX_MONLOC(monLocIDX, user.UserId);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return actResult;
+        }
     }
 }

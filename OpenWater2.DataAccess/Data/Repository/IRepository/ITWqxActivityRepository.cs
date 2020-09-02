@@ -14,6 +14,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public int GetT_WQX_RESULTCount(string OrgID);
         public int GetWQX_ACTIVITY_MyOrgCount(int UserID);
         public List<ActivityListDisplay> GetWQX_ACTIVITYDisplay(bool ActInd, string OrgID, int? MonLocIDX, DateTime? startDt, DateTime? endDt, string ActType, bool WQXPending, int? ProjectIDX, string WQXStatus);
+        public int DeleteT_WQX_ACTIVITY(int ActivityIDX, int userIdx);
         public int DeleteT_WQX_ACTIVITY(int ActivityIDX, string UserID);
         public int InsertOrUpdateWQX_ACTIVITY(global::System.Int32? aCTIVITY_IDX, global::System.String oRG_ID, global::System.Int32? pROJECT_IDX, global::System.Int32? mONLOC_IDX, global::System.String aCTIVITY_ID,
             global::System.String aCT_TYPE, global::System.String aCT_MEDIA, global::System.String aCT_SUBMEDIA, global::System.DateTime? aCT_START_DT, global::System.DateTime? aCT_END_DT,

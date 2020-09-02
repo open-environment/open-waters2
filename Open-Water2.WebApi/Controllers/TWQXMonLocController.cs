@@ -30,9 +30,9 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
         [HttpDelete("api/monloc/deleteWQXMonLoc")]
-        public IActionResult DeleteT_WQX_MONLOC([FromQuery]int monLocIDX, string UserID)
+        public IActionResult DeleteT_WQX_MONLOC([FromQuery]int monLocIDX, int userIdx)
         {
-            var result = _unitOfWork.tWqxMonLocRepository.DeleteT_WQX_MONLOC(monLocIDX, UserID);
+            var result = _unitOfWork.tWqxMonLocRepository.DeleteT_WQX_MONLOC(monLocIDX, userIdx);
             return Ok(result);
         }
         [HttpGet("api/monloc/getWQXMonLoc")]
