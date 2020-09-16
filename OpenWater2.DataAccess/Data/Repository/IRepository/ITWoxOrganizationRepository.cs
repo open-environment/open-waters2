@@ -4,6 +4,7 @@ using OpwnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OpenWater2.DataAccess.Data.Repository.IRepository
 {
@@ -26,9 +27,10 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public List<TWqxRefData> GetT_WQX_REF_DATA(string tABLE, Boolean ActInd, Boolean UsedInd);
         public List<UserOrgDisplay> GetT_OE_USERSInOrganization(string OrgID);
         public List<TOeUsers> GetT_OE_USERSNotInOrganization(string OrgID);
-        public ConnectTestResult ConnectTest(string orgID, string typ);
+        public Task<ConnectTestResult> ConnectTestAsync(string orgID, string typ);
         public List<TWqxImportTranslate> GetWQX_IMPORT_TRANSLATE_byOrg(string OrgID);
         public bool CanUserEditOrg(int UserIDX, string OrgID);
+        public List<string> GetWQX_ORGANIZATION_PendingDataToSubmit();
 
     }
 }

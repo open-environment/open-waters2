@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -101,7 +102,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
-        public List<TWqxMonloc> GetWQX_MONLOC(bool ActInd, string OrgID, bool? WQXPending)
+        public async Task<List<TWqxMonloc>> GetWQX_MONLOC(bool ActInd, string OrgID, bool? WQXPending)
         {
             if (WQXPending == false) WQXPending = null;
             try

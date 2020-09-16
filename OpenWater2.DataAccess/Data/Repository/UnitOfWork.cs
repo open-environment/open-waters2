@@ -16,16 +16,26 @@ namespace OpenWater2.DataAccess.Data.Repository
         {
             _db = db;
             tEpaOrgsRepository = new TEpaOrgsRepository(_db);
-            wqxOrganizationRepository = new TWqxOrganizationRepository(_db, loggerFactory);
+            oeAppSettingsRepository = new TOeAppSettingsRepository(_db);
+            wqxOrganizationRepository = new TWqxOrganizationRepository(_db, 
+                                                                    loggerFactory,
+                                                                    oeAppSettingsRepository,
+                                                                    tOeSysLogRepository);
             oeUsersRepostory = new TOeUsersRepository(_db);
             oeUserRolesRepository = new TOeUserRolesRepository(_db);
-            oeAppSettingsRepository = new TOeAppSettingsRepository(_db);
             tWqxMonLocRepository = new TWqxMonLocRepository(_db);
             tWqxProjectRepository = new TWqxProjectRepository(_db);
             tWqxRefDataRepository = new TWqxRefDataRepository(_db);
             UserOrgsRepository = new TWqxUserOrgsRepository(_db);
-            tWqxActivityRepository = new TWqxActivityRepository(_db);
+            tWqxActivityRepository = new TWqxActivityRepository(_db,
+                                                                wqxOrganizationRepository,
+                                                                oeAppSettingsRepository,
+                                                                tWqxRefDefaultTimeZoneRepository);
             tWqxImportLogRepository = new TWqxImportLogRepository(_db);
+            tWqxImportTemplateRepository = new TWqxImportTemplateRepository(_db);
+            tWqxPendingRecordsRepository = new TWqxPendingRecordsRepository(_db);
+            tOeSysLogRepository = new TOeSysLogRepository(_db);
+            tWqxRefDefaultTimeZoneRepository = new TWqxRefDefaultTimeZoneRepository(_db);
             tWqxImportTempMonlocRepository = new TWqxImportTempMonlocRepository(_db, 
                                                     tWqxRefDataRepository, 
                                                     tWqxMonLocRepository,
@@ -39,19 +49,36 @@ namespace OpenWater2.DataAccess.Data.Repository
             tWqxRefAnalMethodRepository = new TWqxRefAnalMethodRepository(_db);
             tWqxImportTemplateDtlRepository = new TWqxImportTemplateDtlRepository(_db);
             tWqxImportTempBioIndexRepository = new TWqxImportTempBioIndexRepository(_db);
+            tWqxTransactionLogRepository = new TWqxTransactionLogRepository(_db);
+            oeAppTasksRepository = new TOeAppTasksRepository(_db);
+            tWqxSubmitRepository = new TWqxSubmitRepository(_db, 
+                                                            tOeSysLogRepository,
+                                                            oeAppSettingsRepository,
+                                                            wqxOrganizationRepository,
+                                                            UserOrgsRepository,
+                                                            tWqxMonLocRepository,
+                                                            tWqxProjectRepository,
+                                                            tWqxActivityRepository,
+                                                            tWqxTransactionLogRepository);
             tWqxImportTempResultRepository = new TWqxImportTempResultRepository(_db,
                                                                             tWqxRefCharacteristicRepository,
                                                                             tWqxRefDataRepository,
                                                                             tWqxRefAnalMethodRepository,
                                                                             tWqxRefLabRepository,
-                                                                            tWqxRefSampPrepRepository);
+                                                                            tWqxRefSampPrepRepository,
+                                                                            wqxOrganizationRepository,
+                                                                            oeAppSettingsRepository,
+                                                                            tWqxRefDefaultTimeZoneRepository);
             tWqxImportTempSampleRepository = new TWqxImportTempSampleRepository(_db,
                                                                             tWqxRefDataRepository,
                                                                             tWqxMonLocRepository,
                                                                             tWqxRefSampColMethodRepository,
                                                                             tWqxRefSampPrepRepository,
                                                                             tWqxProjectRepository,
-                                                                            oeUsersRepostory);
+                                                                            oeUsersRepostory,
+                                                                            wqxOrganizationRepository,
+                                                                            oeAppSettingsRepository,
+                                                                            tWqxRefDefaultTimeZoneRepository);
 
             wqxImportRepository = new WqxImportRepository(_db,
                                                         tWqxImportTempMonlocRepository,
@@ -112,6 +139,20 @@ namespace OpenWater2.DataAccess.Data.Repository
         public ITWqxImportTemplateDtlRepository tWqxImportTemplateDtlRepository { get; private set; }
 
         public ITWqxImportLogRepository tWqxImportLogRepository { get; private set; }
+
+        public ITWqxImportTemplateRepository tWqxImportTemplateRepository { get; private set; }
+
+        public ITWqxTransactionLogRepository tWqxTransactionLogRepository { get; private set; }
+
+        public ITWqxPendingRecordsRepository tWqxPendingRecordsRepository { get; private set; }
+
+        public IOeAppTasksRepository oeAppTasksRepository { get; private set; }
+
+        public ITOeSysLogRepository tOeSysLogRepository { get; private set; }
+
+        public ITWqxSubmitRepository tWqxSubmitRepository { get; private set; }
+
+        public ITWqxRefDefaultTimeZoneRepository tWqxRefDefaultTimeZoneRepository { get; private set; }
 
         public void Dispose()
         {

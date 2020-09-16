@@ -1,6 +1,5 @@
 ﻿using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
-using OpewnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -114,7 +113,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             try
             {
                 //get import config rules
-                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("M", configFilePath);
+                List<ConfigInfoType> _allRules = UtilityHelper.GetAllColumnInfo("M", configFilePath);
 
                 TWqxImportTempMonloc a = new TWqxImportTempMonloc();
 
@@ -127,7 +126,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                 //*************** PRE CUSTOM VALIDATION **********************************************
                 string _t = null;
 
-                _t = Utils.GetValueOrDefault(colVals, "TRIBAL_LAND_IND");
+                _t = UtilityHelper.GetValueOrDefault(colVals, "TRIBAL_LAND_IND");
                 if (!string.IsNullOrEmpty(_t))
                 {
                     if (_t.ToUpper() == "TRUE") colVals["TRIBAL_LAND_IND"] = "Y";
@@ -135,10 +134,10 @@ namespace OpenWater2.DataAccess.Data.Repository
                 }
 
                 //if there is a match of county value to reference data text (in case user is importing county text instead of code)
-                _t = Utils.GetValueOrDefault(colVals, "COUNTY_CODE");
+                _t = UtilityHelper.GetValueOrDefault(colVals, "COUNTY_CODE");
                 if (!string.IsNullOrEmpty(_t))
                 {
-                    TWqxRefCounty c =  _refDataRepo.GetT_WQX_REF_COUNTY_ByCountyNameAndState(Utils.GetValueOrDefault(colVals, "STATE_CODE"), _t);
+                    TWqxRefCounty c =  _refDataRepo.GetT_WQX_REF_COUNTY_ByCountyNameAndState(UtilityHelper.GetValueOrDefault(colVals, "STATE_CODE"), _t);
                     if (c != null)
                         a.CountryCode = c.CountyCode;
                     else
@@ -242,7 +241,7 @@ namespace OpenWater2.DataAccess.Data.Repository
 
         public void WQX_IMPORT_TEMP_MONLOC_GenVal(ref TWqxImportTempMonloc a, List<ConfigInfoType> t, Dictionary<string, string> colVals, string f)
         {
-            string _value = Utils.GetValueOrDefault(colVals, f); //supplied value for this field
+            string _value = UtilityHelper.GetValueOrDefault(colVals, f); //supplied value for this field
             var _rules = t.Find(item => item._name == f);   //import rules for this field
 
             if (!string.IsNullOrEmpty(_value)) //if value is supplied

@@ -11,6 +11,6 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         IEnumerable<SelectListItem> GetTOeAppSettingsForDropDown();
         void Update(TOeAppSettings oeAppSettings);
 
-        string GetAppSetting(string settingName);
+        string GetT_OE_APP_SETTING(string settingName);
     }
 }

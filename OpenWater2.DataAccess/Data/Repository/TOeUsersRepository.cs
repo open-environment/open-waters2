@@ -149,5 +149,22 @@ namespace OpenWater2.DataAccess.Data.Repository
                 return 0;
             }
         }
+
+        public int UpdateT_OE_USERSDefaultOrg(int idx, string defaultOrgId)
+        {
+            try
+            {
+                TOeUsers row = new TOeUsers();
+                row = (from c in _db.TOeUsers where c.UserIdx == idx select c).First();
+                if (defaultOrgId != null) row.DefaultOrgId = defaultOrgId;
+                _db.TOeUsers.Update(row);
+                _db.SaveChanges();
+                return row.UserIdx;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
     }
 }

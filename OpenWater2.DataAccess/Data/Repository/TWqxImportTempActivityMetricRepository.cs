@@ -1,6 +1,5 @@
 ﻿using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
-using OpewnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -42,7 +41,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             try
             {
                 //get import config ruless
-                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("I", configFilePath);
+                List<ConfigInfoType> _allRules = UtilityHelper.GetAllColumnInfo("I", configFilePath);
 
                 TWqxImportTempActivityMetric a = new TWqxImportTempActivityMetric();
                 
@@ -56,7 +55,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                 string _t = null;
 
                 //fail if no matching activity id found
-                _t = Utils.GetValueOrDefault(colVals, "ACTIVITY_ID");
+                _t = UtilityHelper.GetValueOrDefault(colVals, "ACTIVITY_ID");
                 if (!string.IsNullOrEmpty(_t))
                 {
                     TWqxActivity act = _activityRepo.GetWQX_ACTIVITY_ByUnique(orgId, _t);
@@ -100,7 +99,7 @@ namespace OpenWater2.DataAccess.Data.Repository
 
         public void WQX_IMPORT_TEMP_ACTIVITY_METRIC_GenVal(ref TWqxImportTempActivityMetric a, List<ConfigInfoType> t, Dictionary<string, string> colVals, string f)
         {
-            string _value = Utils.GetValueOrDefault(colVals, f); //supplied value for this field
+            string _value = UtilityHelper.GetValueOrDefault(colVals, f); //supplied value for this field
             var _rules = t.Find(item => item._name == f);   //import rules for this field
 
             if (!string.IsNullOrEmpty(_value)) //if value is supplied

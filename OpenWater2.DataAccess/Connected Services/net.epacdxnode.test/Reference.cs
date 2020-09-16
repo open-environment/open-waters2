@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NetworkNode2
+namespace net.epacdxnode.test
 {
     
     
@@ -131,89 +131,59 @@ namespace NetworkNode2
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
-    [System.ServiceModel.ServiceContractAttribute(Namespace="http://www.exchangenetwork.net/wsdl/node/2", ConfigurationName="NetworkNode2.NetworkNodePortType2")]
+    [System.ServiceModel.ServiceContractAttribute(Namespace="http://www.exchangenetwork.net/wsdl/node/2", ConfigurationName="net.epacdxnode.test.NetworkNodePortType2")]
     public interface NetworkNodePortType2
     {
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NetworkNode2.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
+        [System.ServiceModel.FaultContractAttribute(typeof(net.epacdxnode.test.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        NetworkNode2.AuthenticateResponse1 Authenticate(NetworkNode2.AuthenticateRequest request);
+        System.Threading.Tasks.Task<net.epacdxnode.test.AuthenticateResponse1> AuthenticateAsync(net.epacdxnode.test.AuthenticateRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NetworkNode2.AuthenticateResponse1> AuthenticateAsync(NetworkNode2.AuthenticateRequest request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NetworkNode2.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
+        [System.ServiceModel.FaultContractAttribute(typeof(net.epacdxnode.test.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        NetworkNode2.SubmitResponse Submit(NetworkNode2.SubmitRequest request);
+        System.Threading.Tasks.Task<net.epacdxnode.test.SubmitResponse> SubmitAsync(net.epacdxnode.test.SubmitRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NetworkNode2.SubmitResponse> SubmitAsync(NetworkNode2.SubmitRequest request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NetworkNode2.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
+        [System.ServiceModel.FaultContractAttribute(typeof(net.epacdxnode.test.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        NetworkNode2.GetStatusResponse GetStatus(NetworkNode2.GetStatusRequest request);
+        System.Threading.Tasks.Task<net.epacdxnode.test.GetStatusResponse> GetStatusAsync(net.epacdxnode.test.GetStatusRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NetworkNode2.GetStatusResponse> GetStatusAsync(NetworkNode2.GetStatusRequest request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NetworkNode2.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
+        [System.ServiceModel.FaultContractAttribute(typeof(net.epacdxnode.test.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        NetworkNode2.NotifyResponse Notify(NetworkNode2.NotifyRequest request);
+        System.Threading.Tasks.Task<net.epacdxnode.test.NotifyResponse> NotifyAsync(net.epacdxnode.test.NotifyRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NetworkNode2.NotifyResponse> NotifyAsync(NetworkNode2.NotifyRequest request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NetworkNode2.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
+        [System.ServiceModel.FaultContractAttribute(typeof(net.epacdxnode.test.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        NetworkNode2.DownloadResponse Download(NetworkNode2.DownloadRequest request);
+        System.Threading.Tasks.Task<net.epacdxnode.test.DownloadResponse> DownloadAsync(net.epacdxnode.test.DownloadRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NetworkNode2.DownloadResponse> DownloadAsync(NetworkNode2.DownloadRequest request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NetworkNode2.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
+        [System.ServiceModel.FaultContractAttribute(typeof(net.epacdxnode.test.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        NetworkNode2.QueryResponse Query(NetworkNode2.QueryRequest request);
+        System.Threading.Tasks.Task<net.epacdxnode.test.QueryResponse> QueryAsync(net.epacdxnode.test.QueryRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NetworkNode2.QueryResponse> QueryAsync(NetworkNode2.QueryRequest request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NetworkNode2.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
+        [System.ServiceModel.FaultContractAttribute(typeof(net.epacdxnode.test.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        NetworkNode2.SolicitResponse Solicit(NetworkNode2.SolicitRequest request);
+        System.Threading.Tasks.Task<net.epacdxnode.test.SolicitResponse> SolicitAsync(net.epacdxnode.test.SolicitRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NetworkNode2.SolicitResponse> SolicitAsync(NetworkNode2.SolicitRequest request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NetworkNode2.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
+        [System.ServiceModel.FaultContractAttribute(typeof(net.epacdxnode.test.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        NetworkNode2.ExecuteResponse1 Execute(NetworkNode2.ExecuteRequest request);
+        System.Threading.Tasks.Task<net.epacdxnode.test.ExecuteResponse1> ExecuteAsync(net.epacdxnode.test.ExecuteRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NetworkNode2.ExecuteResponse1> ExecuteAsync(NetworkNode2.ExecuteRequest request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NetworkNode2.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
+        [System.ServiceModel.FaultContractAttribute(typeof(net.epacdxnode.test.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        NetworkNode2.NodePingResponse1 NodePing(NetworkNode2.NodePingRequest request);
+        System.Threading.Tasks.Task<net.epacdxnode.test.NodePingResponse1> NodePingAsync(net.epacdxnode.test.NodePingRequest request);
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NetworkNode2.NodePingResponse1> NodePingAsync(NetworkNode2.NodePingRequest request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NetworkNode2.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
+        [System.ServiceModel.FaultContractAttribute(typeof(net.epacdxnode.test.NodeFaultDetailType), Action="", Name="NodeFaultDetailType", Namespace="http://www.exchangenetwork.net/schema/node/2")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        NetworkNode2.GetServicesResponse GetServices(NetworkNode2.GetServicesRequest request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NetworkNode2.GetServicesResponse> GetServicesAsync(NetworkNode2.GetServicesRequest request);
+        System.Threading.Tasks.Task<net.epacdxnode.test.GetServicesResponse> GetServicesAsync(net.epacdxnode.test.GetServicesRequest request);
     }
     
     /// <remarks/>
@@ -314,18 +284,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class AuthenticateRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.Authenticate Authenticate;
+        public net.epacdxnode.test.Authenticate Authenticate;
         
         public AuthenticateRequest()
         {
         }
         
-        public AuthenticateRequest(NetworkNode2.Authenticate Authenticate)
+        public AuthenticateRequest(net.epacdxnode.test.Authenticate Authenticate)
         {
             this.Authenticate = Authenticate;
         }
@@ -333,18 +304,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class AuthenticateResponse1
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.AuthenticateResponse AuthenticateResponse;
+        public net.epacdxnode.test.AuthenticateResponse AuthenticateResponse;
         
         public AuthenticateResponse1()
         {
         }
         
-        public AuthenticateResponse1(NetworkNode2.AuthenticateResponse AuthenticateResponse)
+        public AuthenticateResponse1(net.epacdxnode.test.AuthenticateResponse AuthenticateResponse)
         {
             this.AuthenticateResponse = AuthenticateResponse;
         }
@@ -777,18 +749,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class SubmitRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.Submit Submit;
+        public net.epacdxnode.test.Submit Submit;
         
         public SubmitRequest()
         {
         }
         
-        public SubmitRequest(NetworkNode2.Submit Submit)
+        public SubmitRequest(net.epacdxnode.test.Submit Submit)
         {
             this.Submit = Submit;
         }
@@ -796,18 +769,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class SubmitResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Name="SubmitResponse", Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.StatusResponseType SubmitResponse1;
+        public net.epacdxnode.test.StatusResponseType SubmitResponse1;
         
         public SubmitResponse()
         {
         }
         
-        public SubmitResponse(NetworkNode2.StatusResponseType SubmitResponse1)
+        public SubmitResponse(net.epacdxnode.test.StatusResponseType SubmitResponse1)
         {
             this.SubmitResponse1 = SubmitResponse1;
         }
@@ -855,18 +829,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class GetStatusRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.GetStatus GetStatus;
+        public net.epacdxnode.test.GetStatus GetStatus;
         
         public GetStatusRequest()
         {
         }
         
-        public GetStatusRequest(NetworkNode2.GetStatus GetStatus)
+        public GetStatusRequest(net.epacdxnode.test.GetStatus GetStatus)
         {
             this.GetStatus = GetStatus;
         }
@@ -874,18 +849,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class GetStatusResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Name="GetStatusResponse", Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.StatusResponseType GetStatusResponse1;
+        public net.epacdxnode.test.StatusResponseType GetStatusResponse1;
         
         public GetStatusResponse()
         {
         }
         
-        public GetStatusResponse(NetworkNode2.StatusResponseType GetStatusResponse1)
+        public GetStatusResponse(net.epacdxnode.test.StatusResponseType GetStatusResponse1)
         {
             this.GetStatusResponse1 = GetStatusResponse1;
         }
@@ -1069,18 +1045,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class NotifyRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.Notify Notify;
+        public net.epacdxnode.test.Notify Notify;
         
         public NotifyRequest()
         {
         }
         
-        public NotifyRequest(NetworkNode2.Notify Notify)
+        public NotifyRequest(net.epacdxnode.test.Notify Notify)
         {
             this.Notify = Notify;
         }
@@ -1088,18 +1065,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class NotifyResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Name="NotifyResponse", Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.StatusResponseType NotifyResponse1;
+        public net.epacdxnode.test.StatusResponseType NotifyResponse1;
         
         public NotifyResponse()
         {
         }
         
-        public NotifyResponse(NetworkNode2.StatusResponseType NotifyResponse1)
+        public NotifyResponse(net.epacdxnode.test.StatusResponseType NotifyResponse1)
         {
             this.NotifyResponse1 = NotifyResponse1;
         }
@@ -1179,18 +1157,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class DownloadRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.Download Download;
+        public net.epacdxnode.test.Download Download;
         
         public DownloadRequest()
         {
         }
         
-        public DownloadRequest(NetworkNode2.Download Download)
+        public DownloadRequest(net.epacdxnode.test.Download Download)
         {
             this.Download = Download;
         }
@@ -1198,19 +1177,20 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class DownloadResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Name="DownloadResponse", Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
         [System.Xml.Serialization.XmlArrayItemAttribute("documents", IsNullable=false)]
-        public NetworkNode2.NodeDocumentType[] DownloadResponse1;
+        public net.epacdxnode.test.NodeDocumentType[] DownloadResponse1;
         
         public DownloadResponse()
         {
         }
         
-        public DownloadResponse(NetworkNode2.NodeDocumentType[] DownloadResponse1)
+        public DownloadResponse(net.epacdxnode.test.NodeDocumentType[] DownloadResponse1)
         {
             this.DownloadResponse1 = DownloadResponse1;
         }
@@ -1544,18 +1524,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class QueryRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.Query Query;
+        public net.epacdxnode.test.Query Query;
         
         public QueryRequest()
         {
         }
         
-        public QueryRequest(NetworkNode2.Query Query)
+        public QueryRequest(net.epacdxnode.test.Query Query)
         {
             this.Query = Query;
         }
@@ -1563,18 +1544,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class QueryResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Name="QueryResponse", Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.ResultSetType QueryResponse1;
+        public net.epacdxnode.test.ResultSetType QueryResponse1;
         
         public QueryResponse()
         {
         }
         
-        public QueryResponse(NetworkNode2.ResultSetType QueryResponse1)
+        public QueryResponse(net.epacdxnode.test.ResultSetType QueryResponse1)
         {
             this.QueryResponse1 = QueryResponse1;
         }
@@ -1686,18 +1668,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class SolicitRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.Solicit Solicit;
+        public net.epacdxnode.test.Solicit Solicit;
         
         public SolicitRequest()
         {
         }
         
-        public SolicitRequest(NetworkNode2.Solicit Solicit)
+        public SolicitRequest(net.epacdxnode.test.Solicit Solicit)
         {
             this.Solicit = Solicit;
         }
@@ -1705,18 +1688,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class SolicitResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Name="SolicitResponse", Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.StatusResponseType SolicitResponse1;
+        public net.epacdxnode.test.StatusResponseType SolicitResponse1;
         
         public SolicitResponse()
         {
         }
         
-        public SolicitResponse(NetworkNode2.StatusResponseType SolicitResponse1)
+        public SolicitResponse(net.epacdxnode.test.StatusResponseType SolicitResponse1)
         {
             this.SolicitResponse1 = SolicitResponse1;
         }
@@ -1852,18 +1836,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class ExecuteRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.Execute Execute;
+        public net.epacdxnode.test.Execute Execute;
         
         public ExecuteRequest()
         {
         }
         
-        public ExecuteRequest(NetworkNode2.Execute Execute)
+        public ExecuteRequest(net.epacdxnode.test.Execute Execute)
         {
             this.Execute = Execute;
         }
@@ -1871,18 +1856,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class ExecuteResponse1
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.ExecuteResponse ExecuteResponse;
+        public net.epacdxnode.test.ExecuteResponse ExecuteResponse;
         
         public ExecuteResponse1()
         {
         }
         
-        public ExecuteResponse1(NetworkNode2.ExecuteResponse ExecuteResponse)
+        public ExecuteResponse1(net.epacdxnode.test.ExecuteResponse ExecuteResponse)
         {
             this.ExecuteResponse = ExecuteResponse;
         }
@@ -1973,18 +1959,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class NodePingRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.NodePing NodePing;
+        public net.epacdxnode.test.NodePing NodePing;
         
         public NodePingRequest()
         {
         }
         
-        public NodePingRequest(NetworkNode2.NodePing NodePing)
+        public NodePingRequest(net.epacdxnode.test.NodePing NodePing)
         {
             this.NodePing = NodePing;
         }
@@ -1992,18 +1979,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class NodePingResponse1
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.NodePingResponse NodePingResponse;
+        public net.epacdxnode.test.NodePingResponse NodePingResponse;
         
         public NodePingResponse1()
         {
         }
         
-        public NodePingResponse1(NetworkNode2.NodePingResponse NodePingResponse)
+        public NodePingResponse1(net.epacdxnode.test.NodePingResponse NodePingResponse)
         {
             this.NodePingResponse = NodePingResponse;
         }
@@ -2051,18 +2039,19 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class GetServicesRequest
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.GetServices GetServices;
+        public net.epacdxnode.test.GetServices GetServices;
         
         public GetServicesRequest()
         {
         }
         
-        public GetServicesRequest(NetworkNode2.GetServices GetServices)
+        public GetServicesRequest(net.epacdxnode.test.GetServices GetServices)
         {
             this.GetServices = GetServices;
         }
@@ -2070,31 +2059,32 @@ namespace NetworkNode2
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
     public partial class GetServicesResponse
     {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Name="GetServicesResponse", Namespace="http://www.exchangenetwork.net/schema/node/2", Order=0)]
-        public NetworkNode2.GenericXmlType GetServicesResponse1;
+        public net.epacdxnode.test.GenericXmlType GetServicesResponse1;
         
         public GetServicesResponse()
         {
         }
         
-        public GetServicesResponse(NetworkNode2.GenericXmlType GetServicesResponse1)
+        public GetServicesResponse(net.epacdxnode.test.GenericXmlType GetServicesResponse1)
         {
             this.GetServicesResponse1 = GetServicesResponse1;
         }
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
-    public interface NetworkNodePortType2Channel : NetworkNode2.NetworkNodePortType2, System.ServiceModel.IClientChannel
+    public interface NetworkNodePortType2Channel : net.epacdxnode.test.NetworkNodePortType2, System.ServiceModel.IClientChannel
     {
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.2")]
-    public partial class NetworkNodePortType2Client : System.ServiceModel.ClientBase<NetworkNode2.NetworkNodePortType2>, NetworkNode2.NetworkNodePortType2
+    public partial class NetworkNodePortType2Client : System.ServiceModel.ClientBase<net.epacdxnode.test.NetworkNodePortType2>, net.epacdxnode.test.NetworkNodePortType2
     {
         
         /// <summary>
@@ -2137,104 +2127,134 @@ namespace NetworkNode2
         {
         }
         
-        public NetworkNode2.AuthenticateResponse1 Authenticate(NetworkNode2.AuthenticateRequest request)
-        {
-            return base.Channel.Authenticate(request);
-        }
-        
-        public System.Threading.Tasks.Task<NetworkNode2.AuthenticateResponse1> AuthenticateAsync(NetworkNode2.AuthenticateRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<net.epacdxnode.test.AuthenticateResponse1> net.epacdxnode.test.NetworkNodePortType2.AuthenticateAsync(net.epacdxnode.test.AuthenticateRequest request)
         {
             return base.Channel.AuthenticateAsync(request);
         }
         
-        public NetworkNode2.SubmitResponse Submit(NetworkNode2.SubmitRequest request)
+        public System.Threading.Tasks.Task<net.epacdxnode.test.AuthenticateResponse1> AuthenticateAsync(net.epacdxnode.test.Authenticate Authenticate)
         {
-            return base.Channel.Submit(request);
+            net.epacdxnode.test.AuthenticateRequest inValue = new net.epacdxnode.test.AuthenticateRequest();
+            inValue.Authenticate = Authenticate;
+            return ((net.epacdxnode.test.NetworkNodePortType2)(this)).AuthenticateAsync(inValue);
         }
         
-        public System.Threading.Tasks.Task<NetworkNode2.SubmitResponse> SubmitAsync(NetworkNode2.SubmitRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<net.epacdxnode.test.SubmitResponse> net.epacdxnode.test.NetworkNodePortType2.SubmitAsync(net.epacdxnode.test.SubmitRequest request)
         {
             return base.Channel.SubmitAsync(request);
         }
         
-        public NetworkNode2.GetStatusResponse GetStatus(NetworkNode2.GetStatusRequest request)
+        public System.Threading.Tasks.Task<net.epacdxnode.test.SubmitResponse> SubmitAsync(net.epacdxnode.test.Submit Submit)
         {
-            return base.Channel.GetStatus(request);
+            net.epacdxnode.test.SubmitRequest inValue = new net.epacdxnode.test.SubmitRequest();
+            inValue.Submit = Submit;
+            return ((net.epacdxnode.test.NetworkNodePortType2)(this)).SubmitAsync(inValue);
         }
         
-        public System.Threading.Tasks.Task<NetworkNode2.GetStatusResponse> GetStatusAsync(NetworkNode2.GetStatusRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<net.epacdxnode.test.GetStatusResponse> net.epacdxnode.test.NetworkNodePortType2.GetStatusAsync(net.epacdxnode.test.GetStatusRequest request)
         {
             return base.Channel.GetStatusAsync(request);
         }
         
-        public NetworkNode2.NotifyResponse Notify(NetworkNode2.NotifyRequest request)
+        public System.Threading.Tasks.Task<net.epacdxnode.test.GetStatusResponse> GetStatusAsync(net.epacdxnode.test.GetStatus GetStatus)
         {
-            return base.Channel.Notify(request);
+            net.epacdxnode.test.GetStatusRequest inValue = new net.epacdxnode.test.GetStatusRequest();
+            inValue.GetStatus = GetStatus;
+            return ((net.epacdxnode.test.NetworkNodePortType2)(this)).GetStatusAsync(inValue);
         }
         
-        public System.Threading.Tasks.Task<NetworkNode2.NotifyResponse> NotifyAsync(NetworkNode2.NotifyRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<net.epacdxnode.test.NotifyResponse> net.epacdxnode.test.NetworkNodePortType2.NotifyAsync(net.epacdxnode.test.NotifyRequest request)
         {
             return base.Channel.NotifyAsync(request);
         }
         
-        public NetworkNode2.DownloadResponse Download(NetworkNode2.DownloadRequest request)
+        public System.Threading.Tasks.Task<net.epacdxnode.test.NotifyResponse> NotifyAsync(net.epacdxnode.test.Notify Notify)
         {
-            return base.Channel.Download(request);
+            net.epacdxnode.test.NotifyRequest inValue = new net.epacdxnode.test.NotifyRequest();
+            inValue.Notify = Notify;
+            return ((net.epacdxnode.test.NetworkNodePortType2)(this)).NotifyAsync(inValue);
         }
         
-        public System.Threading.Tasks.Task<NetworkNode2.DownloadResponse> DownloadAsync(NetworkNode2.DownloadRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<net.epacdxnode.test.DownloadResponse> net.epacdxnode.test.NetworkNodePortType2.DownloadAsync(net.epacdxnode.test.DownloadRequest request)
         {
             return base.Channel.DownloadAsync(request);
         }
         
-        public NetworkNode2.QueryResponse Query(NetworkNode2.QueryRequest request)
+        public System.Threading.Tasks.Task<net.epacdxnode.test.DownloadResponse> DownloadAsync(net.epacdxnode.test.Download Download)
         {
-            return base.Channel.Query(request);
+            net.epacdxnode.test.DownloadRequest inValue = new net.epacdxnode.test.DownloadRequest();
+            inValue.Download = Download;
+            return ((net.epacdxnode.test.NetworkNodePortType2)(this)).DownloadAsync(inValue);
         }
         
-        public System.Threading.Tasks.Task<NetworkNode2.QueryResponse> QueryAsync(NetworkNode2.QueryRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<net.epacdxnode.test.QueryResponse> net.epacdxnode.test.NetworkNodePortType2.QueryAsync(net.epacdxnode.test.QueryRequest request)
         {
             return base.Channel.QueryAsync(request);
         }
         
-        public NetworkNode2.SolicitResponse Solicit(NetworkNode2.SolicitRequest request)
+        public System.Threading.Tasks.Task<net.epacdxnode.test.QueryResponse> QueryAsync(net.epacdxnode.test.Query Query)
         {
-            return base.Channel.Solicit(request);
+            net.epacdxnode.test.QueryRequest inValue = new net.epacdxnode.test.QueryRequest();
+            inValue.Query = Query;
+            return ((net.epacdxnode.test.NetworkNodePortType2)(this)).QueryAsync(inValue);
         }
         
-        public System.Threading.Tasks.Task<NetworkNode2.SolicitResponse> SolicitAsync(NetworkNode2.SolicitRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<net.epacdxnode.test.SolicitResponse> net.epacdxnode.test.NetworkNodePortType2.SolicitAsync(net.epacdxnode.test.SolicitRequest request)
         {
             return base.Channel.SolicitAsync(request);
         }
         
-        public NetworkNode2.ExecuteResponse1 Execute(NetworkNode2.ExecuteRequest request)
+        public System.Threading.Tasks.Task<net.epacdxnode.test.SolicitResponse> SolicitAsync(net.epacdxnode.test.Solicit Solicit)
         {
-            return base.Channel.Execute(request);
+            net.epacdxnode.test.SolicitRequest inValue = new net.epacdxnode.test.SolicitRequest();
+            inValue.Solicit = Solicit;
+            return ((net.epacdxnode.test.NetworkNodePortType2)(this)).SolicitAsync(inValue);
         }
         
-        public System.Threading.Tasks.Task<NetworkNode2.ExecuteResponse1> ExecuteAsync(NetworkNode2.ExecuteRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<net.epacdxnode.test.ExecuteResponse1> net.epacdxnode.test.NetworkNodePortType2.ExecuteAsync(net.epacdxnode.test.ExecuteRequest request)
         {
             return base.Channel.ExecuteAsync(request);
         }
         
-        public NetworkNode2.NodePingResponse1 NodePing(NetworkNode2.NodePingRequest request)
+        public System.Threading.Tasks.Task<net.epacdxnode.test.ExecuteResponse1> ExecuteAsync(net.epacdxnode.test.Execute Execute)
         {
-            return base.Channel.NodePing(request);
+            net.epacdxnode.test.ExecuteRequest inValue = new net.epacdxnode.test.ExecuteRequest();
+            inValue.Execute = Execute;
+            return ((net.epacdxnode.test.NetworkNodePortType2)(this)).ExecuteAsync(inValue);
         }
         
-        public System.Threading.Tasks.Task<NetworkNode2.NodePingResponse1> NodePingAsync(NetworkNode2.NodePingRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<net.epacdxnode.test.NodePingResponse1> net.epacdxnode.test.NetworkNodePortType2.NodePingAsync(net.epacdxnode.test.NodePingRequest request)
         {
             return base.Channel.NodePingAsync(request);
         }
         
-        public NetworkNode2.GetServicesResponse GetServices(NetworkNode2.GetServicesRequest request)
+        public System.Threading.Tasks.Task<net.epacdxnode.test.NodePingResponse1> NodePingAsync(net.epacdxnode.test.NodePing NodePing)
         {
-            return base.Channel.GetServices(request);
+            net.epacdxnode.test.NodePingRequest inValue = new net.epacdxnode.test.NodePingRequest();
+            inValue.NodePing = NodePing;
+            return ((net.epacdxnode.test.NetworkNodePortType2)(this)).NodePingAsync(inValue);
         }
         
-        public System.Threading.Tasks.Task<NetworkNode2.GetServicesResponse> GetServicesAsync(NetworkNode2.GetServicesRequest request)
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<net.epacdxnode.test.GetServicesResponse> net.epacdxnode.test.NetworkNodePortType2.GetServicesAsync(net.epacdxnode.test.GetServicesRequest request)
         {
             return base.Channel.GetServicesAsync(request);
+        }
+        
+        public System.Threading.Tasks.Task<net.epacdxnode.test.GetServicesResponse> GetServicesAsync(net.epacdxnode.test.GetServices GetServices)
+        {
+            net.epacdxnode.test.GetServicesRequest inValue = new net.epacdxnode.test.GetServicesRequest();
+            inValue.GetServices = GetServices;
+            return ((net.epacdxnode.test.NetworkNodePortType2)(this)).GetServicesAsync(inValue);
         }
         
         public virtual System.Threading.Tasks.Task OpenAsync()
@@ -2269,7 +2289,8 @@ namespace NetworkNode2
         {
             if ((endpointConfiguration == EndpointConfiguration.NetworkNodePort2))
             {
-                return new System.ServiceModel.EndpointAddress("https://test.epacdxnode.net/cdx-enws20/services/NetworkNode2");
+                return new System.ServiceModel.EndpointAddress("https://testngn.epacdxnode.net/ngn-enws20/services/NetworkNode2ServiceConditional" +
+                        "MTOM");
             }
             throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
         }

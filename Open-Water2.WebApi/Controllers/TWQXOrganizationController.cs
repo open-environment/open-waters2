@@ -4,9 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OpenWater2.DataAccess;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
-using OpewnWater2.DataAccess;
+
 
 namespace Open_Water2.WebApi.Controllers
 {
@@ -97,7 +98,7 @@ namespace Open_Water2.WebApi.Controllers
                 return Ok(null);
             }
             bool isAdmin = _unitOfWork.oeUserRolesRepository.IsUserInRole(_user.UserId, "Admin", _user);
-            var result = Utils.GetAdminTaskData(_user.UserId, OrgID, _unitOfWork, _user);
+            var result = UtilityHelper.GetAdminTaskData(_user.UserId, OrgID, _unitOfWork, _user);
             return Ok(result);
         }
         [HttpPost("api/org/ApproveRejectTWqxUserOrgs")]
@@ -125,9 +126,9 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
         [HttpGet("api/org/connectTest")]
-        public IActionResult ConnectTest([FromQuery] string orgID, string typ)
+        public async Task<IActionResult> ConnectTest([FromQuery] string orgID, string typ)
         {
-            var result = _unitOfWork.wqxOrganizationRepository.ConnectTest(orgID, typ);
+            var result = await _unitOfWork.wqxOrganizationRepository.ConnectTestAsync(orgID, typ);
             return Ok(result);
         }
         [HttpGet("api/org/GetWqxImportTranslatebyOrg")]

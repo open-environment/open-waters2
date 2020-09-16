@@ -1,5 +1,4 @@
-﻿using com.sun.org.apache.xml.@internal.serializer.utils;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Open_Water2.WebApi.Entities;
@@ -19,6 +18,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenWater2.Models.Model;
 using System.Net;
+using OpenWater2.DataAccess;
 
 namespace Open_Water2.WebApi.Services
 {
@@ -88,6 +88,12 @@ namespace Open_Water2.WebApi.Services
                         return null;
                     }
                     TOeUsers user = _unitOfWork.oeUsersRepostory.GetT_VCCB_USERByEmail(username);
+                    if(user == null)
+                    {
+                        dbUser.errMsg = "User not found";
+                        _logger.LogInformation("User not found");
+                        return null;
+                    }
                     data = new User()
                     {
                         FirstName = dbUser.firstName,
@@ -106,7 +112,7 @@ namespace Open_Water2.WebApi.Services
                     bool isAddOrgId = true;
                     
                     _logger.LogInformation("3...");
-                    SessionVars sessionVars = OpewnWater2.DataAccess.Utils.GetPostLoginUserByUserIdx(user.UserIdx, _unitOfWork, _env, _logger);
+                    SessionVars sessionVars = UtilityHelper.GetPostLoginUserByUserIdx(user.UserIdx, _unitOfWork, _env, _logger);
                     if (sessionVars == null) isAddSessionVars = false;
                     var orgDisplayType = dbUser.orgUsers.Where(ou => ou.ORG_ID == sessionVars.OrgID).FirstOrDefault();
                     //if (orgDisplayType == null) isAddOrgId = false;

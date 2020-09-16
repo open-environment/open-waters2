@@ -1,6 +1,5 @@
 ﻿using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
-using OpewnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,12 +15,18 @@ namespace OpenWater2.DataAccess.Data.Repository
         private readonly ITWqxRefAnalMethodRepository _refAnalMethodRepo;
         private readonly ITWqxRefLabRepository _refLabRepo;
         private readonly ITWqxRefSampPrepRepository _refSampPrepRepo;
+        private readonly ITWqxOrganizationRepository _orgRepo;
+        private readonly ITOeAppSettingsRepository _appSettingsRepo;
+        private readonly ITWqxRefDefaultTimeZoneRepository _timeZoneRepo;
         public TWqxImportTempResultRepository(ApplicationDbContext db,
             ITWqxRefCharacteristicRepository refCharRepo,
             ITWqxRefDataRepository refDataRepo,
             ITWqxRefAnalMethodRepository refAnalMethodRepo,
             ITWqxRefLabRepository refLabRepo,
-            ITWqxRefSampPrepRepository refSampPrepRepo) : base(db)
+            ITWqxRefSampPrepRepository refSampPrepRepo,
+            ITWqxOrganizationRepository orgRepo,
+            ITOeAppSettingsRepository appSettingsRepo,
+            ITWqxRefDefaultTimeZoneRepository timeZoneRepo) : base(db)
         {
             _db = db;
             _refCharRepo = refCharRepo;
@@ -29,6 +34,9 @@ namespace OpenWater2.DataAccess.Data.Repository
             _refAnalMethodRepo = refAnalMethodRepo;
             _refLabRepo = refLabRepo;
             _refSampPrepRepo = refSampPrepRepo;
+            _orgRepo = orgRepo;
+            _appSettingsRepo = appSettingsRepo;
+            _timeZoneRepo = timeZoneRepo;
         }
 
         public int InsertOrUpdateWQX_IMPORT_TEMP_RESULT(int? tEMP_RESULT_IDX, int tEMP_SAMPLE_IDX, int? rESULT_IDX, string dATA_LOGGER_LINE, string rESULT_DETECT_CONDITION, string cHAR_NAME, string mETHOD_SPECIATION_NAME, string rESULT_SAMP_FRACTION, string rESULT_MSR, string rESULT_MSR_UNIT, string rESULT_MSR_QUAL, string rESULT_STATUS, string sTATISTIC_BASE_CODE, string rESULT_VALUE_TYPE, string wEIGHT_BASIS, string tIME_BASIS, string tEMP_BASIS, string pARTICAL_BASIS, string pRECISION_VALUE, string bIAS_VALUE, string cONFIDENCE_INTERVAL_VALUE, string uP_CONFIDENCE_LIMIT, string lOW_CONFIDENCE_LIMIT, string rESULT_COMMENT, string dEPTH_HEIGHT_MSR, string dEPTH_HEIGHT_MSR_UNIT, string dEPTHALTITUDEREFPOINT, string bIO_INTENT_NAME, string bIO_INDIVIDUAL_ID, string bIO_SUBJECT_TAXONOMY, string bIO_UNIDENTIFIED_SPECIES_ID, string bIO_SAMPLE_TISSUE_ANATOMY, string gRP_SUMM_COUNT_WEIGHT_MSR, string gRP_SUMM_COUNT_WEIGHT_MSR_UNIT, string tAX_DTL_CELL_FORM, string tAX_DTL_CELL_SHAPE, string tAX_DTL_HABIT, string tAX_DTL_VOLTINISM, string tAX_DTL_POLL_TOLERANCE, string tAX_DTL_POLL_TOLERANCE_SCALE, string tAX_DTL_TROPHIC_LEVEL, string tAX_DTL_FUNC_FEEDING_GROUP1, string tAX_DTL_FUNC_FEEDING_GROUP2, string tAX_DTL_FUNC_FEEDING_GROUP3, string fREQ_CLASS_CODE, string fREQ_CLASS_UNIT, string fREQ_CLASS_UPPER, string fREQ_CLASS_LOWER, int? aNALYTIC_METHOD_IDX, string aNALYTIC_METHOD_ID, string aNALYTIC_METHOD_CTX, string aNALYTIC_METHOD_NAME, int? lAB_IDX, string lAB_NAME, DateTime? lAB_ANALYSIS_START_DT, DateTime? lAB_ANALYSIS_END_DT, string lAB_ANALYSIS_TIMEZONE, string rESULT_LAB_COMMENT_CODE, string mETHOD_DETECTION_LEVEL, string lAB_REPORTING_LEVEL, string pQL, string lOWER_QUANT_LIMIT, string uPPER_QUANT_LIMIT, string dETECTION_LIMIT_UNIT, int? lAB_SAMP_PREP_IDX, string lAB_SAMP_PREP_ID, string lAB_SAMP_PREP_CTX, DateTime? lAB_SAMP_PREP_START_DT, DateTime? lAB_SAMP_PREP_END_DT, string dILUTION_FACTOR, string sTATUS_CD, string sTATUS_DESC, bool BioIndicator, string orgID, bool autoImportRefDataInd)
@@ -386,7 +394,9 @@ namespace OpenWater2.DataAccess.Data.Repository
                 {
                     //put in Timezone if missing
                     if (lAB_ANALYSIS_START_DT != null || lAB_ANALYSIS_END_DT != null)
-                        a.LabAnalysisTimezone = Utils.GetWQXTimeZoneByDate(a.LabAnalysisTimezone.ConvertOrDefault<DateTime>(), orgID);
+                        a.LabAnalysisTimezone = UtilityHelper.GetWQXTimeZoneByDate(
+                            a.LabAnalysisTimezone.ConvertOrDefault<DateTime>(), orgID,
+                            _orgRepo, _appSettingsRepo, _timeZoneRepo);
                 }
 
                 if (!string.IsNullOrEmpty(rESULT_LAB_COMMENT_CODE))
@@ -518,12 +528,12 @@ namespace OpenWater2.DataAccess.Data.Repository
                 a.ImportStatusDesc = "";
 
                 //get import config rules
-                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("S", configFilePath);
+                List<ConfigInfoType> _allRules = UtilityHelper.GetAllColumnInfo("S", configFilePath);
 
                 //******************* PRE VALIDATION *************************************
                 //special rule: set values of ND, etc
-                string _rdc = Utils.GetValueOrDefault(colVals, "ResultDetectCondition");
-                string _res = Utils.GetValueOrDefault(colVals, "ResultMsr");
+                string _rdc = UtilityHelper.GetValueOrDefault(colVals, "ResultDetectCondition");
+                string _res = UtilityHelper.GetValueOrDefault(colVals, "ResultMsr");
                 if (_rdc == "DNQ" || _res == "DNQ") { colVals["ResultDetectCondition"] = "Detected Not Quantified"; colVals["ResultMsr"] = "DNQ"; }
                 if (_rdc == "ND" || _res == "ND") { colVals["ResultDetectCondition"] = "Not Detected"; colVals["ResultMsr"] = "ND"; }
                 if (_rdc == "NR" || _res == "NR") { colVals["ResultDetectCondition"] = "Not Reported"; colVals["ResultMsr"] = "NR"; }
@@ -691,7 +701,9 @@ namespace OpenWater2.DataAccess.Data.Repository
 
                 //put in Timezone if missing
                 if (a.LabAnalysisStartDt != null || a.LabAnalysisEndDt != null)
-                    a.LabAnalysisTimezone = Utils.GetWQXTimeZoneByDate(a.LabAnalysisStartDt.ConvertOrDefault<DateTime>(), orgID);
+                    a.LabAnalysisTimezone = UtilityHelper.GetWQXTimeZoneByDate(
+                        a.LabAnalysisStartDt.ConvertOrDefault<DateTime>(), orgID,
+                        _orgRepo, _appSettingsRepo, _timeZoneRepo);
 
 
                 //********** LAB SAMPLE PREP*************************
@@ -733,7 +745,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             if (_rules == null)
                 return;
 
-            string _value = Utils.GetValueOrDefault(colVals, f); //supplied value for this field
+            string _value = UtilityHelper.GetValueOrDefault(colVals, f); //supplied value for this field
 
             if (!string.IsNullOrEmpty(_value)) //if value is supplied
             {
@@ -741,7 +753,7 @@ namespace OpenWater2.DataAccess.Data.Repository
 
                 //if this field has another field which gets added to it (used for Date + Time fields)
                 if (!string.IsNullOrEmpty(_rules._addfield))
-                    _value = _value + " " + Utils.GetValueOrDefault(colVals, _rules._addfield);
+                    _value = _value + " " + UtilityHelper.GetValueOrDefault(colVals, _rules._addfield);
 
                 //strings: field length validation and substring 
                 if (_rules._datatype == "" && _rules._length != null)

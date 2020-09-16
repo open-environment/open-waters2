@@ -17,7 +17,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             _db = db;
         }
 
-        public string GetAppSetting(string settingName)
+        public string GetT_OE_APP_SETTING(string settingName)
         {
             return _db.TOeAppSettings.Where(x => x.SettingName == settingName).FirstOrDefault().SettingValue;
         }

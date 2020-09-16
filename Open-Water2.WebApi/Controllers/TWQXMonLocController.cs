@@ -36,9 +36,9 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
         [HttpGet("api/monloc/getWQXMonLoc")]
-        public IActionResult GetWQX_MONLOC([FromQuery]bool ActInd, string OrgID, bool? WQXPending)
+        public async Task<IActionResult> GetWQX_MONLOC([FromQuery]bool ActInd, string OrgID, bool? WQXPending)
         {
-            var result = _unitOfWork.tWqxMonLocRepository.GetWQX_MONLOC(ActInd, OrgID, WQXPending);
+            var result = await _unitOfWork.tWqxMonLocRepository.GetWQX_MONLOC(ActInd, OrgID, WQXPending);
             return Ok(result);
         }
         [HttpGet("api/monloc/GetTWQXMonLocPendingInd")]

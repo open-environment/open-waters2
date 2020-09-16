@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using SendGrid;
-
 using System.Net;
 using System.Net.Mail;
+using OpenWater2.DataAccess.Data.Repository.IRepository;
 
 namespace OpwnWater2.DataAccess
 {
@@ -14,7 +14,9 @@ namespace OpwnWater2.DataAccess
         /// <summary>
         ///  Sends out an email from the application. Returns true if successful.
         /// </summary>
-        public static bool SendGridEmail(string from, List<string> to, List<string> cc, List<string> bcc, string subj, string body, string smtpUser, string smtpUserPwd)
+        public static bool SendGridEmail(string from, List<string> to, 
+            List<string> cc, List<string> bcc, string subj, string body, 
+            string smtpUser, string smtpUserPwd, ITOeSysLogRepository sysLogRepo)
         {
             try
             {
@@ -62,11 +64,11 @@ namespace OpwnWater2.DataAccess
             catch (Exception ex)
             {
                 if (ex.InnerException != null)
-                    db_Ref.InsertT_OE_SYS_LOG("EMAIL ERR", ex.InnerException.ToString());
+                    sysLogRepo.InsertT_OE_SYS_LOG("EMAIL ERR", ex.InnerException.ToString());
                 else if (ex.Message != null)
-                    db_Ref.InsertT_OE_SYS_LOG("EMAIL ERR", ex.Message.ToString());
+                    sysLogRepo.InsertT_OE_SYS_LOG("EMAIL ERR", ex.Message.ToString());
                 else
-                    db_Ref.InsertT_OE_SYS_LOG("EMAIL ERR", "Unknown error");
+                    sysLogRepo.InsertT_OE_SYS_LOG("EMAIL ERR", "Unknown error");
 
                 return false;
 

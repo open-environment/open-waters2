@@ -13,9 +13,18 @@ namespace OpenWater2.DataAccess.Data.Repository
     public class TWqxActivityRepository : Repository<TWqxActivity>, ITWqxActivityRepository
     {
         private readonly ApplicationDbContext _db;
-        public TWqxActivityRepository(ApplicationDbContext db) : base(db)
+        private readonly ITWqxOrganizationRepository _orgRepo;
+        private readonly ITOeAppSettingsRepository _appSettingsRepo;
+        private readonly ITWqxRefDefaultTimeZoneRepository _timeZoneRepo;
+        public TWqxActivityRepository(ApplicationDbContext db,
+            ITWqxOrganizationRepository orgRepo,
+            ITOeAppSettingsRepository appSettingsRepo,
+            ITWqxRefDefaultTimeZoneRepository timeZoneRepo) : base(db)
         {
             _db = db;
+            _orgRepo = orgRepo;
+            _appSettingsRepo = appSettingsRepo;
+            _timeZoneRepo = timeZoneRepo;
         }
         public int DeleteT_WQX_ACTIVITY(int ActivityIDX, int userIdx)
         {
@@ -232,7 +241,9 @@ namespace OpenWater2.DataAccess.Data.Repository
                 if (aCT_TIME_ZONE != null) a.ActTimeZone = aCT_TIME_ZONE;
                 //put in Timezone if missing
                 if (a.ActTimeZone == null)
-                    a.ActTimeZone = OpewnWater2.DataAccess.Utils.GetWQXTimeZoneByDate(a.ActStartDt, oRG_ID);
+                    a.ActTimeZone = UtilityHelper.GetWQXTimeZoneByDate(
+                        a.ActStartDt, oRG_ID,
+                        _orgRepo, _appSettingsRepo, _timeZoneRepo);
 
                 if (rELATIVE_DEPTH_NAME != null) a.RelativeDepthName = rELATIVE_DEPTH_NAME;
                 if (aCT_DEPTHHEIGHT_MSR != null) a.ActDepthheightMsr = aCT_DEPTHHEIGHT_MSR;

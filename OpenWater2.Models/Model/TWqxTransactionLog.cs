@@ -15,5 +15,6 @@ namespace OpenWater2.Models.Model
         public string CdxSubmitTransid { get; set; }
         public string CdxSubmitStatus { get; set; }
         public string OrgId { get; set; }
+       
     }
 }

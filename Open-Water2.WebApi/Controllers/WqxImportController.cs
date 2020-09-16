@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Open_Water2.WebApi.Entities;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
+using OpenWater2.Models.Model;
 
 namespace Open_Water2.WebApi.Controllers
 {
@@ -103,5 +104,92 @@ namespace Open_Water2.WebApi.Controllers
             int result = _unitOfWork.tWqxImportTempSampleRepository.CancelProcessImportTempSample(model.userIdx);
             return Ok(result);
         }
+
+        // GET api/import/getWqxImportTemplate
+        [Route("api/import/getWqxImportTemplate")]
+        [HttpGet]
+        public IActionResult getWqxImportTemplate([FromQuery] string OrgID)
+        {
+            var result = _unitOfWork.tWqxImportTemplateRepository.GetWQX_IMPORT_TEMPLATE(OrgID);
+            return Ok(result);
+        }
+
+        // GET api/import/getWqxImportTemplateDtlDynamicByTemplateId
+        [Route("api/import/getWqxImportTemplateDtlDynamicByTemplateId")]
+        [HttpGet]
+        public IActionResult getWqxImportTemplateDtlDynamicByTemplateId([FromQuery] int TemplateID)
+        {
+            var result = _unitOfWork.tWqxImportTemplateDtlRepository.GetWQX_IMPORT_TEMPLATE_DTL_DynamicByTemplateID(TemplateID);
+            return Ok(result);
+        }
+
+        //// GET api/import/getWqxImportTemplateDtlDynamicByTemplateId
+        //[Route("api/import/getWqxImportTemplateDtlDynamicByTemplateId")]
+        //[HttpGet]
+        //public IActionResult getWqxImportTemplateDtlHardCodeByTemplateId([FromQuery] int TemplateID)
+        //{
+        //    var result = _unitOfWork.tWqxImportTemplateDtlRepository.GetWQX_IMPORT_TEMPLATE_DTL_DynamicByTemplateID(TemplateID);
+        //    return Ok(result);
+        //}
+
+        // DELETE api/import/deleteTWqxImportTemplate
+        [Route("api/import/deleteTWqxImportTemplate")]
+        [HttpDelete]
+        public IActionResult deleteTWqxImportTemplate([FromQuery] int TemplateID)
+        {
+            var result = _unitOfWork.tWqxImportTemplateRepository.DeleteT_WQX_IMPORT_TEMPLATE(TemplateID);
+            return Ok(result);
+        }
+
+        // GET api/import/getWqxImportTemplateDtlHarCodeByTemplateId
+        [Route("api/import/getWqxImportTemplateDtlHarCodeByTemplateId")]
+        [HttpGet]
+        public IActionResult getWqxImportTemplateDtlHarCodeByTemplateId([FromQuery] int TemplateID)
+        {
+            var result = _unitOfWork.tWqxImportTemplateDtlRepository.GetWQX_IMPORT_TEMPLATE_DTL_HardCodeByTemplateID(TemplateID);
+            return Ok(result);
+        }
+
+        // POST api/import/insertOrUpdateWqxImportTemplate
+        [Route("api/import/insertOrUpdateWqxImportTemplate")]
+        [HttpPost]
+        public IActionResult insertOrUpdateWqxImportTemplate([FromBody] TWqxImportTemplate wqxImportTemplate)
+        {
+            var result = _unitOfWork.tWqxImportTemplateRepository.
+                            InsertOrUpdateWQX_IMPORT_TEMPLATE(wqxImportTemplate.TemplateId,
+                                                                wqxImportTemplate.OrgId,
+                                                                wqxImportTemplate.TypeCd,
+                                                                wqxImportTemplate.TemplateName,
+                                                                wqxImportTemplate.CreateUserid);
+            return Ok(result);
+        }
+
+        // POST api/import/insertOrUpdateWqxImportTemplateDtl
+        [Route("api/import/insertOrUpdateWqxImportTemplateDtl")]
+        [HttpPost]
+        public IActionResult insertOrUpdateWqxImportTemplateDtl([FromBody] TWqxImportTemplateDtl wqxImportTemplateDtl)
+        {
+            var result = _unitOfWork.tWqxImportTemplateDtlRepository.
+                            InsertOrUpdateWQX_IMPORT_TEMPLATE_DTL(wqxImportTemplateDtl.TemplateDtlId,
+                                                                    wqxImportTemplateDtl.TemplateId,
+                                                                    wqxImportTemplateDtl.ColNum,
+                                                                    wqxImportTemplateDtl.FieldMap,
+                                                                    wqxImportTemplateDtl.CharName,
+                                                                    wqxImportTemplateDtl.CharDefaultUnit,
+                                                                    wqxImportTemplateDtl.CreateUserid,
+                                                                    wqxImportTemplateDtl.CharDefaultSampFraction);
+            return Ok(result);
+        }
+
+        // DELETE api/import/deleteTWqxImportTemplateDtl
+        [Route("api/import/deleteTWqxImportTemplateDtl")]
+        [HttpDelete]
+        public IActionResult deleteTWqxImportTemplateDtl([FromQuery] int TemplateDtlID)
+        {
+            var result = _unitOfWork.tWqxImportTemplateDtlRepository.DeleteT_WQX_IMPORT_TEMPLATE_DTL(TemplateDtlID);
+            return Ok(result);
+        }
+
     }
+
 }

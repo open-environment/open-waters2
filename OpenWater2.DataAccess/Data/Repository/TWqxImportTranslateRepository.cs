@@ -48,7 +48,18 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
 
         public void Update(TWqxImportTranslate wqxImportTranslate)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if(wqxImportTranslate != null)
+                {
+                    _db.TWqxImportTranslate.Update(wqxImportTranslate);
+                    _db.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

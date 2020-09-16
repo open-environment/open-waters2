@@ -3,6 +3,7 @@ using OpenWater2.Models.Model;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OpenWater2.DataAccess.Data.Repository.IRepository
 {
@@ -11,7 +12,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         IEnumerable<SelectListItem> GetTWqxMonLocForDropDown();
         void Update(TWqxMonloc wqxMonloc);
         public bool GetT_WQX_MONLOC_PendingInd(string OrgID);
-        public List<TWqxMonloc> GetWQX_MONLOC(bool ActInd, string OrgID, bool? WQXPending);
+        public Task<List<TWqxMonloc>> GetWQX_MONLOC(bool ActInd, string OrgID, bool? WQXPending);
         public int DeleteT_WQX_MONLOC(int monLocIDX, int userIdx);
         public int DeleteT_WQX_MONLOC(int monLocIDX, string UserID);
         public TWqxMonloc GetWQX_MONLOC_ByID(int monLocIDX);

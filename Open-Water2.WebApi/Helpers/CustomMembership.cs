@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Open_Water2.WebApi.Entities;
+using OpenWater2.DataAccess;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
-using OpewnWater2.DataAccess;
 using OpwnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -95,7 +95,7 @@ namespace Open_Water2.WebApi.Helpers
         public bool ChangePassword(string username, string oldPassword, string newPassword)
         {
             //validate new password length
-            if (!Utils.ValidateParameter(ref newPassword, true, true, false, 0, _MinRequiredPasswordLength))
+            if (!UtilityHelper.ValidateParameter(ref newPassword, true, true, false, 0, _MinRequiredPasswordLength))
                 return false;
 
             //Validate Non-AlphaNumeric characters
@@ -157,7 +157,10 @@ namespace Open_Water2.WebApi.Helpers
                 msg += "When you login for the first time you will be asked to set a permanent password.";
                 if (string.IsNullOrEmpty(u.Email))
                     return "User does not have email address.";
-                if (Utils.SendEmail(null, u.Email.Split(';').ToList(), null, null, "Open Waters Password Reset", msg, null))
+                if (UtilityHelper.SendEmail(null, u.Email.Split(';').ToList(), 
+                    null, null, "Open Waters Password Reset", 
+                    msg, null, _unitOfWork.oeAppSettingsRepository,
+                    _unitOfWork.tOeSysLogRepository))
                     return "Email has been sent.";
                 else
                     return "Error in sending email";
@@ -171,7 +174,7 @@ namespace Open_Water2.WebApi.Helpers
 
             //******************************** BEGIN VALIDATION ********************************************************
             //Validate Username Length
-            if (!Utils.ValidateParameter(ref username, true, true, true, 25))
+            if (!UtilityHelper.ValidateParameter(ref username, true, true, true, 25))
             {
                 status = MembershipCreateStatus.InvalidUserName;
                 return null;
@@ -186,7 +189,7 @@ namespace Open_Water2.WebApi.Helpers
                 return null;
             }
 
-            if (Utils.IsEmail(email) == false)
+            if (UtilityHelper.IsEmail(email) == false)
             {
                 status = MembershipCreateStatus.InvalidEmail;
                 return null;
@@ -234,11 +237,14 @@ namespace Open_Water2.WebApi.Helpers
                 string message = "Welcome to Open Waters. Open Waters allows you to manage your water quality data and synchronize it with EPA-WQX.  "
                     + "\r\n\r\n Your username is: " + username
                     + "\r\n\r\n You must activate your account by clicking the following link: "
-                    + "\r\n\r\n " + db_Ref.GetT_OE_APP_SETTING("Public App Path") + "Account/Verify.aspx?oauthcrd=" + encryptOauth
+                    + "\r\n\r\n " + _unitOfWork.oeAppSettingsRepository.GetT_OE_APP_SETTING("Public App Path") + "Account/Verify.aspx?oauthcrd=" + encryptOauth
                     + "\r\n\r\n After verifying your account you will be prompted to enter a permanent password.";
 
 
-                bool EmailStatus = Utils.SendEmail(null, email.Split(';').ToList(), null, null, "Confirm Your Open Waters Account", message, null);
+                bool EmailStatus = UtilityHelper.SendEmail(null, email.Split(';').ToList(), 
+                    null, null, "Confirm Your Open Waters Account", 
+                    message, null, _unitOfWork.oeAppSettingsRepository,
+                    _unitOfWork.tOeSysLogRepository);
                 if (EmailStatus == false)
                 {
                     status = MembershipCreateStatus.InvalidEmail;
@@ -249,13 +255,18 @@ namespace Open_Water2.WebApi.Helpers
 
                 //if enabled, send email to admin notifying of account creation
                 
-                if (_unitOfWork.oeAppSettingsRepository.GetAppSetting("Notify Register") == "Y")
+                if (_unitOfWork.oeAppSettingsRepository.GetT_OE_APP_SETTING("Notify Register") == "Y")
                 {
                     //T_OE_USERS adm = db_Accounts.GetT_OE_USERSInRole(2).FirstOrDefault();
                     TOeUsers adm = _unitOfWork.oeUsersRepostory.GetUserByRole(2).FirstOrDefault();
                     if (adm != null)
                     {
-                        Utils.SendEmail(null, adm.Email.Split(';').ToList(), null, null, "Notification: Open Waters Account", "An Open Waters account has just been created by " + username + " (" + email + ")", null);
+                        UtilityHelper.SendEmail(null, adm.Email.Split(';').ToList(), 
+                            null, null, "Notification: Open Waters Account", 
+                            "An Open Waters account has just been created by " + 
+                            username + " (" + email + ")", null,
+                            _unitOfWork.oeAppSettingsRepository,
+                            _unitOfWork.tOeSysLogRepository);
                     }
                 }
 
@@ -285,7 +296,7 @@ namespace Open_Water2.WebApi.Helpers
 
             //******************************** BEGIN VALIDATION ********************************************************
             //Validate Username Length
-            if (!Utils.ValidateParameter(ref username, true, true, true, 25))
+            if (!UtilityHelper.ValidateParameter(ref username, true, true, true, 25))
             {
                 status = MembershipCreateStatus.InvalidUserName;
                 return null;
@@ -300,7 +311,7 @@ namespace Open_Water2.WebApi.Helpers
                 return null;
             }
 
-            if (Utils.IsEmail(email) == false)
+            if (UtilityHelper.IsEmail(email) == false)
             {
                 status = MembershipCreateStatus.InvalidEmail;
                 return null;

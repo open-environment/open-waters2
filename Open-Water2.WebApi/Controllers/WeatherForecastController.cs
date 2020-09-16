@@ -31,7 +31,7 @@ namespace Open_Water2.WebApi.Controllers
         public ContentResult Get()
         {
             string configFilePath = _env.WebRootPath + @"\xml\ImportColumnsConfig.xml";
-            OpewnWater2.DataAccess.Utils.GetColumnMapping("", new string[1], configFilePath);
+            OpenWater2.DataAccess.UtilityHelper.GetColumnMapping("", new string[1], configFilePath);
             return Content(configFilePath);
         }
         //public IEnumerable<WeatherForecast> Get()

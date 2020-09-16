@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
-using OpewnWater2.DataAccess;
 using OpwnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -810,7 +809,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                      select c).FirstOrDefault();
 
                 if (vALUE != null) a.Value = vALUE;
-                if (tEXT != null) a.Text = Utils.SubStringPlus(tEXT, 0, 200);
+                if (tEXT != null) a.Text = UtilityHelper.SubStringPlus(tEXT, 0, 200);
                 a.UpdateDt = System.DateTime.Now;
                 a.ActInd = ActInd;
                 _db.SaveChanges();

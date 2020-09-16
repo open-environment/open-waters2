@@ -18,7 +18,7 @@ using System.Linq;
 using System.Xml.Linq;
 
 
-namespace OpewnWater2.DataAccess
+namespace OpenWater2.DataAccess
 {
     public class ConfigInfoType
     {
@@ -30,8 +30,9 @@ namespace OpewnWater2.DataAccess
         public string _addfield { get; set; }
     }
 
-    public static class Utils
+    public static class UtilityHelper
     {
+       
         public static bool ValidateParameter(ref string param, bool checkForNull, bool checkIfEmpty, bool checkForCommas, int maxSize)
         {
             if (param == null)
@@ -82,24 +83,29 @@ namespace OpewnWater2.DataAccess
         /// <summary>
         ///  Sends out an email from the application. Returns true if successful.
         /// </summary>
-        public static bool SendEmail(string from, List<string> to, List<string> cc, List<string> bcc, string subj, string body, string htmlBody)
+        public static bool SendEmail(string from, List<string> to, 
+            List<string> cc, List<string> bcc, string subj, 
+            string body, string htmlBody,
+            ITOeAppSettingsRepository appSettingsRepo,
+            ITOeSysLogRepository sysLogRepo)
         {
             try
             {
                 //************* GET SMTP SERVER SETTINGS ****************************
-                string mailServer = db_Ref.GetT_OE_APP_SETTING("Email Server");
-                string Port = db_Ref.GetT_OE_APP_SETTING("Email Port");
-                string smtpUser = db_Ref.GetT_OE_APP_SETTING("Email Secure User");
-                string smtpUserPwd = db_Ref.GetT_OE_APP_SETTING("Email Secure Pwd");
+                string mailServer = appSettingsRepo.GetT_OE_APP_SETTING("Email Server");
+                string Port = appSettingsRepo.GetT_OE_APP_SETTING("Email Port");
+                string smtpUser = appSettingsRepo.GetT_OE_APP_SETTING("Email Secure User");
+                string smtpUserPwd = appSettingsRepo.GetT_OE_APP_SETTING("Email Secure Pwd");
 
                 //*************SET MESSAGE SENDER*********************
                 if (from == null)
-                    from = db_Ref.GetT_OE_APP_SETTING("Email From");
+                    from = appSettingsRepo.GetT_OE_APP_SETTING("Email From");
 
                 //************** REROUTE TO SENDGRID HELPER IF SENDGRID ENABLED ******
                 if (mailServer == "smtp.sendgrid.net")
                 {
-                    SendGridHelper.SendGridEmail(from, to, cc, bcc, subj, body, smtpUser, smtpUserPwd);
+                    SendGridHelper.SendGridEmail(from, to, cc, bcc, subj, body, 
+                        smtpUser, smtpUserPwd, sysLogRepo);
                     return true;
                 }
 
@@ -151,11 +157,11 @@ namespace OpewnWater2.DataAccess
             catch (Exception ex)
             {
                 if (ex.InnerException != null)
-                    db_Ref.InsertT_OE_SYS_LOG("EMAIL ERR", ex.InnerException.ToString());
+                    sysLogRepo.InsertT_OE_SYS_LOG("EMAIL ERR", ex.InnerException.ToString());
                 else if (ex.Message != null)
-                    db_Ref.InsertT_OE_SYS_LOG("EMAIL ERR", ex.Message.ToString());
+                    sysLogRepo.InsertT_OE_SYS_LOG("EMAIL ERR", ex.Message.ToString());
                 else
-                    db_Ref.InsertT_OE_SYS_LOG("EMAIL ERR", "Unknown error");
+                    sysLogRepo.InsertT_OE_SYS_LOG("EMAIL ERR", "Unknown error");
 
                 return false;
             }
@@ -290,7 +296,11 @@ namespace OpewnWater2.DataAccess
         /// <param name="TimeZoneDaylightCode">WQX Daylight Savings Code</param>
         /// <returns></returns>
         //TODO: Handle session in core
-        public static string GetWQXTimeZoneByDate(DateTime dt, IHttpContextAccessor httpcontextaccessor)
+        public static string GetWQXTimeZoneByDate(DateTime dt, 
+            IHttpContextAccessor httpcontextaccessor,
+            ITWqxOrganizationRepository orgRepo,
+            ITOeAppSettingsRepository appSettingRepo,
+            ITWqxRefDefaultTimeZoneRepository timeZoneRepo)
         {
             try
             {
@@ -304,16 +314,16 @@ namespace OpewnWater2.DataAccess
                     //no default time zone found in session, need to retrieve from database
                     string TimeZoneID = "";
 
-                    TWqxOrganization org = db_WQX.GetWQX_ORGANIZATION_ByID(OrgID);
+                    TWqxOrganization org = orgRepo.GetWQX_ORGANIZATION_ByID(OrgID);
                     if (org != null)
                     {
                         if ((org.DefaultTimezone ?? "") != "")
                             TimeZoneID = org.DefaultTimezone;
                         else
-                            TimeZoneID = db_Ref.GetT_OE_APP_SETTING("Default Timezone");
+                            TimeZoneID = appSettingRepo.GetT_OE_APP_SETTING("Default Timezone");
                     }
 
-                    TWqxRefDefaultTimeZone tz = db_Ref.GetT_WQX_REF_DEFAULT_TIME_ZONE_ByName(TimeZoneID);
+                    TWqxRefDefaultTimeZone tz = timeZoneRepo.GetT_WQX_REF_DEFAULT_TIME_ZONE_ByName(TimeZoneID);
                     if (tz != null)
                     {
                         //HttpContext.Current.Session[OrgID + "_TZ"] = tz.OfficialTimeZoneName;
@@ -339,7 +349,10 @@ namespace OpewnWater2.DataAccess
                 return "";
             }
         }
-        public static string GetWQXTimeZoneByDate(DateTime dt, string OrgID)
+        public static string GetWQXTimeZoneByDate(DateTime dt, string OrgID,
+            ITWqxOrganizationRepository orgRepo,
+            ITOeAppSettingsRepository appSettingsRepo,
+            ITWqxRefDefaultTimeZoneRepository timeZoneRepo)
         {
             string OrgId_TZ = string.Empty;
             string OrgId_TZ_S = string.Empty;
@@ -351,16 +364,16 @@ namespace OpewnWater2.DataAccess
                     //no default time zone found in session, need to retrieve from database
                     string TimeZoneID = "";
 
-                    TWqxOrganization org = db_WQX.GetWQX_ORGANIZATION_ByID(OrgID);
+                    TWqxOrganization org = orgRepo.GetWQX_ORGANIZATION_ByID(OrgID);
                     if (org != null)
                     {
                         if ((org.DefaultTimezone ?? "") != "")
                             TimeZoneID = org.DefaultTimezone;
                         else
-                            TimeZoneID = db_Ref.GetT_OE_APP_SETTING("Default Timezone");
+                            TimeZoneID = appSettingsRepo.GetT_OE_APP_SETTING("Default Timezone");
                     }
 
-                    TWqxRefDefaultTimeZone tz = db_Ref.GetT_WQX_REF_DEFAULT_TIME_ZONE_ByName(TimeZoneID);
+                    TWqxRefDefaultTimeZone tz = timeZoneRepo.GetT_WQX_REF_DEFAULT_TIME_ZONE_ByName(TimeZoneID);
                     if (tz != null)
                     {
                         //HttpContext.Current.Session[OrgID + "_TZ"] = tz.OfficialTimeZoneName;
@@ -557,6 +570,7 @@ namespace OpewnWater2.DataAccess
                     {
                         _logger.LogInformation("Setting first OrgID to session vars..");
                         sessionVars.OrgID = os[0].OrgId;
+                        u.DefaultOrgId = os[0].OrgId;
 
                         //HttpContext.Current.Session["OrgID"] = os[0].OrgId; //added 1/6/2014
                     }
@@ -628,19 +642,22 @@ namespace OpewnWater2.DataAccess
             }
             return null;
         }
-        public static void PostLoginUser(string UserID, IHttpContextAccessor httpcontextaccessor)
+        public static void PostLoginUser(string UserID, 
+            IHttpContextAccessor httpcontextaccessor,
+            ITOeUsersRepository userRepo,
+            ITWqxUserOrgsRepository userOrgRepo)
         {
 
-            TOeUsers u = db_Accounts.GetT_OE_USERSByID(UserID);
+            TOeUsers u = userRepo.GetT_OE_USERSByID(UserID);
             if (u != null)
             {
                 //if user only belongs to 1 org, update the default org id
                 if (u.DefaultOrgId == null)
                 {
-                    List<TWqxOrganization> os = db_WQX.GetWQX_USER_ORGS_ByUserIDX(u.UserIdx, false);
+                    List<TWqxOrganization> os = userOrgRepo.GetWQX_USER_ORGS_ByUserIDX(u.UserIdx, false);
                     if (os.Count == 1)
                     {
-                        db_Accounts.UpdateT_OE_USERSDefaultOrg(u.UserIdx, os[0].OrgId);
+                        userRepo.UpdateT_OE_USERSDefaultOrg(u.UserIdx, os[0].OrgId);
                         httpcontextaccessor.HttpContext.Session.SetString("OrgID", os[0].OrgId);
                         //HttpContext.Current.Session["OrgID"] = os[0].OrgId; //added 1/6/2014
                     }
@@ -648,7 +665,7 @@ namespace OpewnWater2.DataAccess
 
                 if (u.InitalPwdFlag == false)
                 {
-                    db_Accounts.UpdateT_OE_USERS(u.UserIdx, null, null, null, null, null, null, null, null, System.DateTime.Now, null, null, "system");
+                    userRepo.UpdateT_OE_USERS(u.UserIdx, null, null, null, null, null, null, null, null, System.DateTime.Now, null, null, "system");
 
                     //set important session variables
                     httpcontextaccessor.HttpContext.Session.SetInt32("UserIDX", u.UserIdx);

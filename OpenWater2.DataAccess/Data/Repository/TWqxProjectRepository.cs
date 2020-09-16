@@ -19,7 +19,7 @@ namespace OpenWater2.DataAccess.Data.Repository
         public int DeleteT_WQX_PROJECT(int ProjectIDX, string UserID)
         {
             TWqxProject entityToDelete = _db.TWqxProject.Where(p => p.ProjectIdx == ProjectIDX).FirstOrDefault();
-            if(entityToDelete == null)
+            if(entityToDelete != null)
             {
                 _db.TWqxProject.Remove(entityToDelete);
                 _db.SaveChanges();

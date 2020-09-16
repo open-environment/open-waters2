@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using OpewnWater2.DataAccess;
 using OpwnWater2.DataAccess;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,13 +18,19 @@ namespace OpenWater2.DataAccess.Data.Repository
         private readonly ITWqxRefSampPrepRepository _refSampPrepRepo;
         private readonly ITWqxProjectRepository _projRepo;
         private readonly ITOeUsersRepository _userRepo;
+        private readonly ITWqxOrganizationRepository _orgRepo;
+        private readonly ITOeAppSettingsRepository _appSettingsRepo;
+        private readonly ITWqxRefDefaultTimeZoneRepository _timeZoneRepo;
         public TWqxImportTempSampleRepository(ApplicationDbContext db,
             ITWqxRefDataRepository refDataRepo,
             ITWqxMonLocRepository monlocRepo,
             ITWqxRefSampColMethodRepository refSampColMethodRepo,
             ITWqxRefSampPrepRepository refSampPrepRepo,
             ITWqxProjectRepository projRepo,
-            ITOeUsersRepository userRepo) : base(db)
+            ITOeUsersRepository userRepo,
+            ITWqxOrganizationRepository orgRepo,
+            ITOeAppSettingsRepository appSettingsRepo,
+            ITWqxRefDefaultTimeZoneRepository timeZoneRepo) : base(db)
         {
             _db = db;
             _refDataRepo = refDataRepo;
@@ -34,6 +39,9 @@ namespace OpenWater2.DataAccess.Data.Repository
             _refSampPrepRepo = refSampPrepRepo;
             _projRepo = projRepo;
             _userRepo = userRepo;
+            _orgRepo = orgRepo;
+            _appSettingsRepo = appSettingsRepo;
+            _timeZoneRepo = timeZoneRepo;
         }
 
         public int DeleteT_WQX_IMPORT_TEMP_SAMPLE(string userId)
@@ -182,7 +190,35 @@ namespace OpenWater2.DataAccess.Data.Repository
             return actResult;
         }
 
-        public int InsertOrUpdateWQX_IMPORT_TEMP_SAMPLE(int? tEMP_SAMPLE_IDX, string uSER_ID, string oRG_ID, int? pROJECT_IDX, string pROJECT_ID, int? mONLOC_IDX, string mONLOC_ID, int? aCTIVITY_IDX, string aCTIVITY_ID, string aCT_TYPE, string aCT_MEDIA, string aCT_SUBMEDIA, DateTime? aCT_START_DT, DateTime? aCT_END_DT, string aCT_TIME_ZONE, string rELATIVE_DEPTH_NAME, string aCT_DEPTHHEIGHT_MSR, string aCT_DEPTHHEIGHT_MSR_UNIT, string tOP_DEPTHHEIGHT_MSR, string tOP_DEPTHHEIGHT_MSR_UNIT, string bOT_DEPTHHEIGHT_MSR, string bOT_DEPTHHEIGHT_MSR_UNIT, string dEPTH_REF_POINT, string aCT_COMMENT, string bIO_ASSEMBLAGE_SAMPLED, string bIO_DURATION_MSR, string bIO_DURATION_MSR_UNIT, string bIO_SAMP_COMPONENT, int? bIO_SAMP_COMPONENT_SEQ, string bIO_REACH_LEN_MSR, string bIO_REACH_LEN_MSR_UNIT, string bIO_REACH_WID_MSR, string bIO_REACH_WID_MSR_UNIT, int? bIO_PASS_COUNT, string bIO_NET_TYPE, string bIO_NET_AREA_MSR, string bIO_NET_AREA_MSR_UNIT, string bIO_NET_MESHSIZE_MSR, string bIO_MESHSIZE_MSR_UNIT, string bIO_BOAT_SPEED_MSR, string bIO_BOAT_SPEED_MSR_UNIT, string bIO_CURR_SPEED_MSR, string bIO_CURR_SPEED_MSR_UNIT, string bIO_TOXICITY_TEST_TYPE, int? sAMP_COLL_METHOD_IDX, string sAMP_COLL_METHOD_ID, string sAMP_COLL_METHOD_CTX, string sAMP_COLL_METHOD_NAME, string sAMP_COLL_EQUIP, string sAMP_COLL_EQUIP_COMMENT, int? sAMP_PREP_IDX, string sAMP_PREP_ID, string sAMP_PREP_CTX, string sAMP_PREP_NAME, string sAMP_PREP_CONT_TYPE, string sAMP_PREP_CONT_COLOR, string sAMP_PREP_CHEM_PRESERV, string sAMP_PREP_THERM_PRESERV, string sAMP_PREP_STORAGE_DESC, string sTATUS_CD, string sTATUS_DESC, bool BioIndicator, bool autoImportRefDataInd)
+        public int InsertOrUpdateWQX_IMPORT_TEMP_SAMPLE(int? tEMP_SAMPLE_IDX, 
+            string uSER_ID, string oRG_ID, int? pROJECT_IDX, string pROJECT_ID, 
+            int? mONLOC_IDX, string mONLOC_ID, int? aCTIVITY_IDX, 
+            string aCTIVITY_ID, string aCT_TYPE, string aCT_MEDIA, 
+            string aCT_SUBMEDIA, DateTime? aCT_START_DT, DateTime? aCT_END_DT, 
+            string aCT_TIME_ZONE, string rELATIVE_DEPTH_NAME, 
+            string aCT_DEPTHHEIGHT_MSR, string aCT_DEPTHHEIGHT_MSR_UNIT, 
+            string tOP_DEPTHHEIGHT_MSR, string tOP_DEPTHHEIGHT_MSR_UNIT, 
+            string bOT_DEPTHHEIGHT_MSR, string bOT_DEPTHHEIGHT_MSR_UNIT, 
+            string dEPTH_REF_POINT, string aCT_COMMENT, 
+            string bIO_ASSEMBLAGE_SAMPLED, string bIO_DURATION_MSR, 
+            string bIO_DURATION_MSR_UNIT, string bIO_SAMP_COMPONENT, 
+            int? bIO_SAMP_COMPONENT_SEQ, string bIO_REACH_LEN_MSR, 
+            string bIO_REACH_LEN_MSR_UNIT, string bIO_REACH_WID_MSR, 
+            string bIO_REACH_WID_MSR_UNIT, int? bIO_PASS_COUNT, 
+            string bIO_NET_TYPE, string bIO_NET_AREA_MSR, 
+            string bIO_NET_AREA_MSR_UNIT, string bIO_NET_MESHSIZE_MSR, 
+            string bIO_MESHSIZE_MSR_UNIT, string bIO_BOAT_SPEED_MSR, 
+            string bIO_BOAT_SPEED_MSR_UNIT, string bIO_CURR_SPEED_MSR, 
+            string bIO_CURR_SPEED_MSR_UNIT, string bIO_TOXICITY_TEST_TYPE, 
+            int? sAMP_COLL_METHOD_IDX, string sAMP_COLL_METHOD_ID, 
+            string sAMP_COLL_METHOD_CTX, string sAMP_COLL_METHOD_NAME, 
+            string sAMP_COLL_EQUIP, string sAMP_COLL_EQUIP_COMMENT, 
+            int? sAMP_PREP_IDX, string sAMP_PREP_ID, string sAMP_PREP_CTX, 
+            string sAMP_PREP_NAME, string sAMP_PREP_CONT_TYPE, 
+            string sAMP_PREP_CONT_COLOR, string sAMP_PREP_CHEM_PRESERV, 
+            string sAMP_PREP_THERM_PRESERV, string sAMP_PREP_STORAGE_DESC, 
+            string sTATUS_CD, string sTATUS_DESC, bool BioIndicator, 
+            bool autoImportRefDataInd)
         {
             Boolean insInd = false;
 
@@ -299,7 +335,9 @@ namespace OpenWater2.DataAccess.Data.Repository
             else
             {
                 //put in Timezone if missing
-                a.ActTimeZone = Utils.GetWQXTimeZoneByDate(a.ActStartDt.ConvertOrDefault<DateTime>(), oRG_ID);
+                a.ActTimeZone = UtilityHelper.GetWQXTimeZoneByDate(
+                    a.ActStartDt.ConvertOrDefault<DateTime>(), oRG_ID,
+                    _orgRepo, _appSettingsRepo, _timeZoneRepo);
             }
 
 
@@ -633,7 +671,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                 bool insInd = false;
 
                 //******************* GET STARTING RECORD *************************************************
-                string _a = Utils.GetValueOrDefault(colVals, "ACTIVITY_ID");
+                string _a = UtilityHelper.GetValueOrDefault(colVals, "ACTIVITY_ID");
                 TWqxImportTempSample a = (from c in _db.TWqxImportTempSample
                                           where c.ActivityId == _a
                                               && c.OrgId == orgId
@@ -657,7 +695,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                 if (!string.IsNullOrEmpty(projectId)) a.ProjectId = projectId; else return 0;
 
                 //get import config rules
-                List<ConfigInfoType> _allRules = Utils.GetAllColumnInfo("S", configFilePath);
+                List<ConfigInfoType> _allRules = UtilityHelper.GetAllColumnInfo("S", configFilePath);
 
 
                 //validate mandatory fields
@@ -693,7 +731,9 @@ namespace OpenWater2.DataAccess.Data.Repository
 
                 //SET ACTIVITY TIMEZONE IF NOT SUPPLIED
                 if (string.IsNullOrEmpty(a.ActTimeZone))
-                    a.ActTimeZone = Utils.GetWQXTimeZoneByDate(a.ActStartDt.ConvertOrDefault<DateTime>(), orgId);
+                    a.ActTimeZone = UtilityHelper.GetWQXTimeZoneByDate(
+                        a.ActStartDt.ConvertOrDefault<DateTime>(), orgId,
+                        _orgRepo, _appSettingsRepo, _timeZoneRepo);
 
                 //special sampling collection method handling
                 if (a.SampCollMethodIdx != null)
@@ -811,7 +851,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             if (_rules == null)
                 return;
 
-            string _value = Utils.GetValueOrDefault(colVals, f); //supplied value for this field
+            string _value = UtilityHelper.GetValueOrDefault(colVals, f); //supplied value for this field
 
             if (!string.IsNullOrEmpty(_value)) //if value is supplied
             {
@@ -819,7 +859,7 @@ namespace OpenWater2.DataAccess.Data.Repository
 
                 //if this field has another field which gets added to it (used for Date + Time fields)
                 if (!string.IsNullOrEmpty(_rules._addfield))
-                    _value = _value + " " + Utils.GetValueOrDefault(colVals, _rules._addfield);
+                    _value = _value + " " + UtilityHelper.GetValueOrDefault(colVals, _rules._addfield);
 
                 //strings: field length validation and substring 
                 if (_rules._datatype == "" && _rules._length != null)

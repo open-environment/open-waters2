@@ -29,6 +29,17 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         ITWqxImportTemplateDtlRepository tWqxImportTemplateDtlRepository { get; }
         IWqxImportRepository wqxImportRepository { get;  }
         ITWqxImportLogRepository tWqxImportLogRepository { get; }
+        ITWqxImportTemplateRepository tWqxImportTemplateRepository { get;  }
+
+        ITWqxTransactionLogRepository tWqxTransactionLogRepository { get;  }
+        ITWqxPendingRecordsRepository tWqxPendingRecordsRepository { get;  }
+
+        IOeAppTasksRepository oeAppTasksRepository { get; }
+        ITOeSysLogRepository tOeSysLogRepository { get;  }
+
+        ITWqxSubmitRepository tWqxSubmitRepository { get;  }
+        
+        ITWqxRefDefaultTimeZoneRepository tWqxRefDefaultTimeZoneRepository { get; }
         void Save();
     }
 }

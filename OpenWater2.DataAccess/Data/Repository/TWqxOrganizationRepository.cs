@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using net.epacdxnode.test;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
 using OpwnWater2.DataAccess;
@@ -16,11 +17,17 @@ namespace OpenWater2.DataAccess.Data.Repository
     {
         private readonly ApplicationDbContext _db;
         private readonly ILogger _logger;
+        private readonly ITOeAppSettingsRepository _appSettingsRepo;
+        private readonly ITOeSysLogRepository _sysLogRepo;
         public TWqxOrganizationRepository(ApplicationDbContext db,
-            ILoggerFactory logFactory) : base(db)
+            ILoggerFactory logFactory,
+            ITOeAppSettingsRepository appSettingsRepo,
+            ITOeSysLogRepository sysLogRepo) : base(db)
         {
             _db = db;
             _logger = logFactory.CreateLogger<TWqxOrganizationRepository>();
+            _appSettingsRepo = appSettingsRepo;
+            _sysLogRepo = sysLogRepo;
         }
 
         public IEnumerable<SelectListItem> GetTWqxUserOrgsForDropDown()
@@ -300,15 +307,15 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
-        public ConnectTestResult ConnectTest(string orgID, string typ)
+        public async System.Threading.Tasks.Task<ConnectTestResult> ConnectTestAsync(string orgID, string typ)
         {
             ConnectTestResult connectTestResult = new ConnectTestResult();
             connectTestResult.typ = typ;
             try
             {
                 //AUTHENTICATION TEST*********************************************
-                CDXCredentials cred = WQXSubmit.GetCDXSubmitCredentials2(orgID);
-                string token = WQXSubmit.AuthHelper(cred.userID, cred.credential, "Password", "default", cred.NodeURL);
+                CDXCredentials cred = GetCDXSubmitCredentials2(orgID);
+                string token = await AuthHelperAsync(cred.userID, cred.credential, "Password", "default", cred.NodeURL).ConfigureAwait(false);
                 if (token.Length > 0)
                 {
                     //spnAuth.Attributes["class"] = "signup_header_check";
@@ -319,22 +326,27 @@ namespace OpenWater2.DataAccess.Data.Repository
                     connectTestResult.lblCDXSubmitInd = "This Organization is able to submit to EPA.";
 
                     //SUBMIT TEST*********************************************
-                    //List<net.epacdxnode.test.ParameterType> pars = new List<net.epacdxnode.test.ParameterType>();
+                    List<net.epacdxnode.test.ParameterType> pars = new List<net.epacdxnode.test.ParameterType>();
 
-                    //net.epacdxnode.test.ParameterType p = new net.epacdxnode.test.ParameterType();
-                    //p.parameterName = "organizationIdentifier";
-                    //p.Value = Session["OrgID"].ToString();
-                    //pars.Add(p);
+                    net.epacdxnode.test.ParameterType p = new net.epacdxnode.test.ParameterType();
+                    p.parameterName = "organizationIdentifier";
+                    p.Value = orgID;
+                    pars.Add(p);
 
-                    //net.epacdxnode.test.ParameterType p2 = new net.epacdxnode.test.ParameterType();
-                    //p2.parameterName = "monitoringLocationIdentifier";
-                    //p2.Value = "";
-                    //pars.Add(p2);
+                    net.epacdxnode.test.ParameterType p2 = new net.epacdxnode.test.ParameterType();
+                    p2.parameterName = "monitoringLocationIdentifier";
+                    p2.Value = "";
+                    pars.Add(p2);
 
-                    //OpenEnvironment.net.epacdxnode.test.ResultSetType rs = WQXSubmit.QueryHelper(cred.NodeURL, token, "WQX", "WQX.GetMonitoringLocationByParameters_v2.1", null, null, pars);
+                    //OpenEnvironment.net.epacdxnode.test.ResultSetType rs = 
+                    //WQXSubmit.QueryHelper(cred.NodeURL, token, "WQX", "WQX.GetMonitoringLocationByParameters_v2.1", null, null, pars);
 
+                    var result = await QueryHelperAsync(cred.NodeURL, token, "WQX",
+                        "WQX.GetMonitoringLocationByParameters_v2.1",
+                        null, null, pars).ConfigureAwait(false);
+                    
                     //if (rs.rowId == "-99")
-                    if (1 == 1)
+                    if (result.rowId == "-99")
                     {
                         //THE NAAS ACCOUNT DOES NOT HAVE RIGHTS TO SUBMIT FOR THIS ORGANIZATION*********************************************
                         //spnSubmit.Attributes["class"] = "signup_header_cross";
@@ -436,6 +448,146 @@ namespace OpenWater2.DataAccess.Data.Repository
             catch (Exception ex)
             {
                 throw ex;
+            }
+        }
+
+        public List<string> GetWQX_ORGANIZATION_PendingDataToSubmit()
+        {
+            try
+            {
+                var x = (from m in _db.TWqxMonloc
+                         join o in _db.TWqxOrganization on m.OrgId equals o.OrgId
+                         where o.CdxSubmitInd == true
+                         && m.WqxSubmitStatus == "U"
+                         && m.WqxInd == true
+                         select m.OrgId).Union
+                         (from a in _db.TWqxActivity
+                          join o in _db.TWqxOrganization on a.OrgId equals o.OrgId
+                          where o.CdxSubmitInd == true
+                          && a.WqxSubmitStatus == "U"
+                          && a.WqxInd == true
+                          select a.OrgId).Union
+                          (from p in _db.TWqxProject
+                           join o in _db.TWqxOrganization on p.OrgId equals o.OrgId
+                           where o.CdxSubmitInd == true
+                           && p.WqxSubmitStatus == "U"
+                           && p.WqxInd == true
+                           select p.OrgId);
+
+                return x.Distinct().ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        //TODO: duplicate code
+        private CDXCredentials GetCDXSubmitCredentials2(string OrgID)
+        {
+            //production
+            //    NodeURL = "https://cdxnodengn.epa.gov/ngn-enws20/services/NetworkNode2ServiceConditionalMTOM"; //new 2.1
+            //    NodeURL = "https://cdxnodengn.epa.gov/ngn-enws20/services/NetworkNode2Service"; //new 2.0
+            //test
+            //    NodeURL = "https://testngn.epacdxnode.net/ngn-enws20/services/NetworkNode2ServiceConditionalMTOM"; //new 2.1
+            //    NodeURL = "https://testngn.epacdxnode.net/ngn-enws20/services/NetworkNode2Service";  //new 2.0
+            //    NodeURL = "https://test.epacdxnode.net/cdx-enws20/services/NetworkNode2ConditionalMtom"; //old 2.1
+
+            var cred = new CDXCredentials();
+            try
+            {
+                cred.NodeURL = _appSettingsRepo.GetT_OE_APP_SETTING("CDX Submission URL");
+
+                TWqxOrganization org = GetWQX_ORGANIZATION_ByID(OrgID);
+                if (org != null)
+                {
+                    if (string.IsNullOrEmpty(org.CdxSubmitterId) == false && string.IsNullOrEmpty(org.CdxSubmitterPwdHash) == false)
+                    {
+                        cred.userID = org.CdxSubmitterId;
+                        cred.credential = new SimpleAES().Decrypt(System.Web.HttpUtility.UrlDecode(org.CdxSubmitterPwdHash).Replace(" ", "+"));
+                    }
+                    else
+                    {
+                        cred.userID = _appSettingsRepo.GetT_OE_APP_SETTING("CDX Submitter");
+                        cred.credential = _appSettingsRepo.GetT_OE_APP_SETTING("CDX Submitter Password");
+                    }
+                }
+            }
+            catch { }
+
+            return cred;
+        }
+        internal async System.Threading.Tasks.Task<string> AuthHelperAsync(string userID, string credential, string authMethod, string domain, string NodeURL)
+        {
+            NetworkNodePortType2Client.EndpointConfiguration endpoint =
+                new NetworkNodePortType2Client.EndpointConfiguration();
+
+            NetworkNodePortType2Client nn =
+                new NetworkNodePortType2Client(endpoint, NodeURL);
+            //nn.Url = NodeURL;
+            Authenticate auth1 = new Authenticate();
+            auth1.userId = userID;
+            auth1.credential = credential;
+            auth1.authenticationMethod = authMethod;
+            auth1.domain = domain;
+            try
+            {
+                AuthenticateResponse1 resp = await nn.AuthenticateAsync(auth1).ConfigureAwait(false);
+                return resp.AuthenticateResponse.securityToken;
+            }
+            catch (javax.xml.soap.SOAPException sExept)
+            {
+                _sysLogRepo.InsertT_OE_SYS_LOG("ERROR", sExept.Message.Substring(0, 1999));   //logging an authentication failure
+                return "";
+            }
+        }
+        internal async System.Threading.Tasks.Task<ResultSetType> QueryHelperAsync(string NodeURL, string secToken, string dataFlow, string request, int? rowID, int? maxRows, List<ParameterType> pars)
+        {
+            try
+            {
+                NetworkNodePortType2Client.EndpointConfiguration endpoint = new
+                     NetworkNodePortType2Client.EndpointConfiguration();
+                NetworkNodePortType2Client nn = new 
+                    NetworkNodePortType2Client(endpoint, NodeURL);
+                //NetworkNode2 nn = new NetworkNode2();
+                //nn.Url = NodeURL;
+                //nn.SoapVersion = SoapProtocolVersion.Soap12;
+
+                Query q1 = new Query();
+                q1.securityToken = secToken;
+                q1.dataflow = dataFlow;
+                q1.request = request;
+                q1.rowId = (rowID ?? 0).ToString();
+                q1.maxRows = (maxRows ?? -1).ToString();
+
+                ParameterType[] ps = new ParameterType[pars.Count];
+                int i = 0;
+                System.Xml.XmlQualifiedName parType = new System.Xml.XmlQualifiedName("string", "http://www.w3.org/2001/XMLSchema");
+                foreach (ParameterType par in pars)
+                {
+                    if (par.parameterEncoding == null) par.parameterEncoding = EncodingType.None;
+                    ps[i] = par;
+                    i++;
+                }
+
+                q1.parameters = ps;
+                var result = await nn.QueryAsync(q1).ConfigureAwait(false);
+                return result.QueryResponse1;
+                //return nn.Query(q1);
+            }
+            catch (javax.xml.soap.SOAPException sExept)
+            {
+                _sysLogRepo.InsertT_OE_SYS_LOG("ERROR", sExept.Message.SubStringPlus(0, 1999));   //logging an authentication failure
+
+                //special handling of an unauthorized
+                if (sExept.Message.SubStringPlus(0, 9) == "ORA-20997")
+                {
+                    ResultSetType rs = new ResultSetType();
+                    rs.rowId = "-99";
+                    return rs;
+                }
+
+                return null;
             }
         }
     }

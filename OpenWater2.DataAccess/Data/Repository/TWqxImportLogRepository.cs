@@ -14,6 +14,37 @@ namespace OpenWater2.DataAccess.Data.Repository
         {
             _db = db;
         }
+
+        public TWqxImportLog GetWQX_IMPORT_LOG_NewActivity()
+        {
+            try
+            {
+                return (from i in _db.TWqxImportLog
+                        where i.ImportStatus == "New"
+                        && i.TypeCd == "Sample"
+                        select i).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public int GetWQX_IMPORT_LOG_ProcessingCount()
+        {
+            try
+            {
+                return (from i in _db.TWqxImportLog
+                        where i.ImportStatus == "Processing"
+                        && i.TypeCd == "Sample"
+                        select i).Count();
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+
         public int InsertUpdateWQX_IMPORT_LOG(int? importId, string orgId, string typeCd, string fileName, int fileSize, string importStatus, string importProgress, string importProgressMessage, byte[] importFile, string userId)
         {
             try

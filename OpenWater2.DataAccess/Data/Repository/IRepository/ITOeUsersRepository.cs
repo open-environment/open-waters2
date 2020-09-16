@@ -15,5 +15,6 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         List<TOeUsers> GetUserByRole(int RoleID);
         public int UpdateT_OE_USERS(int idx, string newPWD_HASH, string newPWD_SALT, string newFNAME, string newLNAME, string newEMAIL, bool? newACT_IND, bool? newINIT_PWD_FLG, DateTime? newEFF_DATE, DateTime? newLAST_LOGIN_DT, string newPHONE, string newPHONE_EXT, string newMODIFY_USR);
         public TOeUsers GetT_VCCB_USERByEmail(string email);
+        public int UpdateT_OE_USERSDefaultOrg(int idx, string defaultOrgId);
     }
 }

@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.IO;
 
-namespace OpwnWater2.DataAccess
+namespace OpenWater2.DataAccess
 {
     public class SimpleAES
     {

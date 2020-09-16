@@ -1,6 +1,5 @@
 ﻿using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
-using OpewnWater2.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -137,7 +136,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                             //**********************************************************
                             //HEADER ROW - LOGIC TO DETERMINE WHAT IS IN EACH COLUMN
                             //**********************************************************
-                            colMapping = Utils.GetColumnMapping(importType, cols, configFilePath);
+                            colMapping = UtilityHelper.GetColumnMapping(importType, cols, configFilePath);
 
                             headInd = false;
                         }
@@ -175,7 +174,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                                 {
                                     int _r = _tempResultRepo.InsertWQX_IMPORT_TEMP_RESULT_New(_s, fieldValuesDict, OrgID, configFilePath);
                                     if (_r == 0)
-                                        _tempSampleRepo.InsertOrUpdateWQX_IMPORT_TEMP_SAMPLE_Status(_s, "F", "Unable to validate result [" + Utils.GetValueOrDefault(fieldValuesDict, "CHAR_NAME") + "]. Contact admin.");
+                                        _tempSampleRepo.InsertOrUpdateWQX_IMPORT_TEMP_SAMPLE_Status(_s, "F", "Unable to validate result [" + UtilityHelper.GetValueOrDefault(fieldValuesDict, "CHAR_NAME") + "]. Contact admin.");
                                 }
                             }
                         }
