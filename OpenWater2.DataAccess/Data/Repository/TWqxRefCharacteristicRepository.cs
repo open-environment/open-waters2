@@ -39,6 +39,7 @@ namespace OpenWater2.DataAccess.Data.Repository
         {
             try
             {
+                if (string.IsNullOrEmpty(CharName)) return false;
                 string SampFrac = (from a in _db.TWqxRefCharacteristic
                                    where (a.ActInd == true)
                                    && a.CharName == CharName

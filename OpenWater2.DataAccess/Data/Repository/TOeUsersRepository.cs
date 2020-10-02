@@ -76,24 +76,26 @@ namespace OpenWater2.DataAccess.Data.Repository
 
         public void Update(TOeUsers oeUsers)
         {
-            TOeUsers objFromDb = _db.TOeUsers.Where(x => x.UserIdx == oeUsers.UserIdx).FirstOrDefault();
-            objFromDb.UserIdx = oeUsers.UserIdx;
-            objFromDb.UserId = oeUsers.UserId;
-            objFromDb.PwdHash = oeUsers.PwdHash;
-            objFromDb.PwdSalt = oeUsers.PwdSalt;
-            objFromDb.Fname = oeUsers.Fname;
-            objFromDb.Lname = oeUsers.Lname;
-            objFromDb.Email = oeUsers.Email;
-            objFromDb.InitalPwdFlag = oeUsers.InitalPwdFlag;
-            objFromDb.EffectiveDt = oeUsers.EffectiveDt;
-            objFromDb.LastloginDt = oeUsers.LastloginDt;
-            objFromDb.Phone = oeUsers.Phone;
-            objFromDb.PhoneExt = oeUsers.PhoneExt;
-            objFromDb.DefaultOrgId = oeUsers.DefaultOrgId;
-            objFromDb.ActInd = oeUsers.ActInd;
-            objFromDb.ModifyUserid = oeUsers.ModifyUserid;
-            objFromDb.ModifyDt = oeUsers.ModifyDt;
-            _db.TOeUsers.Update(objFromDb);
+            _db.TOeUsers.Update(oeUsers);
+            _db.SaveChanges();
+            //TOeUsers objFromDb = _db.TOeUsers.Where(x => x.UserIdx == oeUsers.UserIdx).FirstOrDefault();
+            //objFromDb.UserIdx = oeUsers.UserIdx;
+            //objFromDb.UserId = oeUsers.UserId;
+            //objFromDb.PwdHash = oeUsers.PwdHash;
+            //objFromDb.PwdSalt = oeUsers.PwdSalt;
+            //objFromDb.Fname = oeUsers.Fname;
+            //objFromDb.Lname = oeUsers.Lname;
+            //objFromDb.Email = oeUsers.Email;
+            //objFromDb.InitalPwdFlag = oeUsers.InitalPwdFlag;
+            //objFromDb.EffectiveDt = oeUsers.EffectiveDt;
+            //objFromDb.LastloginDt = oeUsers.LastloginDt;
+            //objFromDb.Phone = oeUsers.Phone;
+            //objFromDb.PhoneExt = oeUsers.PhoneExt;
+            //objFromDb.DefaultOrgId = oeUsers.DefaultOrgId;
+            //objFromDb.ActInd = oeUsers.ActInd;
+            //objFromDb.ModifyUserid = oeUsers.ModifyUserid;
+            //objFromDb.ModifyDt = oeUsers.ModifyDt;
+            //_db.TOeUsers.Update(objFromDb);
         }
 
         public int UpdateT_OE_USERS(int idx, string newPWD_HASH, string newPWD_SALT, string newFNAME, string newLNAME, string newEMAIL, bool? newACT_IND, bool? newINIT_PWD_FLG, DateTime? newEFF_DATE, DateTime? newLAST_LOGIN_DT, string newPHONE, string newPHONE_EXT, string newMODIFY_USR)

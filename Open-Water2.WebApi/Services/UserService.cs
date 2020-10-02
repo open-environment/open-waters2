@@ -114,7 +114,7 @@ namespace Open_Water2.WebApi.Services
                     _logger.LogInformation("3...");
                     SessionVars sessionVars = UtilityHelper.GetPostLoginUserByUserIdx(user.UserIdx, _unitOfWork, _env, _logger);
                     if (sessionVars == null) isAddSessionVars = false;
-                    var orgDisplayType = dbUser.orgUsers.Where(ou => ou.ORG_ID == sessionVars.OrgID).FirstOrDefault();
+                    var orgDisplayType = dbUser.orgUsers.Where(ou => ou.OrgUserClientDisplay[0].ORG_CLIENT_ALIAS == sessionVars.OrgID).FirstOrDefault();
                     //if (orgDisplayType == null) isAddOrgId = false;
                     var tokenDescriptor = new SecurityTokenDescriptor();
                     System.Security.Claims.ClaimsIdentity Subject = new System.Security.Claims.ClaimsIdentity();

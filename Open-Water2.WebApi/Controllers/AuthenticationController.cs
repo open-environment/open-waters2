@@ -139,6 +139,148 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(actResult);
         }
         [AllowAnonymous]
+        [HttpPost("api/auth/CheckUserExist")]
+        public IActionResult CheckUserExist([FromBody] CheckUserExistModel payload)
+        {
+            ExtLoginUser actResult = null;
+            TOeUsers user = _unitOfWork.oeUsersRepostory.GetT_VCCB_USERByEmail(payload.email);
+            if (user != null)
+            {
+                _logger.LogInformation("User with given username found...");
+                actResult = new ExtLoginUser()
+                {
+                    userexist = true,
+                    username = user.Fname,
+                    useridx = user.UserIdx,
+                };
+            }
+            else
+            {
+                _logger.LogInformation("User with given username does not exist...");
+                actResult = new ExtLoginUser();
+                // Create New User
+                string firstname = payload.open_waters[0].Split(";")[3];
+                if (string.IsNullOrEmpty(firstname)) firstname = Helpers.HelperUtils.RandomString(10);
+                string lastname = Helpers.HelperUtils.RandomString(10);
+                string role = "user";
+                foreach (string s in payload.open_waters)
+                {
+                    if (s.Split(";")[1] == "True")
+                    {
+                        role = "admin";
+                        break;
+                    }
+                }
+                MembershipCreateStatus status;
+                CustomMembership c = new CustomMembership(_unitOfWork);
+                _logger.LogInformation("Creating new user...");
+                User u = c.ExtCreateUser(Helpers.HelperUtils.RandomString(24), "", payload.email, firstname, lastname, role, null, null, true, null, out status);
+                if(status == MembershipCreateStatus.Success)
+                {
+                    foreach (string s in payload.open_waters)
+                    {
+                        string orgAlias = s.Split(";")[0];
+                        string orgName = s.Split(";")[4];
+                        if (!String.IsNullOrEmpty(orgAlias))
+                        {
+                            TWqxOrganization o = _unitOfWork.wqxOrganizationRepository.GetWQX_ORGANIZATION_ByID(orgAlias);
+                            if (o == null)
+                            {
+                                int isOrgAdded = _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATION(orgAlias, orgName);
+                                if (isOrgAdded == 1)
+                                {
+                                    _logger.LogInformation("New organization added..." + orgName);
+
+                                    //Add User-Org relation
+                                    //Get all organizations for the user
+                                    List<TWqxOrganization> orgs = _unitOfWork.UserOrgsRepository.GetWQX_USER_ORGS_ByUserIDX(u.UserIdx == null ? 0 : (int)u.UserIdx, false);
+                                    //Check if current organization is in the list
+                                    var org = orgs.Where(o => o.OrgId == orgAlias).FirstOrDefault();
+                                    if (org == null)
+                                    {
+                                        //If not, add new organization relation
+                                        _unitOfWork.UserOrgsRepository.InsertT_WQX_USER_ORGS(orgAlias, u.UserIdx == null ? 0 : (int)u.UserIdx, "U");
+                                        _logger.LogInformation("User-Organization relation is added...");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                _logger.LogInformation("Organization is already added...add user-org relation" + orgName);
+
+                                //Add User-Org relation
+                                //Get all organizations for the user
+                                List<TWqxOrganization> orgs = _unitOfWork.UserOrgsRepository.GetWQX_USER_ORGS_ByUserIDX(u.UserIdx == null ? 0 : (int)u.UserIdx, false);
+                                //Check if current organization is in the list
+                                var org = orgs.Where(o => o.OrgId == orgAlias).FirstOrDefault();
+                                if (org == null)
+                                {
+                                    //If not, add new organization relation
+                                    _unitOfWork.UserOrgsRepository.InsertT_WQX_USER_ORGS(orgAlias, u.UserIdx == null ? 0 : (int)u.UserIdx, "U");
+                                    _logger.LogInformation("User-Organization relation is added...");
+                                }
+                            }
+                        }
+                    }
+                    if (payload.open_waters.Count > 0)
+                    {
+                        _logger.LogInformation("Set default organization...");
+                        var DefaultOrgId = payload.open_waters[0].Split(";")[0];
+                        var _user = _unitOfWork.oeUsersRepostory.GetT_OE_USERSByIDX(u.UserIdx == null ? 0 : (int)u.UserIdx);
+                        if (u != null)
+                        {
+                            _user.DefaultOrgId = DefaultOrgId;
+                            _unitOfWork.oeUsersRepostory.Update(_user);
+                        }
+                    }
+                    actResult.userexist = true;
+                    actResult.useridx = Convert.ToInt32(u.UserIdx);
+                    actResult.username = u.FirstName;
+                    actResult.errMsg = "";
+                }
+                else
+                {
+                    actResult.userexist = false;
+                    actResult.errMsg = "User could not be synced!";
+                }
+            }
+            //string pl = System.Web.HttpUtility.UrlDecode(payload);
+            //_logger.LogInformation("Decoded payload: " + pl);
+            //byte[] decodedBytes = Convert.FromBase64String(pl);
+            //string plStr = System.Text.Encoding.Unicode.GetString(decodedBytes);
+            //_logger.LogInformation("Payload converted from Base64: " + plStr);
+            //var plParts = plStr.Split("###");
+            //var userName = plParts[0];
+            //var encryptedPassword = plParts[1];
+            //var userid = plParts[2];
+            //var decreptedPassword = Helpers.HelperUtils.Decrypt(encryptedPassword);
+            //_logger.LogInformation(String.Format("Payload splitted: [username: {0}] [decreptedPassword:{1}] [userid:{2}] ", userName, decreptedPassword, userid));
+            ////check if user exist
+            //TOeUsers user = _unitOfWork.oeUsersRepostory.GetT_VCCB_USERByEmail(userName);
+            //if (user != null)
+            //{
+            //    _logger.LogInformation("User with given username found...");
+            //    actResult = new ExtLoginUser
+            //    {
+            //        userexist = true,
+            //        username = userName,
+            //        password = decreptedPassword,
+            //        useridx = user.UserIdx,
+            //    };
+            //}
+            //else
+            //{
+            //    _logger.LogInformation("User with given username does not exist...");
+            //    actResult = new ExtLoginUser
+            //    {
+            //        userexist = false,
+            //        userid = userid,
+            //    };
+            //}
+            //_logger.LogInformation("Returning Result...");
+            return Ok(actResult);
+        }
+        [AllowAnonymous]
         [HttpGet("api/auth/CreateAndGetNewUserData")]
         public IActionResult CreateAndGetNewUserData([FromQuery] string userid)
         {
@@ -175,13 +317,33 @@ namespace Open_Water2.WebApi.Controllers
                     _logger.LogInformation("Sync organizations...");
                     foreach (var orgUser in jWTLoginModel.orgUsers)
                     {
-                        TWqxOrganization o = _unitOfWork.wqxOrganizationRepository.GetWQX_ORGANIZATION_ByID(orgUser.ORG_ID);
-                        if (o == null)
+                        string orgAlias = orgUser.OrgUserClientDisplay[0].ORG_CLIENT_ALIAS;
+                        if (!String.IsNullOrEmpty(orgAlias))
                         {
-                            int isOrgAdded = _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATION(orgUser.ORG_ID, orgUser.ORG_NAME);
-                            if (isOrgAdded == 1)
+                            TWqxOrganization o = _unitOfWork.wqxOrganizationRepository.GetWQX_ORGANIZATION_ByID(orgAlias);
+                            if (o == null)
                             {
-                                _logger.LogInformation("New organization added..." + orgUser.ORG_NAME);
+                                int isOrgAdded = _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATION(orgAlias, orgUser.ORG_NAME);
+                                if (isOrgAdded == 1)
+                                {
+                                    _logger.LogInformation("New organization added..." + orgUser.ORG_NAME);
+
+                                    //Add User-Org relation
+                                    //Get all organizations for the user
+                                    List<TWqxOrganization> orgs = _unitOfWork.UserOrgsRepository.GetWQX_USER_ORGS_ByUserIDX(u.UserIdx == null ? 0 : (int)u.UserIdx, false);
+                                    //Check if current organization is in the list
+                                    var org = orgs.Where(o => o.OrgId == orgAlias).FirstOrDefault();
+                                    if (org == null)
+                                    {
+                                        //If not, add new organization relation
+                                        _unitOfWork.UserOrgsRepository.InsertT_WQX_USER_ORGS(orgAlias, u.UserIdx == null ? 0 : (int)u.UserIdx, "U");
+                                        _logger.LogInformation("User-Organization relation is added...");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                _logger.LogInformation("Organization is already added...add user-org relation" + orgUser.ORG_NAME);
 
                                 //Add User-Org relation
                                 //Get all organizations for the user
@@ -196,11 +358,15 @@ namespace Open_Water2.WebApi.Controllers
                                 }
                             }
                         }
+                        else
+                        {
+                            _logger.LogInformation("User-Organization relation - orgAlias null for: " + orgUser.ORG_ID);
+                        }
                     }
                     if (jWTLoginModel.orgUsers.Count > 0)
                     {
                         _logger.LogInformation("Set default organization...");
-                        var DefaultOrgId = jWTLoginModel.orgUsers[0].ORG_ID;
+                        var DefaultOrgId = jWTLoginModel.orgUsers[0].OrgUserClientDisplay[0].ORG_CLIENT_ALIAS;
                         var _user = _unitOfWork.oeUsersRepostory.GetT_OE_USERSByIDX(u.UserIdx == null ? 0 : (int)u.UserIdx);
                         if (u != null)
                         {
@@ -220,6 +386,13 @@ namespace Open_Water2.WebApi.Controllers
             _logger.LogInformation("Something went wrong...User sync failed...");
             actResult.errMsg = "User sync failed...";
             return Ok(actResult);
+        }
+              
+        public class CheckUserExistModel
+        {
+            public string userid { get; set; }
+            public string email { get; set; }
+            public List<string> open_waters { get; set; }
         }
         public class LoginAuthParams
         {

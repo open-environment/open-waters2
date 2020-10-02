@@ -14,5 +14,7 @@ namespace Open_Water2.WebApi.Entities
         public string STATUS_IND { get; set; }
         public string ORG_NAME { get; set; }
         public string USER_NAME { get; set; }
+
+        public List<OrgUserClientShortDisplayType> OrgUserClientDisplay { get; set; }
     }
 }

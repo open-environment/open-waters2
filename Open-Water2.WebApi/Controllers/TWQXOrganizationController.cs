@@ -11,7 +11,7 @@ using OpenWater2.Models.Model;
 
 namespace Open_Water2.WebApi.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "ApiReader")]
     [ApiController]
     public class TWQXOrganizationController : Controller
     {
@@ -65,6 +65,11 @@ namespace Open_Water2.WebApi.Controllers
             string cDX_SUBMITTER_PWD, bool? cDX_SUBMIT_IND, string dEFAULT_TIMEZONE, string cREATE_USER = "system", string mAIL_ADDRESS = null,
             string mAIL_ADD_CITY = null, string mAIL_ADD_STATE = null, string mAIL_ADD_ZIP = null)
         {
+            if (cDX_SUBMITTER_ID == null)
+            {
+                cDX_SUBMITTER_ID = "";
+                cDX_SUBMITTER_PWD = "--------";
+            }
             var result = _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATION(oRG_ID, oRG_NAME, oRG_DESC, tRIBAL_CODE, eLECTRONIC_ADDRESS,
             eLECTRONICADDRESSTYPE, tELEPHONE_NUM, tELEPHONE_NUM_TYPE, TELEPHONE_EXT, cDX_SUBMITTER_ID,
             cDX_SUBMITTER_PWD, cDX_SUBMIT_IND, dEFAULT_TIMEZONE, cREATE_USER, mAIL_ADDRESS,

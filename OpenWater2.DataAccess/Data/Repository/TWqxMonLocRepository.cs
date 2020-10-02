@@ -3,6 +3,7 @@ using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -150,11 +151,13 @@ namespace OpenWater2.DataAccess.Data.Repository
                 if (mONLOC_ID != null) a.MonlocId = mONLOC_ID;
                 if (mONLOC_NAME != null) a.MonlocName = mONLOC_NAME;
                 if (mONLOC_TYPE != null) a.MonlocType = mONLOC_TYPE;
+
                 if (mONLOC_DESC != null) a.MonlocDesc = mONLOC_DESC;
                 if (hUC_EIGHT != null) a.HucEight = hUC_EIGHT;
                 if (HUC_TWELVE != null) a.HucTwelve = HUC_TWELVE;
                 if (tRIBAL_LAND_IND != null) a.TribalLandInd = tRIBAL_LAND_IND;
                 if (tRIBAL_LAND_NAME != null) a.TribalLandName = tRIBAL_LAND_NAME;
+
                 if (lATITUDE_MSR != null) a.LatitudeMsr = lATITUDE_MSR;
                 if (lONGITUDE_MSR != null) a.LongitudeMsr = lONGITUDE_MSR;
                 if (sOURCE_MAP_SCALE != null) a.SourceMapScale = sOURCE_MAP_SCALE;
@@ -194,6 +197,28 @@ namespace OpenWater2.DataAccess.Data.Repository
                 _db.SaveChanges();
 
                 return a.MonlocIdx;
+            }
+            catch (DbEntityValidationException e)
+            {
+                foreach (var eve in e.EntityValidationErrors)
+                {
+                    Console.WriteLine("Entity of type \"{0}\" in the state \"{1}\" has the following validation errors:",
+                        eve.Entry.Entity.GetType().Name, eve.Entry.State);
+                    foreach (var ve in eve.ValidationErrors)
+                    {
+                        Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
+                            ve.PropertyName, ve.ErrorMessage);
+                    }
+
+                    foreach (var ve in eve.ValidationErrors)
+                    {
+                        Console.WriteLine("- Property: \"{0}\", Value: \"{1}\", Error: \"{2}\"",
+                            ve.PropertyName,
+                            eve.Entry.CurrentValues.GetValue<object>(ve.PropertyName),
+                            ve.ErrorMessage);
+                    }
+                }
+                return 0;
             }
             catch (Exception ex)
             {

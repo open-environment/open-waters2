@@ -36,7 +36,7 @@ namespace Open_Water2.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
+
             services.AddControllers().AddNewtonsoftJson(options =>
             options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -52,51 +52,67 @@ namespace Open_Water2.WebApi
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
 
-            services.AddAuthentication(x =>
+            //services.AddAuthentication(x =>
+            //{
+            //    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //})
+            //.AddJwtBearer(x =>
+            //{
+            //    x.RequireHttpsMetadata = false;
+            //    x.SaveToken = true;
+            //    x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            //    {
+            //        ValidateIssuerSigningKey = true,
+            //        IssuerSigningKey = new SymmetricSecurityKey(key),
+            //        ValidateIssuer = false,
+            //        ValidateAudience = false
+            //    };
+            //});
+            //JWT Changes Ends
+            services.AddAuthentication(options =>
             {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(x =>
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(o =>
             {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
-                x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
+                o.Authority = appSettings.Authority;
+                o.Audience = appSettings.Audience;
             });
-            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+
+            services.AddAuthorization(options =>
             {
-                builder.SetIsOriginAllowed(_ => true)
-                       .AllowAnyMethod()
-                       .AllowAnyHeader()
-                       .AllowCredentials();
-            }));
+                options.AddPolicy("ApiReader", policy => policy.RequireClaim("scope", "api.read"));
+            });
+
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+        {
+            builder.SetIsOriginAllowed(_ => true)
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
+        }));
 
             services.AddScoped<IUserService, UserService>();
-            //JWT Changes Ends
+            
 
             services.AddScoped<ApplicationDbContext, ApplicationDbContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, 
+        public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
             //app.UseCors(options => options.SetIsOriginAllowed(x => _ = true).AllowAnyMethod().AllowAnyHeader().AllowCredentials());
             //app.UseOptions();
-            
+
             app.UseHttpsRedirection();
             app.UseRouting();
 
