@@ -18,6 +18,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
                                     string orgId);
 
         public List<TWqxTransactionLog> GetV_WQX_TRANSACTION_LOG(string TableCD, DateTime? startDt, DateTime? endDt, string OrgID);
+        public List<TWqxTransactionLog> GetWQX_TRANSACTION_LOG(string TableCD, int TableIdx);
         public TWqxTransactionLog GetWQX_TRANSACTION_LOG_ByLogID(int LogID);
         public void Update(TWqxTransactionLog wqxTransactionLog);
     }

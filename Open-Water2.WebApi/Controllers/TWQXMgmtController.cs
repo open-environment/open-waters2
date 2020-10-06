@@ -35,6 +35,15 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
 
+        // GET api/mgmt/getWqxTransactionLog
+        [Route("api/mgmt/getWqxTransactionLog")]
+        [HttpGet]
+        public IActionResult getWqxTransactionLog(string TableCD, int TableIdx)
+        {
+            var result = _unitOfWork.tWqxTransactionLogRepository.GetWQX_TRANSACTION_LOG(TableCD, TableIdx);
+            return Ok(result);
+        }
+
         // GET api/mgmt/getVWqxPendingRecords
         [Route("api/mgmt/getVWqxPendingRecords")]
         [HttpGet]

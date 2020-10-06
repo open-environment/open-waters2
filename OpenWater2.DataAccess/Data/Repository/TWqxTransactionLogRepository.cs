@@ -33,6 +33,21 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public List<TWqxTransactionLog> GetWQX_TRANSACTION_LOG(string TableCD, int TableIdx)
+        {
+            try
+            {
+                return (from i in _db.TWqxTransactionLog
+                        where i.TableCd == TableCD
+                        && i.TableIdx == TableIdx
+                        select i).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public TWqxTransactionLog GetWQX_TRANSACTION_LOG_ByLogID(int LogID)
         {
             try
