@@ -1,4 +1,5 @@
 ﻿using java.util;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using System;
@@ -11,10 +12,13 @@ namespace OpenWater2.DataAccess.Data.Repository
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _db;
-
-        public UnitOfWork(ApplicationDbContext db, ILoggerFactory loggerFactory)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public UnitOfWork(ApplicationDbContext db, 
+            ILoggerFactory loggerFactory,
+            IWebHostEnvironment webHostEnvironment)
         {
             _db = db;
+            _webHostEnvironment = webHostEnvironment;
             tEpaOrgsRepository = new TEpaOrgsRepository(_db);
             oeAppSettingsRepository = new TOeAppSettingsRepository(_db);
             wqxOrganizationRepository = new TWqxOrganizationRepository(_db, 
@@ -25,7 +29,10 @@ namespace OpenWater2.DataAccess.Data.Repository
             oeUserRolesRepository = new TOeUserRolesRepository(_db);
             tWqxMonLocRepository = new TWqxMonLocRepository(_db);
             tWqxProjectRepository = new TWqxProjectRepository(_db);
-            tWqxRefDataRepository = new TWqxRefDataRepository(_db);
+            tWqxRefDataRepository = new TWqxRefDataRepository(_db, 
+                                        _webHostEnvironment,
+                                        tEpaOrgsRepository,
+                                        oeAppSettingsRepository);
             UserOrgsRepository = new TWqxUserOrgsRepository(_db);
             tWqxActivityRepository = new TWqxActivityRepository(_db,
                                                                 wqxOrganizationRepository,
@@ -95,8 +102,8 @@ namespace OpenWater2.DataAccess.Data.Repository
 
 
         }
-
-        public ITEpaOrgsRepository tEpaOrgsRepository { get; private set; }
+       
+    public ITEpaOrgsRepository tEpaOrgsRepository { get; private set; }
 
         public ITWqxOrganizationRepository wqxOrganizationRepository { get; private set; }
 
@@ -153,6 +160,8 @@ namespace OpenWater2.DataAccess.Data.Repository
         public ITWqxSubmitRepository tWqxSubmitRepository { get; private set; }
 
         public ITWqxRefDefaultTimeZoneRepository tWqxRefDefaultTimeZoneRepository { get; private set; }
+
+       
 
         public void Dispose()
         {

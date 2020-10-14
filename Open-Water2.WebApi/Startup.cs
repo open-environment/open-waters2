@@ -90,7 +90,8 @@ namespace Open_Water2.WebApi
             builder.SetIsOriginAllowed(_ => true)
                    .AllowAnyMethod()
                    .AllowAnyHeader()
-                   .AllowCredentials();
+                   .AllowCredentials()
+                   .WithExposedHeaders("Content-Disposition");
         }));
 
             services.AddScoped<IUserService, UserService>();

@@ -123,15 +123,6 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
 
-        //// GET api/import/getWqxImportTemplateDtlDynamicByTemplateId
-        //[Route("api/import/getWqxImportTemplateDtlDynamicByTemplateId")]
-        //[HttpGet]
-        //public IActionResult getWqxImportTemplateDtlHardCodeByTemplateId([FromQuery] int TemplateID)
-        //{
-        //    var result = _unitOfWork.tWqxImportTemplateDtlRepository.GetWQX_IMPORT_TEMPLATE_DTL_DynamicByTemplateID(TemplateID);
-        //    return Ok(result);
-        //}
-
         // DELETE api/import/deleteTWqxImportTemplate
         [Route("api/import/deleteTWqxImportTemplate")]
         [HttpDelete]
@@ -190,6 +181,23 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
 
+        // GET api/import/getWqxImportLog
+        [Route("api/import/getWqxImportLog")]
+        [HttpGet]
+        public IActionResult GetWQX_IMPORT_LOG([FromQuery] string OrgID)
+        {
+            var result = _unitOfWork.tWqxImportLogRepository.GetWQX_IMPORT_LOG(OrgID);
+            return Ok(result);
+        }
+
+        // DELETE api/import/deleteTWqxImportTemplate
+        [Route("api/import/deleteTWqxImportTemplate")]
+        [HttpDelete]
+        public IActionResult DeleteTWqxImportLog([FromQuery] int importId)
+        {
+            var result = _unitOfWork.tWqxImportLogRepository.DeleteTWqxImportLog(importId);
+            return Ok(result);
+        }
     }
 
 }

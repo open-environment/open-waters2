@@ -9,8 +9,8 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
 {
     public interface ITWqxRefDataRepository : IRepository<TWqxRefData>
     {
-        public int InsertOrUpdateT_WQX_REF_ANAL_METHOD(global::System.Int32? aNALYTIC_METHOD_IDX, global::System.String aNALYTIC_METHOD_ID, string aNALYTIC_METHOD_CTX,
-            string aNALYTIC_METHOD_NAME, string aNALYTIC_METHOD_DESC, bool aCT_IND);
+        public int InsertOrUpdateT_WQX_REF_ANAL_METHOD(int? analyticMethodIdx, string analyticMethodId, string analyticMethodCtx,
+            string analyticMethodName, string analyticMethodDesc, bool actInd);
 
         public int InsertOrUpdateT_WQX_REF_SAMP_COL_METHOD(global::System.Int32? sAMP_COLL_METHOD_IDX, global::System.String sAMP_COLL_METHOD_ID,
             string sAMP_COLL_METHOD_CTX, string sAMP_COLL_METHOD_NAME, string sAMP_COLL_METHOD_DESC, bool aCT_IND);
@@ -23,10 +23,13 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public int InsertOrUpdateT_WQX_REF_CHARACTERISTIC(global::System.String cHAR_NAME, global::System.Decimal? dETECT_LIMIT, global::System.String dEFAULT_UNIT, global::System.Boolean? uSED_IND,
             global::System.Boolean aCT_IND, global::System.String sAMP_FRAC_REQ, global::System.String pICK_LIST);
         public TWqxRefAnalMethod GetT_WQX_REF_ANAL_METHODByIDandContext(string ID, string Context);
+        public List<TWqxRefAnalMethod> GetT_WQX_REF_ANAL_METHODByValue(string value);
         public List<TWqxRefData> GetAllT_WQX_REF_DATA();
         public List<TWqxRefCharacteristic> GetAllT_WQX_REF_CHARACTERISTIC();
+        public List<TWqxRefCharacteristic> GetT_WQX_REF_CHARACTERISTICByCharName(string charName);
         public List<TWqxRefAnalMethod> GetAllT_WQX_REF_ANAL_METHOD();
         public List<TWqxRefSampPrep> GetAllT_WQX_REF_SAMP_PREP();
+        public List<TWqxRefSampPrep> GetAllT_WQX_REF_SAMP_PREPByContext(string Context);
         public List<TWqxRefDefaultTimeZone> GetT_WQX_REF_DEFAULT_TIME_ZONE();
         public List<TWqxRefCharacteristic> GetT_WQX_REF_CHARACTERISTIC(Boolean ActInd, Boolean onlyUsedInd);
         public List<TWqxRefData> GetT_WQX_REF_DATA(string tABLE, Boolean ActInd, Boolean UsedInd);
@@ -45,6 +48,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
 
         public int InsertOrUpdateWQX_IMPORT_TRANSLATE(int? tRANSLATE_IDX, string oRG_ID, string cOL_NAME, string dATA_FROM, string dATA_TO, string cREATE_USER = "system");
         public List<TWqxRefCounty> GetT_WQX_REF_COUNTY(string StateCode);
+        public List<TWqxRefCounty> GetAllT_WQX_REF_COUNTY();
         public int GetT_WQX_REF_DATA_Count();
         public int GetT_WQX_REF_CHAR_ORG_Count(string orgName);
         public List<TWqxRefSampColMethod> GetT_WQX_REF_SAMP_COL_METHOD_ByContext(string Context);
@@ -60,9 +64,16 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public List<TWqxRefData> GetT_WQX_REF_TAXA_ByOrg(string OrgID);
         public TWqxRefCharLimits GetT_WQX_REF_CHAR_LIMITS_ByNameUnit(string CharName, string UnitName);
         public bool GetT_WQX_REF_DATA_ByKey(string table, string value);
+        public List<TWqxRefData> GetT_WQX_REF_DATA_ByValueOrText(string table, string value);
         public TWqxRefCounty GetT_WQX_REF_COUNTY_ByCountyNameAndState(string stateName, string countyName);
         public int DeleteT_WQX_RESULT(int ResultIDX);
-
+        public string GetT_WQX_REF_DATA_LastUpdate();
+        public int WQXImport_Org();
+        public System.Threading.Tasks.Task<int> WQXImport_RefDataAsync(string tableName);
+        public int InsertOrUpdateT_WQX_REF_DATA(string table, string value, string text, Boolean? UsedInd, bool? ActInd);
+        public int InsertOrUpdateT_WQX_REF_DATA(TWqxRefData refData);
+        public int InsertOrUpdateT_WQX_REF_COUNTY(string stateCode, string countyCode, string countyName, Boolean? UsedInd);
+        public List<TWqxRefLab> GetT_WQX_REF_LAB_ByOrgId(string OrgId);
     }
     
 }

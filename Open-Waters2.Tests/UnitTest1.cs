@@ -55,12 +55,13 @@ namespace Open_Waters2.Tests
                 //var _db2 = new ApplicationDbContext(mydb, operationalStoreOptions);
 
                 var _db = new ApplicationDbContext(option1, operationalStoreOptions);
+
                 using(var _db2 = new ApplicationDbContext(mydb, operationalStoreOptions))
                 {
                     _db2.Database.EnsureCreated();
                     
-                    UnitOfWork unitOfWork = new UnitOfWork(_db2, _loggerFactory);
-                    var result = unitOfWork.wqxOrganizationRepository.GetAll();
+                    //UnitOfWork unitOfWork = new UnitOfWork(_db2, _loggerFactory);
+                    //var result = unitOfWork.wqxOrganizationRepository.GetAll();
                 }
                 
             }

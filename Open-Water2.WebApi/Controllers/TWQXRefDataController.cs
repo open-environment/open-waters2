@@ -36,13 +36,18 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxRefDataRepository.GetAllT_WQX_REF_CHARACTERISTIC();
             return Ok(result);
         }
-
-        [HttpPost("api/refdata/InsertOrUpdateTWQXRefAnalMethod")]
-        public IActionResult InsertOrUpdateT_WQX_REF_ANAL_METHOD([FromQuery]global::System.Int32? aNALYTIC_METHOD_IDX, global::System.String aNALYTIC_METHOD_ID, string aNALYTIC_METHOD_CTX,
-            string aNALYTIC_METHOD_NAME, string aNALYTIC_METHOD_DESC, bool aCT_IND)
+        [HttpGet("api/refdata/getTWqxRefCharacteristicByCharName")]
+        public IActionResult GetT_WQX_REF_CHARACTERISTICByCharName([FromQuery] string charName)
         {
-            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_ANAL_METHOD(aNALYTIC_METHOD_IDX, aNALYTIC_METHOD_ID, aNALYTIC_METHOD_CTX,
-            aNALYTIC_METHOD_NAME, aNALYTIC_METHOD_DESC, aCT_IND);
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_CHARACTERISTICByCharName(charName);
+            return Ok(result);
+        }
+
+        [HttpPost("api/refdata/insertOrUpdateTWQXRefAnalMethod")]
+        public IActionResult InsertOrUpdateT_WQX_REF_ANAL_METHOD([FromBody]TWqxRefAnalMethod refAnal)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_ANAL_METHOD(refAnal.AnalyticMethodIdx, refAnal.AnalyticMethodId, refAnal.AnalyticMethodCtx,
+            refAnal.AnalyticMethodName, refAnal.AnalyticMethodDesc, (bool)refAnal.ActInd.HasValue ? (bool)refAnal.ActInd : true);
             return Ok(result);
         }
         [HttpGet("api/refdata/GetTWQXRefAnalMethodByIDandContext")]
@@ -51,40 +56,39 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_ANAL_METHODByIDandContext(ID, Context);
             return Ok(result);
         }
-        [HttpPost("api/refdata/InsertOrUpdateTWQXRefSampColMethod")]
-        public IActionResult InsertOrUpdateT_WQX_REF_SAMP_COL_METHOD([FromQuery]global::System.Int32? sAMP_COLL_METHOD_IDX, global::System.String sAMP_COLL_METHOD_ID,
-            string sAMP_COLL_METHOD_CTX, string sAMP_COLL_METHOD_NAME, string sAMP_COLL_METHOD_DESC, bool aCT_IND)
+        [HttpPost("api/refdata/insertOrUpdateTWQXRefSampColMethod")]
+        public IActionResult InsertOrUpdateT_WQX_REF_SAMP_COL_METHOD([FromBody] TWqxRefSampColMethod refSampCol)
         {
-            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_SAMP_COL_METHOD(sAMP_COLL_METHOD_IDX, sAMP_COLL_METHOD_ID,
-            sAMP_COLL_METHOD_CTX, sAMP_COLL_METHOD_NAME, sAMP_COLL_METHOD_DESC, aCT_IND);
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_SAMP_COL_METHOD(refSampCol.SampCollMethodIdx, refSampCol.SampCollMethodId,
+            refSampCol.SampCollMethodCtx, refSampCol.SampCollMethodName, refSampCol.SampCollMethodDesc, refSampCol.ActInd.HasValue ? (bool)refSampCol.ActInd : true);
             return Ok(result);
         }
-        [HttpPost("api/refdata/InsertOrUpdateTWQXRefSampPrep")]
-        public IActionResult InsertOrUpdateT_WQX_REF_SAMP_PREP([FromQuery]global::System.Int32? sAMP_PREP_IDX, global::System.String sAMP_PREP_METHOD_ID,
-            string sAMP_PREP_METHOD_CTX, string sAMP_PREP_METHOD_NAME, string sAMP_PREP_METHOD_DESC, bool aCT_IND)
+        [HttpPost("api/refdata/insertOrUpdateTWQXRefSampPrep")]
+        public IActionResult InsertOrUpdateT_WQX_REF_SAMP_PREP([FromBody]TWqxRefSampPrep refSamp)
         {
-            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_SAMP_PREP(sAMP_PREP_IDX, sAMP_PREP_METHOD_ID,
-            sAMP_PREP_METHOD_CTX, sAMP_PREP_METHOD_NAME, sAMP_PREP_METHOD_DESC, aCT_IND);
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_SAMP_PREP(refSamp.SampPrepIdx, refSamp.SampPrepMethodId,
+            refSamp.SampPrepMethodCtx, refSamp.SampPrepMethodName, refSamp.SampPrepMethodDesc, (bool)refSamp.ActInd.HasValue ? (bool)refSamp.ActInd : true);
             return Ok(result);
         }
-        [HttpPost("api/refdata/InsertOrUpdateTWQXRefLab")]
-        public IActionResult InsertOrUpdateT_WQX_REF_LAB([FromQuery]global::System.Int32? lAB_IDX, global::System.String lAB_NAME, string lAB_ACCRED_IND, string lAB_ACCRED_AUTHORITY, string oRG_ID, bool aCT_IND)
+        [HttpPost("api/refdata/insertOrUpdateTWQXRefLab")]
+        public IActionResult InsertOrUpdateT_WQX_REF_LAB([FromBody] TWqxRefLab refLab)
         {
-            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_SAMP_PREP(lAB_IDX, lAB_NAME, lAB_ACCRED_IND, lAB_ACCRED_AUTHORITY, oRG_ID, aCT_IND);
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_LAB(
+                refLab.LabIdx, refLab.LabName, refLab.LabAccredInd, 
+                refLab.LabAccredAuthority, refLab.OrgId, (bool)refLab.ActInd);
             return Ok(result);
         }
         [HttpPut("api/refdata/updateTWQXRefDataByIdx")]
-        public IActionResult UpdateT_WQX_REF_DATAByIDX([FromQuery]global::System.Int32 IDX, global::System.String Value, global::System.String Text, Boolean ActInd)
+        public IActionResult UpdateT_WQX_REF_DATAByIDX([FromQuery]int idx, string value, string text, bool actInd)
         {
-            var result = _unitOfWork.tWqxRefDataRepository.UpdateT_WQX_REF_DATAByIDX(IDX, Value, Text, ActInd);
+            var result = _unitOfWork.tWqxRefDataRepository.UpdateT_WQX_REF_DATAByIDX(idx, value, text, actInd);
             return Ok(result);
         }
-        [HttpPost("api/refdata/InsertOrUpdateTWQXRefCharacteristic")]
-        public IActionResult InsertOrUpdateT_WQX_REF_CHARACTERISTIC([FromQuery]global::System.String cHAR_NAME, global::System.Decimal? dETECT_LIMIT, global::System.String dEFAULT_UNIT, global::System.Boolean? uSED_IND,
-            global::System.Boolean aCT_IND, global::System.String sAMP_FRAC_REQ, global::System.String pICK_LIST)
+        [HttpPost("api/refdata/insertOrUpdateTWQXRefCharacteristic")]
+        public IActionResult InsertOrUpdateT_WQX_REF_CHARACTERISTIC([FromBody] TWqxRefCharacteristic refChar)
         {
-            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_CHARACTERISTIC(cHAR_NAME, dETECT_LIMIT, dEFAULT_UNIT, uSED_IND,
-            aCT_IND, sAMP_FRAC_REQ, pICK_LIST);
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_CHARACTERISTIC(refChar.CharName, refChar.DefaultDetectLimit, refChar.DefaultUnit, refChar.UsedInd,
+            (bool)refChar.ActInd, refChar.SampFracReq, refChar.PickList);
             return Ok(result);
         }
         [HttpGet("api/refdata/getTWqxRefDefaultTimeZone")]
@@ -183,6 +187,12 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_COUNTY(stateCode);
             return Ok(result);
         }
+        [HttpGet("api/refdata/GetAllTWqxRefCounty")]
+        public IActionResult GetAllT_WQX_REF_COUNTY()
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetAllT_WQX_REF_COUNTY();
+            return Ok(result);
+        }
         [HttpGet("api/refdata/getTWqxRefDataCount")]
         public IActionResult GetT_WQX_REF_DATA_Count()
         {
@@ -246,6 +256,58 @@ namespace Open_Water2.WebApi.Controllers
         public IActionResult DeleteT_WQX_RESULT([FromQuery] int ResultIdx)
         {
             var result = _unitOfWork.tWqxRefDataRepository.DeleteT_WQX_RESULT(ResultIdx);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/getTWqxRefDataLastUpdate")]
+        public IActionResult GetT_WQX_REF_DATA_LastUpdate()
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_DATA_LastUpdate();
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/wqxImportOrg")]
+        public IActionResult WQXImport_Org()
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.WQXImport_Org();
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/wqxImportRefData")]
+        public async Task<IActionResult> WQXImport_RefDataAsync([FromQuery] string tableName)
+        {
+            var result = await _unitOfWork.tWqxRefDataRepository.WQXImport_RefDataAsync(tableName);
+            return Ok(result);
+        }
+
+        
+        [HttpGet("api/refdata/getTWqxRefDataByValueOrText")]
+        public IActionResult GetT_WQX_REF_DATA_ByValueOrText([FromQuery] string table, string value)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_DATA_ByValueOrText(table, value);
+            return Ok(result);
+        }
+
+        [HttpPost("api/refdata/insertOrUpdateTWqxRefData")]
+        public IActionResult InsertOrUpdateT_WQX_REF_DATA([FromBody] TWqxRefData refData)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_DATA(refData.Table,refData.Value,refData.Text,refData.UsedInd, refData.ActInd);
+            return Ok(result);
+        }
+
+        [HttpGet("api/refdata/getTWqxRefAnalMethodByValue")]
+        public IActionResult GetT_WQX_REF_ANAL_METHODByValue([FromQuery] string value)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_ANAL_METHODByValue(value);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/getAllTWqxRefSampPrepByContext")]
+        public IActionResult GetAllT_WQX_REF_SAMP_PREPByContext([FromQuery] string Context)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetAllT_WQX_REF_SAMP_PREPByContext(Context);
+            return Ok(result);
+        }
+        [HttpGet("api/refdata/getTWqxRefLabByOrgId")]
+        public IActionResult GetT_WQX_REF_LAB_ByOrgId([FromQuery] string OrgId)
+        {
+            var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_LAB_ByOrgId(OrgId);
             return Ok(result);
         }
     }

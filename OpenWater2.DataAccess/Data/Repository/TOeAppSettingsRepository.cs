@@ -29,15 +29,37 @@ namespace OpenWater2.DataAccess.Data.Repository
 
         public void Update(TOeAppSettings oeAppSettings)
         {
-            TOeAppSettings objFromDb = _db.TOeAppSettings.Where(x => x.SettingIdx == oeAppSettings.SettingIdx).FirstOrDefault();
-            objFromDb.SettingName = oeAppSettings.SettingName;
-            objFromDb.SettingDesc = oeAppSettings.SettingDesc;
-            objFromDb.SettingValue = oeAppSettings.SettingValue;
-            objFromDb.EncryptInd = oeAppSettings.EncryptInd;
-            objFromDb.SettingValueSalt = oeAppSettings.SettingValueSalt;
-            objFromDb.ModifyUserid = oeAppSettings.ModifyUserid;
-            objFromDb.ModifyDt = DateTime.Now;
-            _db.TOeAppSettings.Update(objFromDb);
+            try
+            {
+                if (oeAppSettings != null)
+                {
+                    TOeAppSettings objFromDb = _db.TOeAppSettings.Where(x => x.SettingIdx == oeAppSettings.SettingIdx).FirstOrDefault();
+                    if (objFromDb != null)
+                    {
+                        if(oeAppSettings.SettingName != null) objFromDb.SettingName = oeAppSettings.SettingName;
+                        if(oeAppSettings.SettingDesc != null) objFromDb.SettingDesc = oeAppSettings.SettingDesc;
+                        if(oeAppSettings.SettingValue != null) objFromDb.SettingValue = oeAppSettings.SettingValue;
+                        if(oeAppSettings.EncryptInd != null) objFromDb.EncryptInd = oeAppSettings.EncryptInd;
+                        if(oeAppSettings.SettingValueSalt != null) objFromDb.SettingValueSalt = oeAppSettings.SettingValueSalt;
+                        if(oeAppSettings.ModifyUserid != null) objFromDb.ModifyUserid = oeAppSettings.ModifyUserid;
+                        objFromDb.ModifyDt = DateTime.Now;
+                        _db.TOeAppSettings.Update(objFromDb);
+                        _db.SaveChanges();
+                    }
+                    else
+                    {
+                        throw new Exception("Could not update data!");
+                    }
+                }else
+                {
+                    throw new Exception("Could not update data!");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            
         }
     }
 }

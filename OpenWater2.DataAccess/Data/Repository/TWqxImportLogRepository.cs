@@ -15,6 +15,39 @@ namespace OpenWater2.DataAccess.Data.Repository
             _db = db;
         }
 
+        public int DeleteT_WQX_IMPORT_LOG(int importId)
+        {
+            try
+            {
+                TWqxImportLog wqxImportLog = _db.TWqxImportLog.Where(i => i.ImportId == importId).FirstOrDefault();
+                if(wqxImportLog != null)
+                {
+                    _db.TWqxImportLog.Remove(wqxImportLog);
+                    _db.SaveChanges();
+                    return 1;
+                }
+                return 0;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        public List<TWqxImportLog> GetWQX_IMPORT_LOG(string OrgID)
+        {
+            try
+            {
+                return (from i in _db.TWqxImportLog
+                        where i.OrgId == OrgID
+                        select i).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public TWqxImportLog GetWQX_IMPORT_LOG_NewActivity()
         {
             try

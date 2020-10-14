@@ -148,6 +148,11 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.wqxOrganizationRepository.CanUserEditOrg(UserIDX, OrgID);
             return Ok(result);
         }
-
+        [HttpGet("api/org/getTEPAOrgsLastUpdateDate")]
+        public IActionResult getTEPAOrgsLastUpdateDate()
+        {
+            var result = _unitOfWork.tEpaOrgsRepository.GetT_EPA_ORGS_LastUpdateDate();
+            return Ok(result);
+        }
     }
 }

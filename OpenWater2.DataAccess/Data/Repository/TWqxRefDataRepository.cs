@@ -7,15 +7,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
+using System.IO;
+using System.Xml;
+using OpenEnvironment.gov.epa.cdx;
+using cdx.epa.gov;
+using System.Xml.Linq;
+using Ionic.Zip;
+using Microsoft.AspNetCore.Hosting;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
     public class TWqxRefDataRepository : Repository<TWqxRefData>, ITWqxRefDataRepository
     {
         private readonly ApplicationDbContext _db;
-        public TWqxRefDataRepository(ApplicationDbContext db) : base(db)
+        private readonly IWebHostEnvironment _environment;
+        private readonly ITEpaOrgsRepository _epaOrgRepo;
+        private readonly ITOeAppSettingsRepository _oeAppSettingsRepo;
+        public TWqxRefDataRepository(ApplicationDbContext db,
+            IWebHostEnvironment environment,
+            ITEpaOrgsRepository epaOrgRepo,
+            ITOeAppSettingsRepository oeAppSettingsRepo) : base(db)
         {
             _db = db;
+            _environment = environment;
+            _epaOrgRepo = epaOrgRepo;
+            _oeAppSettingsRepo = oeAppSettingsRepo;
         }
 
         public int DeleteT_WQX_IMPORT_TRANSLATE(int TranslateID)
@@ -23,7 +40,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             try
             {
                 TWqxImportTranslate wqxImportTranslate = _db.TWqxImportTranslate.Where(i => i.TranslateIdx == TranslateID).FirstOrDefault();
-                if(wqxImportTranslate != null)
+                if (wqxImportTranslate != null)
                 {
                     _db.TWqxImportTranslate.Remove(wqxImportTranslate);
                     _db.SaveChanges();
@@ -81,7 +98,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             {
                 TWqxResult r = new TWqxResult();
                 r = (from c in _db.TWqxResult where c.ResultIdx == ResultIDX select c).FirstOrDefault();
-                if(r != null)
+                if (r != null)
                 {
                     _db.TWqxResult.Remove(r);
                     _db.SaveChanges();
@@ -105,6 +122,20 @@ namespace OpenWater2.DataAccess.Data.Repository
             return _db.TWqxRefCharacteristic.ToList();
         }
 
+        public List<TWqxRefCounty> GetAllT_WQX_REF_COUNTY()
+        {
+            try
+            {
+                return (from a in _db.TWqxRefCounty
+                        orderby a.CountyName
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public List<TWqxRefData> GetAllT_WQX_REF_DATA()
         {
             return _db.TWqxRefData.ToList();
@@ -113,6 +144,13 @@ namespace OpenWater2.DataAccess.Data.Repository
         public List<TWqxRefSampPrep> GetAllT_WQX_REF_SAMP_PREP()
         {
             return _db.TWqxRefSampPrep.ToList();
+        }
+
+        public List<TWqxRefSampPrep> GetAllT_WQX_REF_SAMP_PREPByContext(string Context)
+        {
+            return _db.TWqxRefSampPrep
+                .Where(s => s.SampPrepMethodCtx == Context)
+                .ToList();
         }
 
         public List<AnalMethodDisplay> GetT_WQX_REF_ANAL_METHOD(bool ActInd)
@@ -149,6 +187,22 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public List<TWqxRefAnalMethod> GetT_WQX_REF_ANAL_METHODByValue(string value)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefAnalMethod
+                        where (a.AnalyticMethodId.Contains(value == null ? "" : value)
+                        || a.AnalyticMethodCtx.Contains(value == null ? "" : value)
+                        || a.AnalyticMethodName.Contains(value == null ? "" : value))
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public List<TWqxRefCharacteristic> GetT_WQX_REF_CHARACTERISTIC(bool ActInd, bool onlyUsedInd)
         {
             try
@@ -162,6 +216,11 @@ namespace OpenWater2.DataAccess.Data.Repository
             {
                 throw ex;
             }
+        }
+
+        public List<TWqxRefCharacteristic> GetT_WQX_REF_CHARACTERISTICByCharName(string charName)
+        {
+            return _db.TWqxRefCharacteristic.Where(c => c.CharName.Contains(string.IsNullOrWhiteSpace(charName) ? "" : charName)).ToList();
         }
 
         public List<TWqxRefCharacteristic> GetT_WQX_REF_CHARACTERISTIC_ByOrg(string OrgID, bool RBPInd)
@@ -314,6 +373,24 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public List<TWqxRefData> GetT_WQX_REF_DATA_ByValueOrText(string table, string value)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefData
+                        where a.Table == table
+                        //&& (a.Value + " " + a.Text).Contains(value == null ? "" : value, StringComparison.CurrentCultureIgnoreCase)
+                        && (a.Value.Contains(value == null ? "" : value)
+                        || a.Text.Contains(value == null ? "" : value))
+                        orderby a.Value
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public int GetT_WQX_REF_DATA_Count()
         {
             try
@@ -327,12 +404,45 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public string GetT_WQX_REF_DATA_LastUpdate()
+        {
+            string actResult = string.Empty;
+            try
+            {
+                DateTime? dt = (from a in _db.TWqxRefData
+                                select a.UpdateDt).Max();
+                if (dt != null && dt.HasValue)
+                {
+                    actResult = dt.Value.ToString(@"dd-MM-yyyy HH:mm:ss");
+                }
+            }
+            catch (Exception ex)
+            {
+                actResult = "";
+            }
+            return actResult;
+        }
+
         public List<TWqxRefDefaultTimeZone> GetT_WQX_REF_DEFAULT_TIME_ZONE()
         {
             try
             {
                 return (from a in _db.TWqxRefDefaultTimeZone
                         orderby a.TimeZoneName descending
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxRefLab> GetT_WQX_REF_LAB_ByOrgId(string OrgId)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefLab
+                        where a.OrgId == OrgId
                         select a).ToList();
             }
             catch (Exception ex)
@@ -385,45 +495,48 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
-        public int InsertOrUpdateT_WQX_REF_ANAL_METHOD(int? aNALYTIC_METHOD_IDX, string aNALYTIC_METHOD_ID, string aNALYTIC_METHOD_CTX, string aNALYTIC_METHOD_NAME, string aNALYTIC_METHOD_DESC, bool aCT_IND)
+        public int InsertOrUpdateT_WQX_REF_ANAL_METHOD(int? analyticMethodIdx, string analyticMethodId, string analyticMethodCtx,
+            string analyticMethodName, string analyticMethodDesc, bool actInd)
         {
             try
             {
                 Boolean insInd = true;
                 TWqxRefAnalMethod a = new TWqxRefAnalMethod();
 
-                if (_db.TWqxRefAnalMethod.Any(o => o.AnalyticMethodIdx == aNALYTIC_METHOD_IDX))
+                if (_db.TWqxRefAnalMethod.Any(o => o.AnalyticMethodIdx == analyticMethodIdx))
                 {
                     //update case
                     a = (from c in _db.TWqxRefAnalMethod
-                         where c.AnalyticMethodIdx == aNALYTIC_METHOD_IDX
+                         where c.AnalyticMethodIdx == analyticMethodIdx
                          select c).FirstOrDefault();
                     insInd = false;
                 }
                 else
                 {
-                    if (_db.TWqxRefAnalMethod.Any(o => o.AnalyticMethodId == aNALYTIC_METHOD_ID && o.AnalyticMethodCtx == aNALYTIC_METHOD_CTX))
+                    if (_db.TWqxRefAnalMethod.Any(o => o.AnalyticMethodId == analyticMethodId && o.AnalyticMethodCtx == analyticMethodCtx))
                     {
                         //update case
                         a = (from c in _db.TWqxRefAnalMethod
-                             where c.AnalyticMethodId == aNALYTIC_METHOD_ID
-                             && c.AnalyticMethodCtx == aNALYTIC_METHOD_CTX
+                             where c.AnalyticMethodId == analyticMethodId
+                             && c.AnalyticMethodCtx == analyticMethodCtx
                              select c).FirstOrDefault();
                         insInd = false;
                     }
                 }
 
-                if (aNALYTIC_METHOD_ID != null) a.AnalyticMethodId = aNALYTIC_METHOD_ID;
-                if (aNALYTIC_METHOD_CTX != null) a.AnalyticMethodCtx = aNALYTIC_METHOD_CTX;
-                if (aNALYTIC_METHOD_NAME != null) a.AnalyticMethodName = aNALYTIC_METHOD_NAME;
-                if (aNALYTIC_METHOD_DESC != null) a.AnalyticMethodDesc = aNALYTIC_METHOD_DESC;
-                if (aCT_IND != null) a.ActInd = aCT_IND;
+                if (analyticMethodId != null) a.AnalyticMethodId = analyticMethodId;
+                if (analyticMethodCtx != null) a.AnalyticMethodCtx = analyticMethodCtx;
+                if (analyticMethodName != null) a.AnalyticMethodName = analyticMethodName;
+                if (analyticMethodDesc != null) a.AnalyticMethodDesc = analyticMethodDesc;
+                if (actInd != null) a.ActInd = actInd;
 
                 a.UpdateDt = System.DateTime.Now;
 
                 if (insInd) //insert case
+                {
+                    a.ActInd = true;
                     _db.TWqxRefAnalMethod.Add(a);
-
+                }
                 _db.SaveChanges();
                 return a.AnalyticMethodIdx;
             }
@@ -433,34 +546,42 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
-        public int InsertOrUpdateT_WQX_REF_CHARACTERISTIC(string cHAR_NAME, decimal? dETECT_LIMIT, string dEFAULT_UNIT, bool? uSED_IND, bool aCT_IND, string sAMP_FRAC_REQ, string pICK_LIST)
+        public int InsertOrUpdateT_WQX_REF_CHARACTERISTIC(
+            string charName,
+            decimal? detectLimit,
+            string defaultUnit,
+            bool? usedInd,
+            bool actInd,
+            string sampFracReq,
+            string pickList)
         {
             try
             {
                 Boolean insInd = true;
                 TWqxRefCharacteristic a = new TWqxRefCharacteristic();
 
-                if (_db.TWqxRefCharacteristic.Any(o => o.CharName == cHAR_NAME))
+                if (_db.TWqxRefCharacteristic.Any(o => o.CharName == charName))
                 {
                     //update case
                     a = (from c in _db.TWqxRefCharacteristic
-                         where c.CharName == cHAR_NAME
+                         where c.CharName == charName
                          select c).FirstOrDefault();
                     insInd = false;
                 }
 
-                a.CharName = cHAR_NAME;
-                if (dETECT_LIMIT != null) a.DefaultDetectLimit = dETECT_LIMIT;
-                if (dEFAULT_UNIT != null) a.DefaultUnit = dEFAULT_UNIT;
-                if (uSED_IND != null) a.UsedInd = uSED_IND;
-                if (sAMP_FRAC_REQ != null) a.SampFracReq = sAMP_FRAC_REQ;
-                if (pICK_LIST != null) a.PickList = pICK_LIST;
-
+                a.CharName = charName;
+                if (detectLimit != null) a.DefaultDetectLimit = detectLimit;
+                if (defaultUnit != null) a.DefaultUnit = defaultUnit;
+                if (usedInd != null) a.UsedInd = usedInd;
+                if (sampFracReq != null) a.SampFracReq = sampFracReq;
+                if (pickList != null) a.PickList = pickList;
+                if (actInd != null) a.ActInd = actInd;
                 a.UpdateDt = System.DateTime.Now;
-                a.ActInd = true;
+
 
                 if (insInd) //insert case
                 {
+                    a.ActInd = true;
                     a.UsedInd = false;
                     _db.TWqxRefCharacteristic.Add(a);
                 }
@@ -506,6 +627,91 @@ namespace OpenWater2.DataAccess.Data.Repository
                     a.CreateDt = System.DateTime.Now;
                     a.CreateUserid = createUserId;
                     _db.TWqxRefCharOrg.Add(a);
+                }
+                _db.SaveChanges();
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+
+        public int InsertOrUpdateT_WQX_REF_COUNTY(string stateCode, string countyCode, string countyName, bool? UsedInd)
+        {
+            try
+            {
+                Boolean insInd = true;
+                TWqxRefCounty a = new TWqxRefCounty();
+
+                if (_db.TWqxRefCounty.Any(o => o.StateCode == stateCode && o.CountyCode == countyCode))
+                {
+                    //update case
+                    a = (from c in _db.TWqxRefCounty
+                         where c.StateCode == stateCode
+                         && c.CountyCode == countyCode
+                         select c).FirstOrDefault();
+                    insInd = false;
+                }
+
+                a.StateCode = stateCode;
+                a.CountyCode = countyCode;
+                a.CountyName = countyName;
+
+                if (UsedInd != null) a.UsedInd = UsedInd;
+
+                a.UpdateDt = System.DateTime.Now;
+                a.ActInd = true;
+
+                if (insInd) //insert case
+                {
+                    if (UsedInd == null) a.UsedInd = true;
+                    _db.TWqxRefCounty.Add(a);
+                }
+                _db.SaveChanges();
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+
+        public int InsertOrUpdateT_WQX_REF_DATA(string table, string value, string text, bool? UsedInd, bool? ActInd)
+        {
+            return InsertOrUpdateT_WQX_REF_DATA(new TWqxRefData(table, value, text, UsedInd, ActInd));
+        }
+        public int InsertOrUpdateT_WQX_REF_DATA(TWqxRefData refData)
+        {
+            try
+            {
+                if (refData == null) return 0;
+
+                Boolean insInd = true;
+                TWqxRefData a = new TWqxRefData();
+
+                if (_db.TWqxRefData.Any(o => o.Value == refData.Value && o.Table == refData.Table))
+                {
+                    //update case
+                    a = (from c in _db.TWqxRefData
+                         where c.Value == refData.Value
+                         && c.Table == refData.Table
+                         select c).FirstOrDefault();
+                    insInd = false;
+                }
+
+                a.Table = refData.Table == null ? "" : refData.Table;
+                a.Value = refData.Value == null ? "" : refData.Value;
+                a.ActInd = refData.ActInd == null ? true : refData.ActInd;
+                a.Text = refData.Text == null ? "" : UtilityHelper.SubStringPlus(refData.Text, 0, 200);
+                a.UsedInd = refData.UsedInd == null ? true : refData.UsedInd;
+                a.UpdateDt = System.DateTime.Now;
+
+                if (insInd) //insert case
+                {
+                    if (refData.ActInd == null) a.ActInd = true;
+                    if (refData.UsedInd == null) a.UsedInd = true;
+                    _db.TWqxRefData.Add(a);
                 }
                 _db.SaveChanges();
                 return 1;
@@ -615,39 +821,45 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
-        public int InsertOrUpdateT_WQX_REF_SAMP_PREP(int? sAMP_PREP_IDX, string sAMP_PREP_METHOD_ID, string sAMP_PREP_METHOD_CTX, string sAMP_PREP_METHOD_NAME, string sAMP_PREP_METHOD_DESC, bool aCT_IND)
+        public int InsertOrUpdateT_WQX_REF_SAMP_PREP(
+            int? samPrepIdx, 
+            string sampPrepMethodId, 
+            string sampPrepMethodCtx, 
+            string sampPrepMethodName, 
+            string sampPrepMethodDesc, 
+            bool actInd)
         {
             try
             {
                 Boolean insInd = true;
                 TWqxRefSampPrep a = new TWqxRefSampPrep();
 
-                if (_db.TWqxRefSampPrep.Any(o => o.SampPrepIdx == sAMP_PREP_IDX))
+                if (_db.TWqxRefSampPrep.Any(o => o.SampPrepIdx == samPrepIdx))
                 {
                     //update case
                     a = (from c in _db.TWqxRefSampPrep
-                         where c.SampPrepIdx == sAMP_PREP_IDX
+                         where c.SampPrepIdx == samPrepIdx
                          select c).FirstOrDefault();
                     insInd = false;
                 }
                 else
                 {
-                    if (_db.TWqxRefAnalMethod.Any(o => o.AnalyticMethodId == sAMP_PREP_METHOD_ID && o.AnalyticMethodCtx == sAMP_PREP_METHOD_CTX))
+                    if (_db.TWqxRefSampPrep.Any(o => o.SampPrepMethodId == sampPrepMethodId && o.SampPrepMethodCtx == sampPrepMethodCtx))
                     {
                         //update case
                         a = (from c in _db.TWqxRefSampPrep
-                             where c.SampPrepMethodId == sAMP_PREP_METHOD_ID
-                             && c.SampPrepMethodCtx == sAMP_PREP_METHOD_CTX
+                             where c.SampPrepMethodId == sampPrepMethodId
+                             && c.SampPrepMethodCtx == sampPrepMethodCtx
                              select c).FirstOrDefault();
                         insInd = false;
                     }
                 }
 
-                if (sAMP_PREP_METHOD_ID != null) a.SampPrepMethodId = sAMP_PREP_METHOD_ID;
-                if (sAMP_PREP_METHOD_CTX != null) a.SampPrepMethodCtx = sAMP_PREP_METHOD_CTX;
-                if (sAMP_PREP_METHOD_NAME != null) a.SampPrepMethodName = sAMP_PREP_METHOD_NAME;
-                if (sAMP_PREP_METHOD_DESC != null) a.SampPrepMethodDesc = sAMP_PREP_METHOD_DESC;
-                if (aCT_IND != null) a.ActInd = aCT_IND;
+                if (sampPrepMethodId != null) a.SampPrepMethodId = sampPrepMethodId;
+                if (sampPrepMethodCtx != null) a.SampPrepMethodCtx = sampPrepMethodCtx;
+                if (sampPrepMethodName != null) a.SampPrepMethodName = sampPrepMethodName;
+                if (sampPrepMethodDesc != null) a.SampPrepMethodDesc = sampPrepMethodDesc;
+                if (actInd != null) a.ActInd = actInd;
 
                 a.UpdateDt = System.DateTime.Now;
 
@@ -821,6 +1033,330 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
-        
+        public int WQXImport_Org()
+        {
+            int actResult = 0;
+            try
+            {
+                //*******************************************
+                //grab latest Organizations from WQX Portal
+                //*******************************************
+                ServicePointManager.Expect100Continue = true;
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                WebRequest request = WebRequest.Create("http://www.waterqualitydata.us/Codes/Organization?mimeType=xml");
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                // Get the stream containing content returned by the server.
+                Stream dataStream = response.GetResponseStream();
+                // Open the stream using a StreamReader for easy access.
+                StreamReader reader = new StreamReader(dataStream);
+                // Read the content.
+                string responseFromServer = reader.ReadToEnd();
+                //read the response as XML
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(responseFromServer);
+                XmlNodeList codes = doc.SelectNodes("Codes")[0].SelectNodes("Code");
+
+                //if we got this far without error, then it's time to delete the previous organizations
+                //int SuccID = _db.TEpaOrgs.DeleteT_EPA_ORGS();
+                //int SuccID = _epaOrgRepo.DeleteT_EPA_ORGS();
+                int SuccID = 1;
+                if (SuccID > 0)
+                {
+                    //iterate through each organization to add to the table
+                    //foreach (XmlNode code in codes)
+                    //{
+                    //    string orgID = code.Attributes[0].Value;
+                    //    string orgName = code.Attributes[1].Value;
+                    //    _epaOrgRepo.InsertOrUpdateT_EPA_ORGS(orgID, orgName);
+                    //}
+
+                    actResult = 1;
+                }
+                else
+                {
+                    actResult = 2;
+                }
+            }
+            catch (Exception ex)
+            {
+                string msg = ex.Message;
+                actResult = 0;
+            }
+            return actResult;
+        }
+
+        public async System.Threading.Tasks.Task<int> WQXImport_RefDataAsync(string tableName)
+        {
+            int SuccID = 1;
+            try
+            {
+                //******* ORGANIZATION LEVEL *********************
+                if (tableName == "ALL" || tableName == "Tribe")
+                    SuccID = await GetAndStoreRefTableAsync("Tribe", "Code", "Name", null).ConfigureAwait(false);
+
+                //if it fails on the first, it will likely fail for all - so exit code
+                if (SuccID == 0)
+                {
+                    // lblMsg.Text = "Data retrieval failed";
+                    return SuccID;
+                }
+
+                // lblMsg.Text = "";
+
+                //******* PROJECT LEVEL *********************
+                if (tableName == "ALL" || tableName == "SamplingDesignType")
+                    await GetAndStoreRefTableAsync("SamplingDesignType", "Code", "Code", null).ConfigureAwait(false);
+
+
+                //******* MON LOC LEVEL *********************
+                if (tableName == "ALL" || tableName == "County")
+                    await GetAndStoreRefTableAsync("County", "CountyFIPSCode", "CountyName", "County").ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "Country")
+                    await GetAndStoreRefTableAsync("Country", "Code", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "HorizontalCollectionMethod")
+                    await GetAndStoreRefTableAsync("HorizontalCollectionMethod", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "HorizontalCoordinateReferenceSystemDatum")
+                    await GetAndStoreRefTableAsync("HorizontalCoordinateReferenceSystemDatum", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "MonitoringLocationType")
+                    await GetAndStoreRefTableAsync("MonitoringLocationType", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "State")
+                    await GetAndStoreRefTableAsync("State", "Code", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "VerticalCollectionMethod")
+                    await GetAndStoreRefTableAsync("VerticalCollectionMethod", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "VerticalCoordinateReferenceSystemDatum")
+                    await GetAndStoreRefTableAsync("VerticalCoordinateReferenceSystemDatum", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "WellFormationType")
+                    await GetAndStoreRefTableAsync("WellFormationType", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "WellType")
+                    await GetAndStoreRefTableAsync("WellType", "Name", "Name", null).ConfigureAwait(false);
+
+                //******* ACTIVITY/RESULTS LEVEL *************            
+                if (tableName == "ALL" || tableName == "ActivityMedia")
+                    await GetAndStoreRefTableAsync("ActivityMedia", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ActivityMediaSubdivision")
+                    await GetAndStoreRefTableAsync("ActivityMediaSubdivision", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ActivityType")
+                    await GetAndStoreRefTableAsync("ActivityType", "Code", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ActivityRelativeDepth")
+                    await GetAndStoreRefTableAsync("ActivityRelativeDepth", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "AnalyticalMethod")
+                    await GetAndStoreRefTableAsync("AnalyticalMethod", "ID", "Name", "AnalMethod").ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "Assemblage")
+                    await GetAndStoreRefTableAsync("Assemblage", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "BiologicalIntent")
+                    await GetAndStoreRefTableAsync("BiologicalIntent", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "CellForm")
+                    await GetAndStoreRefTableAsync("CellForm", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "CellShape")
+                    await GetAndStoreRefTableAsync("CellShape", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "Characteristic")
+                    await GetAndStoreRefTableAsync("Characteristic", "Name", "Name", "Characteristic").ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "DetectionQuantitationLimitType")
+                    await GetAndStoreRefTableAsync("DetectionQuantitationLimitType", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "FrequencyClassDescriptor")
+                    await GetAndStoreRefTableAsync("FrequencyClassDescriptor", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "Habit")
+                    await GetAndStoreRefTableAsync("Habit", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "MeasureUnit")
+                    await GetAndStoreRefTableAsync("MeasureUnit", "Code", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "MethodSpeciation")
+                    await GetAndStoreRefTableAsync("MethodSpeciation", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "MetricType")
+                    await GetAndStoreRefTableAsync("MetricType", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "NetType")
+                    await GetAndStoreRefTableAsync("NetType", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ResultDetectionCondition")
+                    await GetAndStoreRefTableAsync("ResultDetectionCondition", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ResultLaboratoryComment")
+                    await GetAndStoreRefTableAsync("ResultLaboratoryComment", "Code", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ResultMeasureQualifier")
+                    await GetAndStoreRefTableAsync("ResultMeasureQualifier", "Code", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ResultSampleFraction")
+                    await GetAndStoreRefTableAsync("ResultSampleFraction", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ResultStatus")
+                    await GetAndStoreRefTableAsync("ResultStatus", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ResultTemperatureBasis")
+                    await GetAndStoreRefTableAsync("ResultTemperatureBasis", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ResultTimeBasis")
+                    await GetAndStoreRefTableAsync("ResultTimeBasis", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ResultValueType")
+                    await GetAndStoreRefTableAsync("ResultValueType", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ResultWeightBasis")
+                    await GetAndStoreRefTableAsync("ResultWeightBasis", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "SampleCollectionEquipment")
+                    await GetAndStoreRefTableAsync("SampleCollectionEquipment", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "SampleContainerColor")
+                    await GetAndStoreRefTableAsync("SampleContainerColor", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "SampleContainerType")
+                    await GetAndStoreRefTableAsync("SampleContainerType", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "SampleTissueAnatomy")
+                    await GetAndStoreRefTableAsync("SampleTissueAnatomy", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "StatisticalBase")
+                    await GetAndStoreRefTableAsync("StatisticalBase", "Code", "Code", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "Taxon")
+                    await GetAndStoreRefTableAsync("Taxon", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ThermalPreservativeUsed")
+                    await GetAndStoreRefTableAsync("ThermalPreservativeUsed", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "TimeZone")
+                    await GetAndStoreRefTableAsync("TimeZone", "Code", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ToxicityTestType")
+                    await GetAndStoreRefTableAsync("ToxicityTestType", "Name", "Name", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "Voltinism")
+                    await GetAndStoreRefTableAsync("Voltinism", "Name", "Description", null).ConfigureAwait(false);
+
+                // DisplayDates();
+
+                //if (lblMsg.Text == "")
+                //    lblMsg.Text = "Data Retrieval Complete.";
+            }
+            catch (Exception ex)
+            {
+                string msg = ex.Message;
+                // throw;
+            }
+            return SuccID;
+        }
+
+        private async System.Threading.Tasks.Task<int> GetAndStoreRefTableAsync(
+            string tableName,
+            string ValueString,
+            string TextString,
+            string CustomParseName)
+        {
+            try
+            {
+                //get file
+
+                //DomainValuesService d = new DomainValuesService();
+                WQXWebServicesSoapClient.EndpointConfiguration endpointConfiguration
+                    = new WQXWebServicesSoapClient.EndpointConfiguration();
+                string url = _oeAppSettingsRepo.GetT_OE_APP_SETTING("CDX Ref Data URL");
+                WQXWebServicesSoapClient client = new WQXWebServicesSoapClient(endpointConfiguration, url);
+                GetDomainValuesRequest request =
+                    new GetDomainValuesRequest
+                    {
+                        Body = new GetDomainValuesRequestBody
+                        {
+                            domainName = tableName,
+                        }
+                    };
+                GetDomainValuesResponse response = await client.GetDomainValuesAsync(request).ConfigureAwait(false);
+                GetDomainValuesResponseBody responseBody = response.Body;
+
+                //d.Url = db_Ref.GetT_OE_APP_SETTING("CDX Ref Data URL");
+
+                XDocument xdoc = null;
+
+                byte[] b = responseBody.GetDomainValuesResult;
+
+                using (System.IO.Stream stream = new System.IO.MemoryStream(b))
+                {
+                    using (var zip = ZipFile.Read(stream))
+                    {
+                        foreach (var entry in zip)
+                        {
+                            //cleanup any previous files
+
+                            if (File.Exists(Path.Combine(_environment.WebRootPath, "/tmp/" + entry.FileName)))
+                                File.Delete(Path.Combine(_environment.WebRootPath, "/tmp/" + entry.FileName));
+
+                            entry.Extract(Path.Combine(_environment.WebRootPath, "/tmp/"));
+
+                            xdoc = XDocument.Load(Path.Combine(_environment.WebRootPath, "/tmp/" + entry.FileName));
+                        }
+                    }
+                }
+
+
+                // ***************** DEFAULT PARSING **************************************
+                if (CustomParseName == null)
+                {
+                    var lv1s = from lv1 in xdoc.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}WQXElementRow")
+                               select new
+                               {
+                                   ID = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}WQXElementRowColumn").First(ID2 => ID2.Attribute("colname").Value == ValueString).Attribute("value"),
+                                   Text = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}WQXElementRowColumn").First(Text2 => Text2.Attribute("colname").Value == TextString).Attribute("value"),
+                               };
+
+                    foreach (var lv1 in lv1s)
+                    {
+
+                        InsertOrUpdateT_WQX_REF_DATA(tableName, lv1.ID.Value, lv1.Text.Value, null, null);
+                    }
+
+                    var lv1sALT = from lv1 in xdoc.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRow")
+                                  select new
+                                  {
+                                      ID = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRowColumn").First(ID2 => ID2.Attribute("colname").Value == ValueString).Attribute("value"),
+                                      Text = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRowColumn").First(Text2 => Text2.Attribute("colname").Value == TextString).Attribute("value"),
+                                  };
+
+                    foreach (var lv1 in lv1sALT)
+                    {
+                        InsertOrUpdateT_WQX_REF_DATA(tableName, lv1.ID.Value, lv1.Text.Value, null, null);
+                    }
+                }
+
+                // ***************** CUSTOM PARSING for CHARACTERSTIC **************************************
+                else if (CustomParseName == "Characteristic")
+                {
+                    var lv1s = from lv1 in xdoc.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRow")
+                               select new
+                               {
+                                   ID = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRowColumn").First(ID2 => ID2.Attribute("colname").Value == ValueString).Attribute("value"),
+                                   SampFracReq = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRowColumn").First(Text2 => Text2.Attribute("colname").Value == "SampleFractionRequired").Attribute("value"),
+                                   PickList = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRowColumn").First(Text2 => Text2.Attribute("colname").Value == "PickList").Attribute("value")
+                               };
+
+                    foreach (var lv1 in lv1s)
+                    {
+                        InsertOrUpdateT_WQX_REF_CHARACTERISTIC(lv1.ID.Value, null, null, null, true, lv1.SampFracReq.Value, lv1.PickList.Value);
+                    }
+                }
+
+                // ***************** CUSTOM PARSING for ANALYTICAL METHOD **************************************
+                else if (CustomParseName == "AnalMethod")
+                {
+                    var lv1s = from lv1 in xdoc.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRow")
+                               select new
+                               {
+                                   ID = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRowColumn").First(ID2 => ID2.Attribute("colname").Value == "ID").Attribute("value"),
+                                   Name = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRowColumn").First(Text2 => Text2.Attribute("colname").Value == "Name").Attribute("value"),
+                                   CTX = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRowColumn").First(CTX2 => CTX2.Attribute("colname").Value == "ContextCode").Attribute("value"),
+                                   Desc = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/3}WQXElementRowColumn").First(Desc2 => Desc2.Attribute("colname").Value == "Description").Attribute("value"),
+                               };
+
+                    foreach (var lv1 in lv1s)
+                    {
+                        InsertOrUpdateT_WQX_REF_ANAL_METHOD(null, lv1.ID.Value, lv1.CTX.Value, lv1.Name.Value, lv1.Desc.Value, true);
+                    }
+                }
+
+                // ***************** CUSTOM PARSING for COUNTY **************************************
+                else if (CustomParseName == "County")
+                {
+                    var lv1s = from lv1 in xdoc.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}WQXElementRow")
+                               select new
+                               {
+                                   ID = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}WQXElementRowColumn").First(ID2 => ID2.Attribute("colname").Value == "CountyFIPSCode").Attribute("value"),
+                                   Text = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}WQXElementRowColumn").First(Text2 => Text2.Attribute("colname").Value == "CountyName").Attribute("value"),
+                                   State = lv1.Descendants("{http://www.exchangenetwork.net/schema/wqx/2}WQXElementRowColumn").First(Text2 => Text2.Attribute("colname").Value == "StateCode").Attribute("value"),
+                               };
+
+
+                    foreach (var lv1 in lv1s)
+                    {
+                        InsertOrUpdateT_WQX_REF_COUNTY(lv1.State.Value, lv1.ID.Value, lv1.Text.Value, null);
+                    }
+                }
+
+                return 1;
+            }
+            catch (Exception e)
+            {
+                //lblMsg.Text = "Error" + e.Message;
+                return 0;
+            }
+        }
     }
 }

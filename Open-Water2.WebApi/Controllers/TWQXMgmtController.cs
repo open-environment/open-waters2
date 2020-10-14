@@ -13,7 +13,7 @@ using OpenWater2.Models.Model;
 
 namespace Open_Water2.WebApi.Controllers
 {
-    
+
     [ApiController]
     public class TWQXMgmtController : ControllerBase
     {
@@ -65,7 +65,7 @@ namespace Open_Water2.WebApi.Controllers
         // PUT api/mgmt/updateTOeAppTasks
         [Route("api/mgmt/updateTOeAppTasks")]
         [HttpPut]
-        public IActionResult updateTOeAppTasks([FromBody]TOeAppTasks oeAppTasks)
+        public IActionResult updateTOeAppTasks([FromBody] TOeAppTasks oeAppTasks)
         {
             var result = _unitOfWork.oeAppTasksRepository.UpdateT_OE_APP_TASKS(oeAppTasks.TaskName, oeAppTasks.TaskStatus, oeAppTasks.TaskFreqMs, oeAppTasks.ModifyUserid);
             return Ok(result);
@@ -78,18 +78,44 @@ namespace Open_Water2.WebApi.Controllers
         {
             TWqxTransactionLogModel actResult = new TWqxTransactionLogModel();
             var result = _unitOfWork.tWqxTransactionLogRepository.GetWQX_TRANSACTION_LOG_ByLogID(LogID);
-            actResult.wqxTransactionLog = result;
-            if(result.ResponseFile != null)
+            //actResult.wqxTransactionLog = result;
+            //return File(actResult.wqxTransactionLog.ResponseFile, "application/x-unknown", 
+            //    actResult.wqxTransactionLog.ResponseFile != null ? actResult.wqxTransactionLog.ResponseTxt : "download.xml");
+            System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+
+            if (!string.IsNullOrWhiteSpace(result.ResponseTxt) && result.ResponseTxt.Contains(".zip"))
             {
-               actResult.ResponseFileXML = Encoding.UTF8.GetString(result.ResponseFile, 0, result.ResponseFile.Length);
+                //actResult.BlobFile = File(result.ResponseFile != null ? result.ResponseFile : encoding.GetBytes(result.ResponseTxt), "application/zip");
+                actResult.FileName = result.ResponseFile != null ? result.ResponseTxt : "download.zip";
+                //actResult.ContentType = "application/zip";
+                return File(result.ResponseFile != null ? result.ResponseFile : encoding.GetBytes(result.ResponseTxt), "application/zip", actResult.FileName);
+                /*return new FileContentResult(result.ResponseFile, "application/zip")
+                {
+                    FileDownloadName = actResult.FileName,
+                };*/
+
             }
-            return Ok(actResult);
+            else if (!string.IsNullOrWhiteSpace(result.ResponseTxt) && result.ResponseTxt.Contains(".xml"))
+            {
+                // var data = Encoding.UTF8.GetString(actResult.wqxTransactionLog.ResponseFile, 0, result.ResponseFile.Length);
+                //actResult.BlobFile = File(result.ResponseFile != null ? result.ResponseFile : encoding.GetBytes(result.ResponseTxt), "text/xml");
+                actResult.FileName = result.ResponseFile != null ? result.ResponseTxt : "download.xml";
+                //actResult.ContentType = "application/xml";
+                return File(result.ResponseFile != null ? result.ResponseFile : encoding.GetBytes(result.ResponseTxt), "text/xml", actResult.FileName);
+            }
+            else
+            {
+                //actResult.BlobFile = File(result.ResponseFile != null ? result.ResponseFile : encoding.GetBytes(""), "text/xml");
+                actResult.FileName = "download.xml";
+                //actResult.ContentType = "application/xml";
+                return File(result.ResponseFile != null ? result.ResponseFile : encoding.GetBytes(""), "text/xml", actResult.FileName);
+            }
         }
 
         // GET api/mgmt/wqxMaster
         [Route("api/mgmt/wqxMaster")]
         [HttpGet]
-        public async Task<IActionResult> WQX_MasterAsync([FromQuery]string orgId)
+        public async Task<IActionResult> WQX_MasterAsync([FromQuery] string orgId)
         {
             await _unitOfWork.tWqxSubmitRepository.WQX_MasterAsync(orgId);
             return Ok(1);

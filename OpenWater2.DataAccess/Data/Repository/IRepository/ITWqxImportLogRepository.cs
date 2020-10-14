@@ -11,5 +11,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
             string importProgressMessage, byte[] importFile, string userId);
         public int GetWQX_IMPORT_LOG_ProcessingCount();
         public TWqxImportLog GetWQX_IMPORT_LOG_NewActivity();
+        List<TWqxImportLog> GetWQX_IMPORT_LOG(string OrgID);
+        public int DeleteTWqxImportLog(int importId);
     }
 }
