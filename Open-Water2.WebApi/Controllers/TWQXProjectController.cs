@@ -70,5 +70,19 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxProjectRepository.GetWQX_PROJECT(ActInd, OrgID, WQXPending);
             return Ok(result);
         }
+
+        [HttpDelete("api/project/deleteTWqxImportTempProject")]
+        public IActionResult DeleteTWqxImportTempProject([FromQuery] int userIdx)
+        {
+            var result = _unitOfWork.tWqxImportTempProjectRepository.DeleteTWqxImportTempProject(userIdx);
+            return Ok(result);
+        }
+
+        [HttpGet("api/project/wqxImportProject")]
+        public async Task<IActionResult> WQXImportProjectAsync([FromQuery] string orgId, int userIdx)
+        {
+            var result = await _unitOfWork.tWqxProjectRepository.WQXImportProjectAsync(orgId, userIdx);
+            return Ok(result);
+        }
     }
 }

@@ -30,5 +30,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
             DateTime? wQXUpdateDate, Boolean? aCT_IND, Boolean? wQX_IND, String cREATE_USER = "system");
 
         public List<TWqxMonloc> GetWQX_MONLOC_ByOrgID(string OrgID);
+        public Task<ImportStatusModel> WQXImportMonLocAsync(string orgID, int userIdx);
+        public Task<ImportStatusModel> WQXImportMonLocAsync(string orgID, string userId);
     }
 }

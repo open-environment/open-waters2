@@ -15,7 +15,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             _db = db;
         }
 
-        public int DeleteT_WQX_IMPORT_LOG(int importId)
+        public int DeleteTWqxImportLog(int importId)
         {
             try
             {
@@ -82,11 +82,12 @@ namespace OpenWater2.DataAccess.Data.Repository
         {
             try
             {
+                if (importId == 0) importId = null;
                 TWqxImportLog t = new TWqxImportLog();
                 if (importId != null)
                     t = (from c in _db.TWqxImportLog
                          where c.ImportId == importId
-                         select c).First();
+                         select c).FirstOrDefault();
 
                 if (importId == null)
                     t = new TWqxImportLog();
@@ -114,7 +115,7 @@ namespace OpenWater2.DataAccess.Data.Repository
 
                 return t.ImportId;
             }
-            catch
+            catch(Exception e)
             {
                 return 0;
             }

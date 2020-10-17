@@ -80,5 +80,18 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxMonLocRepository.GetWQX_MONLOC_ByOrgID(OrgID);
             return Ok(result);
         }
+
+        [HttpDelete("api/monloc/deleteTWqxImportTempMonloc")]
+        public IActionResult DeleteTWqxImportTempMonloc([FromQuery] int userIdx)
+        {
+            var result = _unitOfWork.tWqxImportTempMonlocRepository.DeleteTWqxImportTempMonloc(userIdx);
+            return Ok(result);
+        }
+        [HttpGet("api/monloc/wqxImportMonLoc")]
+        public async Task<IActionResult> WQXImportMonLocAsync([FromQuery] string orgId, int userIdx)
+        {
+            var result = await _unitOfWork.tWqxMonLocRepository.WQXImportMonLocAsync(orgId, userIdx);
+            return Ok(result);
+        }
     }
 }

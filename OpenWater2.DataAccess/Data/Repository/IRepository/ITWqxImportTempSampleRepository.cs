@@ -2,13 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OpenWater2.DataAccess.Data.Repository.IRepository
 {
     public interface ITWqxImportTempSampleRepository : IRepository<TWqxImportTempSample>
     {
         public int CancelProcessImportTempSample(int userIdx);
-        public int DeleteT_WQX_IMPORT_TEMP_SAMPLE(string userId);
+        public int DeleteTWqxImportTempSample(int userIdx);
+        public int DeleteTWqxImportTempSample(string userId);
         public void WQX_IMPORT_TEMP_SAMPLE_GenVal(ref TWqxImportTempSample a, List<ConfigInfoType> t, Dictionary<string, string> colVals, string f);
         public int InsertUpdateWQX_IMPORT_TEMP_SAMPLE_New(string userId, string orgId, int? projectIdx, string projectId, Dictionary<string, string> colVals, string configFilePath);
         public void Update(TWqxImportTempSample wqxImportTempSample);
@@ -33,5 +35,6 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
             int? sAMP_PREP_IDX, global::System.String sAMP_PREP_ID, global::System.String sAMP_PREP_CTX, global::System.String sAMP_PREP_NAME,
             global::System.String sAMP_PREP_CONT_TYPE, global::System.String sAMP_PREP_CONT_COLOR, global::System.String sAMP_PREP_CHEM_PRESERV,
             global::System.String sAMP_PREP_THERM_PRESERV, global::System.String sAMP_PREP_STORAGE_DESC, string sTATUS_CD, string sTATUS_DESC, bool BioIndicator, Boolean autoImportRefDataInd);
+        public Task<bool> ImportActivityAsync(string OrgID, int? ImportID, string UserID);
     }
 }

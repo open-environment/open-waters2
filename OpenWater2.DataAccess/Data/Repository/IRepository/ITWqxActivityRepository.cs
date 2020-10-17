@@ -33,5 +33,6 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public List<TWqxResult> GetT_WQX_RESULT(int ActivityIDX);
         public TWqxActivity GetWQX_ACTIVITY_ByUnique(string OrgID, string ActivityID);
         public int UpdateWQX_ACTIVITY_WQXStatus(global::System.Int32? aCTIVITY_IDX, global::System.String wQX_SUBMIT_STATUS, Boolean? aCT_IND, Boolean? wQX_IND, String cREATE_USER = "system");
+        public List<VWqxActivityLatest> GetVWqxActivityLatest(string orgId);
     }
 }

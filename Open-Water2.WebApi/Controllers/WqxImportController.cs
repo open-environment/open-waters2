@@ -53,6 +53,15 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
 
+        // GET api/import/getWqxImportTempProjectByUserIdx
+        [Route("api/import/getWqxImportTempProjectByUserIdx")]
+        [HttpGet]
+        public IActionResult getWqxImportTempProjectByUserIdx([FromQuery] int userIdx)
+        {
+            var result = _unitOfWork.tWqxImportTempProjectRepository.GetWqxImportTempProject(userIdx);
+            return Ok(result);
+        }
+
         // GET api/import/getWqxImportTempSampleByUserIdx
         [Route("api/import/getWqxImportTempSampleByUserIdx")]
         [HttpGet]
@@ -74,6 +83,17 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
 
+        // POST api/import/processImportTempProject
+        [Route("api/import/processImportTempProject")]
+        [HttpPost]
+        public IActionResult processImportTempProject([FromBody] ImportProcessModel model)
+        {
+            int result = _unitOfWork.tWqxImportTempProjectRepository.ProcessImportTempProject(model.wqxImport,
+                                                                        model.wqxSubmitStatus,
+                                                                        model.selectedTempMonlocIds,
+                                                                        model.userIdx);
+            return Ok(result);
+        }
         // POST api/import/processImportTempSample
         [Route("api/import/processImportTempSample")]
         [HttpPost]
@@ -90,6 +110,18 @@ namespace Open_Water2.WebApi.Controllers
         public IActionResult cancelProcessImportTempMonloc([FromBody] ImportProcessModel model)
         {
             int result = _unitOfWork.tWqxImportTempMonlocRepository.CancelProcessImportTempMonloc(model.wqxImport,
+                                                                        model.wqxSubmitStatus,
+                                                                        model.selectedTempMonlocIds,
+                                                                        model.userIdx);
+            return Ok(result);
+        }
+
+        // POST api/import/cancelProcessImportTempProject
+        [Route("api/import/cancelProcessImportTempProject")]
+        [HttpPost]
+        public IActionResult cancelProcessImportTempProject([FromBody] ImportProcessModel model)
+        {
+            int result = _unitOfWork.tWqxImportTempProjectRepository.CancelProcessImportTempProject(model.wqxImport,
                                                                         model.wqxSubmitStatus,
                                                                         model.selectedTempMonlocIds,
                                                                         model.userIdx);
@@ -190,12 +222,40 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
 
-        // DELETE api/import/deleteTWqxImportTemplate
-        [Route("api/import/deleteTWqxImportTemplate")]
+        // DELETE api/import/deleteTWqxImportLog
+        [Route("api/import/deleteTWqxImportLog")]
         [HttpDelete]
         public IActionResult DeleteTWqxImportLog([FromQuery] int importId)
         {
             var result = _unitOfWork.tWqxImportLogRepository.DeleteTWqxImportLog(importId);
+            return Ok(result);
+        }
+
+        // DELETE api/import/insertOrUpdateTwqxImportLog
+        [Route("api/import/insertOrUpdateTwqxImportLog")]
+        [HttpPost]
+        public IActionResult InsertOrUpdateTwqxImportLog([FromBody] TWqxImportLog importLog)
+        {
+            var result = _unitOfWork.tWqxImportLogRepository.InsertUpdateWQX_IMPORT_LOG(
+                importLog.ImportId,
+                importLog.OrgId,
+                importLog.TypeCd,
+                importLog.FileName,
+                importLog.FileSize,
+                importLog.ImportStatus,
+                importLog.ImportProgress,
+                importLog.ImportProgressMsg,
+                importLog.ImportFile,
+                importLog.CreateUserid);
+            return Ok(result);
+        }
+
+        // GET api/import/importActivity
+        [Route("api/import/importActivity")]
+        [HttpGet]
+        public async Task<IActionResult> ImportActivityAsync([FromQuery] string orgId, int? importId, string userId)
+        {
+            var result = await _unitOfWork.tWqxImportTempSampleRepository.ImportActivityAsync(orgId, importId, userId);
             return Ok(result);
         }
     }

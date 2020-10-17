@@ -113,5 +113,19 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxActivityRepository.UpdateWQX_ACTIVITY_WQXStatus(aCTIVITY_IDX,wQX_SUBMIT_STATUS,aCT_IND,wQX_IND,cREATE_USER);
             return Ok(result);
         }
+
+        [HttpDelete("api/activity/deleteTWqxImportTempSample")]
+        public IActionResult DeleteTWqxImportTempSample([FromQuery] int userIdx)
+        {
+            var result = _unitOfWork.tWqxImportTempSampleRepository.DeleteTWqxImportTempSample(userIdx);
+            return Ok(result);
+        }
+
+        [HttpGet("api/activity/getVWqxActivityLatest")]
+        public IActionResult GetVWqxActivityLatest([FromQuery] string orgId)
+        {
+            var result = _unitOfWork.tWqxActivityRepository.GetVWqxActivityLatest(orgId);
+            return Ok(result);
+        }
     }
 }

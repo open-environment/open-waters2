@@ -41,6 +41,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         ITWqxSubmitRepository tWqxSubmitRepository { get;  }
         
         ITWqxRefDefaultTimeZoneRepository tWqxRefDefaultTimeZoneRepository { get; }
+        ITWqxImportTempProjectRepository tWqxImportTempProjectRepository { get;  }
         void Save();
     }
 }

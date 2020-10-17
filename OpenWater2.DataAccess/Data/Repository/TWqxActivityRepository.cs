@@ -393,5 +393,19 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
+
+        public List<VWqxActivityLatest> GetVWqxActivityLatest(string orgId)
+        {
+            try
+            {
+                return (from a in _db.VWqxActivityLatest
+                        where (orgId != null ? a.OrgId == orgId : true)
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

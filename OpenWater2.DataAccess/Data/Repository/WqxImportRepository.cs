@@ -326,9 +326,9 @@ namespace OpenWater2.DataAccess.Data.Repository
         private bool DeleteTempImportData(string importType, string username)
         {
             if (importType == "M")
-                return (_tempMonlocRepo.DeleteT_WQX_IMPORT_TEMP_MONLOC(username) != 0);
+                return (_tempMonlocRepo.DeleteTWqxImportTempMonloc(username) != 0);
             else if (importType == "S")
-                return (_tempSampleRepo.DeleteT_WQX_IMPORT_TEMP_SAMPLE(username) != 0);
+                return (_tempSampleRepo.DeleteTWqxImportTempSample(username) != 0);
             else if (importType == "I")
             {
                 _tempActivityMetreicRepo.DeleteT_WQX_IMPORT_TEMP_ACTIVITY_METRIC(username);

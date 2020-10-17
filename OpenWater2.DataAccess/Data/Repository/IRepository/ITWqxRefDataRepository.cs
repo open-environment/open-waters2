@@ -74,6 +74,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public int InsertOrUpdateT_WQX_REF_DATA(TWqxRefData refData);
         public int InsertOrUpdateT_WQX_REF_COUNTY(string stateCode, string countyCode, string countyName, Boolean? UsedInd);
         public List<TWqxRefLab> GetT_WQX_REF_LAB_ByOrgId(string OrgId);
+        public TWqxRefData GetT_WQX_REF_DATA_ByTextGetRow(string table, string text);
     }
     
 }

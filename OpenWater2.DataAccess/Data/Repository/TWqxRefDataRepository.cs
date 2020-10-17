@@ -373,6 +373,23 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public TWqxRefData GetT_WQX_REF_DATA_ByTextGetRow(string table, string text)
+        {
+            try
+            {
+                return (from a in _db.TWqxRefData
+                        where (a.ActInd == true)
+                        && a.Table == table
+                        && a.Text.ToUpper() == text.ToUpper()
+                        select a).FirstOrDefault();
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
         public List<TWqxRefData> GetT_WQX_REF_DATA_ByValueOrText(string table, string value)
         {
             try
