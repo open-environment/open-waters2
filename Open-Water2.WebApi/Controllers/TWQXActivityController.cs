@@ -127,5 +127,11 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxActivityRepository.GetVWqxActivityLatest(orgId);
             return Ok(result);
         }
+        [HttpGet("api/activity/getTWqxResultSampledCharacteristics")]
+        public IActionResult GetTWqxResultSampledCharacteristics([FromQuery] string orgId)
+        {
+            var result = _unitOfWork.tWqxActivityRepository.GetTWqxResultSampledCharacteristics(orgId);
+            return Ok(result);
+        }
     }
 }

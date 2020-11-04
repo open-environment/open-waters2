@@ -63,22 +63,21 @@ namespace OpenWater2.DataAccess.Data.Repository
                                         _webHostEnvironment,
                                         tEpaOrgsRepository,
                                         oeAppSettingsRepository);
+            tWqxActivityRepository = new TWqxActivityRepository(_db,
+                                                                wqxOrganizationRepository,
+                                                                oeAppSettingsRepository,
+                                                                tWqxRefDefaultTimeZoneRepository);
             tWqxMonLocRepository = new TWqxMonLocRepository(_db,
                                             oeAppSettingsRepository,
                                             wqxOrganizationRepository,
                                             tOeSysLogRepository,
-                                            tWqxRefDataRepository);
+                                            tWqxRefDataRepository,
+                                            tWqxActivityRepository);
 
             tWqxImportTempMonlocRepository = new TWqxImportTempMonlocRepository(_db,
                                                     tWqxRefDataRepository,
                                                     tWqxMonLocRepository,
                                                     tWqxImportLogRepository);
-
-            tWqxActivityRepository = new TWqxActivityRepository(_db,
-                                                                wqxOrganizationRepository,
-                                                                oeAppSettingsRepository,
-                                                                tWqxRefDefaultTimeZoneRepository);
-
             tWqxSubmitRepository = new TWqxSubmitRepository(_db,
                                                             tOeSysLogRepository,
                                                             oeAppSettingsRepository,

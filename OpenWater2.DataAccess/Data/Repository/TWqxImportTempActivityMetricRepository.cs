@@ -36,6 +36,38 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        public List<TWqxImportTempActivityMetric> GetWqxImportTempActivityMetric(string userId)
+        {
+            try
+            {
+                return (from a in _db.TWqxImportTempActivityMetric
+                        where a.UserId == userId
+                        orderby a.TempActivityMetricIdx
+                        select a).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<TWqxImportTempActivityMetric> GetWqxImportTempActivityMetric(int userIdx)
+        {
+            try
+            {
+                TOeUsers user = _db.TOeUsers.Where(u => u.UserIdx == userIdx).FirstOrDefault();
+                if(user != null)
+                {
+                    return GetWqxImportTempActivityMetric(user.UserId);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return null;
+        }
+
         public int InsertWQX_IMPORT_TEMP_ACTIVITY_METRIC(string userId, string orgId, Dictionary<string, string> colVals, string configFilePath)
         {
             try

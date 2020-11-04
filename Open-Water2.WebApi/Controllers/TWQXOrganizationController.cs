@@ -106,6 +106,40 @@ namespace Open_Water2.WebApi.Controllers
             var result = UtilityHelper.GetAdminTaskData(_user.UserId, OrgID, _unitOfWork, _user);
             return Ok(result);
         }
+
+
+        [HttpGet("api/org/getMyAccountByUserIdx")]
+        public IActionResult GetMyAccountByUserIdx([FromQuery] int userIdx)
+        {
+            MyAccountModel myAccountModel = new MyAccountModel();
+            var result = _unitOfWork.oeUsersRepostory.GetT_OE_USERSByIDX(userIdx);
+            if (result != null) myAccountModel.user = result;
+            var result2 = _unitOfWork.oeUserRolesRepository.GetT_OE_ROLESInUser(userIdx);
+            if (result2 != null)
+            {
+                foreach(TOeRoles role in result2)
+                {
+                    myAccountModel.roles.Add(role.RoleName);
+                }
+            }
+            var result3 = _unitOfWork.wqxOrganizationRepository.GetWQX_USER_ORGS_ByUserIDX(userIdx, true);
+            if (result3 != null)
+            {
+                foreach(TWqxOrganization org in result3)
+                {
+                    myAccountModel.organizations.Add(org.OrgFormalName);
+                }
+            }
+            return Ok(myAccountModel);
+        }
+
+        [HttpPost("api/org/updateMyAccountUser")]
+        public IActionResult UpdateMyAccountUser([FromQuery] int userIdx, string firstName, string lastName, string email, string phone, string userName)
+        {
+            var result = _unitOfWork.oeUsersRepostory.UpdateT_OE_USERS(userIdx, null, null, firstName, lastName, email, null, null, null, null, phone, null, userName);
+            return Ok(result);
+        }
+
         [HttpPost("api/org/ApproveRejectTWqxUserOrgs")]
         public IActionResult ApproveRejectT_WQX_USER_ORGS([FromQuery] string orgID, int userIDX, string ApproveRejectCode)
         {

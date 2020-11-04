@@ -32,5 +32,7 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public List<TWqxMonloc> GetWQX_MONLOC_ByOrgID(string OrgID);
         public Task<ImportStatusModel> WQXImportMonLocAsync(string orgID, int userIdx);
         public Task<ImportStatusModel> WQXImportMonLocAsync(string orgID, string userId);
+        public Task<List<MapMarkerModel>> GetSitesAsync(bool ActInd, string OrgID, bool? WQXPending);
+        public List<Object> GetChartData(string orgId, string chartType, string charName, string charName2, string begDt, string endDt, string monLoc, string decimals, string wqxInd);
     }
 }

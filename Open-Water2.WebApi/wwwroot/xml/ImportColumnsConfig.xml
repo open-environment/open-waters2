@@ -158,8 +158,8 @@
     <Field Level="I" FieldName="MetricTypeId" ReqInd="N" Length="35" UniqueInd="N" FKey="" DataType=""><Alias>Metric Type ID</Alias></Field>
     <Field Level="I" FieldName="MetricTypeIdContext" ReqInd="N" Length="50" UniqueInd="N" FKey="" DataType=""><Alias>Metric Type Context</Alias></Field>
     <Field Level="I" FieldName="MetricScore" ReqInd="N" Length="10" UniqueInd="N" FKey="" DataType=""><Alias>Activity Metric Score</Alias></Field>
-    <Field Level="I" FieldName="MetricValuemsr" ReqInd="N" Length="12" UniqueInd="N" FKey="" DataType=""><Alias>Activity Metric Value</Alias></Field>
-    <Field Level="I" FieldName="MetricValuemsrUnit" ReqInd="N" Length="12" UniqueInd="N" FKey="MeasureUnit" DataType=""><Alias>Activity Metric Value Unit</Alias></Field>
+    <Field Level="I" FieldName="MetricValueMsr" ReqInd="N" Length="12" UniqueInd="N" FKey="" DataType=""><Alias>Activity Metric Value</Alias></Field>
+    <Field Level="I" FieldName="MetricValueMsrUnit" ReqInd="N" Length="12" UniqueInd="N" FKey="MeasureUnit" DataType=""><Alias>Activity Metric Value Unit</Alias></Field>
     <Field Level="I" FieldName="TempBioHabitatIndexIdx" ReqInd="N" Length="" UniqueInd="N" FKey="" DataType="int"><Alias>Index ID</Alias></Field>
     <Field Level="I" FieldName="MetricComment" ReqInd="N" Length="1000" UniqueInd="N" FKey="" DataType=""><Alias>Activity Metric Comment</Alias></Field>
 

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
+using OpenWater2.Models.Model;
 
 namespace Open_Water2.WebApi.Controllers
 {
@@ -91,6 +92,27 @@ namespace Open_Water2.WebApi.Controllers
         public async Task<IActionResult> WQXImportMonLocAsync([FromQuery] string orgId, int userIdx)
         {
             var result = await _unitOfWork.tWqxMonLocRepository.WQXImportMonLocAsync(orgId, userIdx);
+            return Ok(result);
+        }
+        [HttpGet("api/monloc/getSitesAsync")]
+        public async Task<IActionResult> GetSitesAsync([FromQuery] bool ActInd, string OrgID, bool? WQXPending)
+        {
+            var result = await _unitOfWork.tWqxMonLocRepository.GetSitesAsync(ActInd, OrgID, WQXPending);
+            return Ok(result);
+        }
+        [HttpPost("api/monloc/getChartData")]
+        public IActionResult GetChartData([FromBody] GetChartDataModel getChartDataModel)
+        {
+            var result = _unitOfWork.tWqxMonLocRepository.GetChartData(
+                getChartDataModel.orgId,
+                getChartDataModel.chartType,
+                System.Web.HttpUtility.UrlDecode(getChartDataModel.charName),
+                System.Web.HttpUtility.UrlDecode(getChartDataModel.charName2),
+                getChartDataModel.begDt,
+                getChartDataModel.endDt,
+                string.Join(",",getChartDataModel.monLoc),
+                getChartDataModel.decimals,
+                getChartDataModel.wqxInd);
             return Ok(result);
         }
     }

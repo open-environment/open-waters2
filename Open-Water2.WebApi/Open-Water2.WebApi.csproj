@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\App_Docs\" />
     <Folder Include="wwwroot\xml\" />
   </ItemGroup>
 

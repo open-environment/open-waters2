@@ -86,16 +86,16 @@ namespace Open_Water2.WebApi
             });
 
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
-        {
-            builder.SetIsOriginAllowed(_ => true)
-                   .AllowAnyMethod()
-                   .AllowAnyHeader()
-                   .AllowCredentials()
-                   .WithExposedHeaders("Content-Disposition");
-        }));
+            {
+                builder.SetIsOriginAllowed(_ => true)
+                       .AllowAnyMethod()
+                       .AllowAnyHeader()
+                       .AllowCredentials()
+                       .WithExposedHeaders("Content-Disposition");
+            }));
 
             services.AddScoped<IUserService, UserService>();
-            
+
 
             services.AddScoped<ApplicationDbContext, ApplicationDbContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -111,13 +111,14 @@ namespace Open_Water2.WebApi
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors("MyPolicy");
             //app.UseCors(options => options.SetIsOriginAllowed(x => _ = true).AllowAnyMethod().AllowAnyHeader().AllowCredentials());
-            //app.UseOptions();
+            app.UseOptions();
 
             app.UseHttpsRedirection();
             app.UseRouting();
 
-            app.UseCors("MyPolicy");
+            
 
             app.UseAuthentication();
             app.UseAuthorization();

@@ -258,6 +258,14 @@ namespace Open_Water2.WebApi.Controllers
             var result = await _unitOfWork.tWqxImportTempSampleRepository.ImportActivityAsync(orgId, importId, userId);
             return Ok(result);
         }
+        // GET api/import/getWqxImportTempActivityMetric
+        [Route("api/import/getWqxImportTempActivityMetric")]
+        [HttpGet]
+        public IActionResult GetWqxImportTempActivityMetric([FromQuery] int userIdx)
+        {
+            var result = _unitOfWork.tWqxImportTempActivityMetricRepository.GetWqxImportTempActivityMetric(userIdx);
+            return Ok(result);
+        }
     }
 
 }

@@ -3,10 +3,11 @@ using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Data.Entity.Validation;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -32,7 +33,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             try
             {
                 TOeUsers user = _db.TOeUsers.Where(u => u.UserIdx == userIdx).FirstOrDefault();
-                if(user == null)
+                if (user == null)
                 {
                     return actResult;
                 }
@@ -79,8 +80,8 @@ namespace OpenWater2.DataAccess.Data.Repository
             try
             {
                 TWqxActivity a = (from c in _db.TWqxActivity
-                                    where c.ActivityIdx == aCTIVITY_IDX
-                                    select c).FirstOrDefault();
+                                  where c.ActivityIdx == aCTIVITY_IDX
+                                  select c).FirstOrDefault();
 
                 if (wQX_SUBMIT_STATUS != null) a.WqxSubmitStatus = wQX_SUBMIT_STATUS;
                 if (aCT_IND != null) a.ActInd = aCT_IND;
@@ -407,5 +408,73 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
+
+        public VWqxActivityLatest GetVWqxActivityLatestByMonlocId(int monlocId)
+        {
+            try
+            {
+                return (from a in _db.VWqxActivityLatest
+                        where a.MonlocIdx == monlocId
+                        select a).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<CharDisplay> GetTWqxResultSampledCharacteristics(string orgId)
+        {
+            List<CharDisplay> actResult = null;
+            try
+            {
+                //var xxx = (from r in _db.TWqxResult
+                //           join a in _db.TWqxActivity on r.ActivityIdx equals a.ActivityIdx
+                //           where a.OrgId == orgId
+                //           && System.Data.Objects.SqlClient.SqlFunctions.IsNumeric(r.ResultMsr) == 1
+                //           select new CharDisplay
+                //           {
+                //               charName = EF.Functions.Like(r.ResultMsr, @"^-?\d*\.{0,1}\d+$").ToString()
+                //           }).Distinct().OrderBy(x => x.charName).ToList();
+
+                using (DataSet ds = new DataSet("ActResultsDS"))
+                {
+                    using (var sqlComm = (Microsoft.Data.SqlClient.SqlCommand)_db.Database.GetDbConnection().CreateCommand())
+                    {
+                        sqlComm.CommandType = CommandType.Text;
+                        sqlComm.CommandText = "select distinct r.CHAR_NAME from T_WQX_RESULT r inner join T_WQX_ACTIVITY a on a.ACTIVITY_IDX = r.ACTIVITY_IDX where a.ORG_ID = @OrgId and ISNUMERIC(r.RESULT_MSR) = 1 order by r.CHAR_NAME";
+                        sqlComm.Parameters.Add("@OrgID", SqlDbType.VarChar).Value = orgId ?? (object)DBNull.Value;
+
+                        using (Microsoft.Data.SqlClient.SqlDataAdapter da = new Microsoft.Data.SqlClient.SqlDataAdapter())
+                        {
+                            da.SelectCommand = sqlComm;
+                            da.Fill(ds);
+                            if (ds != null && ds.Tables.Count > 0)
+                            {
+                                //charName
+                                if (ds.Tables[0].Rows.Count > 0) actResult = new List<CharDisplay>();
+                                foreach (DataRow row in ds.Tables[0].Rows)
+                                {
+                                    CharDisplay cd = new CharDisplay
+                                    {
+                                        charName = row[0] == DBNull.Value ? "" : row[0].ToString(),
+                                    };
+                                    actResult.Add(cd);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //return xxx;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return actResult;
+        }
+
+       
     }
 }

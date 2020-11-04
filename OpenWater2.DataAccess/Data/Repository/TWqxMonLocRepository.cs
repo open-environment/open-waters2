@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using net.epacdxnode.test;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity.Validation;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,12 +22,14 @@ namespace OpenWater2.DataAccess.Data.Repository
         private readonly ITWqxOrganizationRepository _orgRepo;
         private readonly ITOeSysLogRepository _sysLogRepo;
         private readonly ITWqxRefDataRepository _refDataRepo;
+        private readonly ITWqxActivityRepository _activityRepo;
         //private readonly ITWqxImportTempMonlocRepository _impTempMonlocRepo;
         public TWqxMonLocRepository(ApplicationDbContext db,
             ITOeAppSettingsRepository appSettingsRepo,
             ITWqxOrganizationRepository orgRepo,
             ITOeSysLogRepository sysLogRepo,
-            ITWqxRefDataRepository refDataRepo
+            ITWqxRefDataRepository refDataRepo,
+            ITWqxActivityRepository activityRepo
             /*ITWqxImportTempMonlocRepository impTempMonlocRepo*/) : base(db)
         {
             _db = db;
@@ -32,6 +37,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             _orgRepo = orgRepo;
             _sysLogRepo = sysLogRepo;
             _refDataRepo = refDataRepo;
+            _activityRepo = activityRepo;
             //_impTempMonlocRepo = impTempMonlocRepo;
         }
 
@@ -774,5 +780,159 @@ namespace OpenWater2.DataAccess.Data.Repository
                 return null;
             }
         }
+
+        public async Task<List<MapMarkerModel>> GetSitesAsync(bool actInd, string orgId, bool? wqxPending)
+        {
+            List<MapMarkerModel> actResult = new List<MapMarkerModel>();
+            List <TWqxMonloc> ms = await GetWQX_MONLOC(true, orgId, false).ConfigureAwait(false);
+            if(ms != null)
+            {
+                foreach(TWqxMonloc m in ms)
+                {
+                    string samps = "";
+                    string comments = "";
+                    VWqxActivityLatest l = _activityRepo.GetVWqxActivityLatestByMonlocId(m.MonlocIdx);
+                    if(l != null)
+                    {
+                        samps = "<br/><u><b>Most recent sampling results:</b></u><br/>Alkalinity: " + l.AlkalinityTotal + "<br/>Ammonia: " + l.Ammonia + "<br/>E coli: " + l.EscherichiaColi +
+                            "<br/>Nitrate: " + l.Nitrate +
+                            "<br/>Nitrite: " + l.Nitrite +
+                            "<br/>pH: " + l.PH +
+                            "<br/>Phosphorus: " + l.Phosphorus +
+                            "<br/>Salinity: " + l.Salinity +
+                            "<br/>Water Temp: " + l.TemperatureWater +
+                            "<br/>Turbidity: " + l.Turbidity;
+
+                        if (l.ActComment != null)
+                            comments = "<br/><i>" + l.ActComment + "</i><br/>";
+                    }
+                    string infoTitle = m.MonlocName + " - " + m.MonlocType;
+                    string infoBody = m.MonlocDesc + " < br /> " + comments + samps;
+                    actResult.Add(new MapMarkerModel(m.LatitudeMsr,m.LongitudeMsr,infoTitle, infoBody));
+                }
+            }
+            return actResult;
+        }
+
+        public List<object> GetChartData(string orgId, string chartType, string charName, string charName2, string begDt, string endDt, string monLoc, string decimals, string wqxInd)
+        {
+            if (string.IsNullOrWhiteSpace(orgId)) return null;
+            //handle monLocArray
+            List<SelMonloc> _monLocList = new List<SelMonloc>();
+            if (string.IsNullOrWhiteSpace(monLoc)) monLoc = "";
+            List<string> monLocList = monLoc.Split(',').ToList();
+            int i = 1;
+            foreach (string m in monLocList)
+            {
+                _monLocList.Add(new SelMonloc { monLocIDX = m.ConvertOrDefault<int?>(), seq = i });
+                i++;
+            }
+
+            //get results from stored procedure
+            List<WQXAnalysis_Result> _ds = SP_WQXAnalysis(chartType, orgId, (chartType == "MLOC" ? 0 : monLoc.ConvertOrDefault<int>()), charName, begDt.ConvertOrDefault<DateTime?>(), endDt.ConvertOrDefault<DateTime?>(), wqxInd);
+            if (_ds == null) return null;
+
+            //populate to object that gets returned
+            List<object> iData = new List<object>();
+            List<string> labels = new List<string>();
+            List<decimal> lst_dataItem_1 = new List<decimal>();
+            List<decimal> lst_dataItem_2 = new List<decimal>();
+
+            //populate data for bar chart
+            List<WQXAnalysis_Result> _ds2 = null;
+            if (chartType == "MLOC")
+            {
+                _ds2 = (from a in _ds
+                        join b in _monLocList on a.MONLOC_IDX equals b.monLocIDX
+                        orderby b.seq
+                        select a).ToList();
+            }
+            else if (chartType == "SERIES")
+                _ds2 = _ds;
+
+            //populate labels
+            foreach (WQXAnalysis_Result _d in _ds2)
+                labels.Add(chartType == "SERIES" ? _d.ACT_START_DT.ToString() : _d.MONLOC_ID);
+            iData.Add(labels);
+
+            //populate points
+            foreach (WQXAnalysis_Result _d in _ds2)
+                lst_dataItem_1.Add(string.IsNullOrWhiteSpace(decimals) ? _d.RESULT_MSR.ConvertOrDefault<decimal>() : Math.Round(_d.RESULT_MSR.ConvertOrDefault<decimal>(), 2));
+            iData.Add(lst_dataItem_1);
+
+            //populate datatable
+            iData.Add(_ds2);
+
+            //populate 2nd char
+            List<WQXAnalysis_Result> _ds_second = null;
+            if (charName2 != "")
+                _ds_second = SP_WQXAnalysis(chartType, orgId, (chartType == "MLOC" ? 0 : monLoc.ConvertOrDefault<int>()), charName2, begDt.ConvertOrDefault<DateTime?>(), endDt.ConvertOrDefault<DateTime?>(), wqxInd);
+            iData.Add(_ds_second);
+
+
+            return iData;
+        }
+
+        private List<WQXAnalysis_Result> SP_WQXAnalysis(string TypeText, string OrgID, int? MonLocIDX, string charName, DateTime? startDt, DateTime? endDt, string DataIncludeInd)
+        {
+            List<WQXAnalysis_Result> actResult = null;
+            try
+            {
+                using (DataSet ds = new DataSet("dbo.WQXAnalysisDS"))
+                {
+                    using (var sqlComm = (Microsoft.Data.SqlClient.SqlCommand)_db.Database.GetDbConnection().CreateCommand())
+                    {
+                        sqlComm.CommandType = CommandType.StoredProcedure;
+                        sqlComm.CommandText = "WQXAnalysis";
+                        sqlComm.Parameters.Add("@TypeText", SqlDbType.VarChar).Value = TypeText ?? (object)DBNull.Value;
+                        sqlComm.Parameters.Add("@OrgID", SqlDbType.VarChar).Value = OrgID ?? (object)DBNull.Value;
+                        sqlComm.Parameters.Add("@MonLocIDX", SqlDbType.Int).Value = MonLocIDX ?? (object)DBNull.Value;
+                        sqlComm.Parameters.Add("@CharName", SqlDbType.VarChar).Value = charName ?? (object)DBNull.Value;
+                        sqlComm.Parameters.Add("@StartDt", SqlDbType.DateTime).Value = startDt ?? (object)DBNull.Value;
+                        sqlComm.Parameters.Add("@EndDt", SqlDbType.DateTime).Value = endDt ?? (object)DBNull.Value; 
+                        sqlComm.Parameters.Add("@DataIncludeInd", SqlDbType.VarChar).Value = DataIncludeInd ?? (object)DBNull.Value;
+                        
+                        using (Microsoft.Data.SqlClient.SqlDataAdapter da = new Microsoft.Data.SqlClient.SqlDataAdapter())
+                        {
+                            da.SelectCommand = sqlComm;
+                            da.Fill(ds);
+                            if(ds != null && ds.Tables.Count > 0)
+                            {
+                                //MONLOC_IDX, MONLOC_ID, CHAR_NAME, ACT_START_DT, RESULT_MSR, 
+                                //RESULT_MSR_UNIT, DETECTION_LIMIT
+                                if (ds.Tables[0].Rows.Count > 0) actResult = new List<WQXAnalysis_Result>();
+                                foreach (DataRow row in ds.Tables[0].Rows)
+                                {
+                                    int _MONLOC_IDX = 0;
+                                    int.TryParse(row[0] == DBNull.Value ? "0" : row[0].ToString(), out _MONLOC_IDX);
+                                    decimal _RESULT_MSR = 0;
+                                    decimal.TryParse(row[4] == DBNull.Value ? "0" : row[4].ToString(), out _RESULT_MSR);
+                                    WQXAnalysis_Result war = new WQXAnalysis_Result
+                                    {
+                                        MONLOC_IDX =  _MONLOC_IDX,
+                                        MONLOC_ID = row[1] == DBNull.Value ? "" : row[1].ToString(),
+                                        CHAR_NAME = row[2] == DBNull.Value ? "" : row[2].ToString(),
+                                        ACT_START_DT = row[3] == DBNull.Value ? (DateTime?) null : (DateTime?)row[3],
+                                        RESULT_MSR = _RESULT_MSR,
+                                        RESULT_MSR_UNIT = row[5] == DBNull.Value ? "" : row[5].ToString(),
+                                        DETECTION_LIMIT = row[6] == DBNull.Value ? "" : row[6].ToString(),
+                                    };
+                                    actResult.Add(war);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                
+            }
+            catch (Exception ex)
+            {
+                  throw;
+            }
+            return actResult;
+        }
+
+        
     }
 }
