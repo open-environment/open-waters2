@@ -266,6 +266,14 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxImportTempActivityMetricRepository.GetWqxImportTempActivityMetric(userIdx);
             return Ok(result);
         }
+        // GET api/import/getImportTempSampleHeaders
+        [Route("api/import/getImportTempSampleHeaders")]
+        [HttpGet]
+        public IActionResult GetImportTempSampleHeaders()
+        {
+            var result = _unitOfWork.tWqxImportTempSampleRepository.GetImportTempSampleHeaders();
+            return Ok(result);
+        }
     }
 
 }

@@ -5,13 +5,16 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using OpenWater2.DataAccess.Data.Repository.IRepository;
 
 namespace Open_Water2.WebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    //[Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
+        IUnitOfWork _unitOfWork;
+
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
@@ -21,13 +24,22 @@ namespace Open_Water2.WebApi.Controllers
         private readonly IWebHostEnvironment _env;
         public WeatherForecastController(
             ILogger<WeatherForecastController> logger,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            IUnitOfWork unitOfWork)
         {
             _logger = logger;
             _env = env;
+            _unitOfWork = unitOfWork;
         }
 
-        [HttpGet]
+        [HttpGet("api/test/getProjs")]
+        public IActionResult GetWQX_Projects()
+        {
+            var result = _unitOfWork.tWqxProjectRepository.GetAll();
+            return Ok(result);
+        }
+
+        [HttpGet("api/test/getPath")]
         public ContentResult Get()
         {
             string configFilePath = _env.WebRootPath + @"\xml\ImportColumnsConfig.xml";

@@ -36,5 +36,6 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
             global::System.String sAMP_PREP_CONT_TYPE, global::System.String sAMP_PREP_CONT_COLOR, global::System.String sAMP_PREP_CHEM_PRESERV,
             global::System.String sAMP_PREP_THERM_PRESERV, global::System.String sAMP_PREP_STORAGE_DESC, string sTATUS_CD, string sTATUS_DESC, bool BioIndicator, Boolean autoImportRefDataInd);
         public Task<bool> ImportActivityAsync(string OrgID, int? ImportID, string UserID);
+        public string GetImportTempSampleHeaders();
     }
 }

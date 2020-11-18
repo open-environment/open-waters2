@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using System.IO;
 using Ionic.Zip;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -1385,6 +1386,41 @@ namespace OpenWater2.DataAccess.Data.Repository
             {
                 return null;
             }
+        }
+
+        public string GetImportTempSampleHeaders()
+        {
+            string actResult = "";
+            try
+            {
+                using (DataSet ds = new DataSet("ImportTempSampleHeadersDS"))
+                {
+                    using (var sqlComm = (Microsoft.Data.SqlClient.SqlCommand)_db.Database.GetDbConnection().CreateCommand())
+                    {
+                        sqlComm.CommandType = CommandType.StoredProcedure;
+                        sqlComm.CommandText = "GetImportActivitiesHeaders";
+
+                        using (Microsoft.Data.SqlClient.SqlDataAdapter da = new Microsoft.Data.SqlClient.SqlDataAdapter())
+                        {
+                            da.SelectCommand = sqlComm;
+                            da.Fill(ds);
+                            if (ds != null && ds.Tables.Count > 0)
+                            {
+                                foreach (DataRow row in ds.Tables[0].Rows)
+                                {
+                                    actResult = row[0].ToString();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            return actResult;
         }
     }
 }

@@ -87,7 +87,7 @@ namespace Open_Water2.WebApi
 
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
-                builder.SetIsOriginAllowed(_ => true)
+                 builder.SetIsOriginAllowed(_ => true)
                        .AllowAnyMethod()
                        .AllowAnyHeader()
                        .AllowCredentials()
@@ -95,7 +95,6 @@ namespace Open_Water2.WebApi
             }));
 
             services.AddScoped<IUserService, UserService>();
-
 
             services.AddScoped<ApplicationDbContext, ApplicationDbContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -106,19 +105,19 @@ namespace Open_Water2.WebApi
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env)
         {
+            
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors("MyPolicy");
-            //app.UseCors(options => options.SetIsOriginAllowed(x => _ = true).AllowAnyMethod().AllowAnyHeader().AllowCredentials());
-            app.UseOptions();
-
             app.UseHttpsRedirection();
             app.UseRouting();
 
-            
+            app.UseCors("MyPolicy");
+            //app.UseCors(options => options.SetIsOriginAllowed(x => _ = true).AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+            app.UseOptions();
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -127,7 +126,7 @@ namespace Open_Water2.WebApi
             {
                 endpoints.MapControllers();
             });
-            //loggerFactory.AddFile("Logs/mylog-{Date}.txt",LogLevel.Debug);
+            
         }
     }
 }
