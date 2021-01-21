@@ -12,5 +12,6 @@ namespace Open_Water2.WebApi.Helpers
         public string SvcPortalGetNewUserData { get; set; }
         public string Authority { get; set; }
         public string Audience { get; set; }
+        public string MetadataAddress { get; set; }
     }
 }

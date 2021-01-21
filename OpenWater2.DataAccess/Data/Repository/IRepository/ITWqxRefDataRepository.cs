@@ -22,6 +22,8 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public int UpdateT_WQX_REF_DATAByIDX(global::System.Int32 IDX, global::System.String vALUE, global::System.String tEXT, Boolean ActInd);
         public int InsertOrUpdateT_WQX_REF_CHARACTERISTIC(global::System.String cHAR_NAME, global::System.Decimal? dETECT_LIMIT, global::System.String dEFAULT_UNIT, global::System.Boolean? uSED_IND,
             global::System.Boolean aCT_IND, global::System.String sAMP_FRAC_REQ, global::System.String pICK_LIST);
+        public int InsertOrUpdateT_WQX_REF_CHARACTERISTIC(string cHAR_NAME, decimal? dETECT_LIMIT, string dEFAULT_UNIT, bool? uSED_IND,
+            bool aCT_IND, string sAMP_FRAC_REQ, string pICK_LIST, string mETH_SPEC_REQ);
         public TWqxRefAnalMethod GetT_WQX_REF_ANAL_METHODByIDandContext(string ID, string Context);
         public List<TWqxRefAnalMethod> GetT_WQX_REF_ANAL_METHODByValue(string value);
         public List<TWqxRefData> GetAllT_WQX_REF_DATA();
@@ -60,6 +62,11 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
             global::System.Int32? aNALYTIC_METHOD_IDX, int? lAB_IDX, DateTime? lAB_ANALYSIS_START_DT, global::System.String dETECTION_LIMIT, global::System.String pQL,
             global::System.String lOWER_QUANT_LIMIT, global::System.String uPPER_QUANT_LIMIT, int? lAB_SAMP_PREP_IDX, DateTime? lAB_SAMP_PREP_START_DT, string dILUTION_FACTOR,
             string fREQ_CLASS_CODE, string fREQ_CLASS_UNIT,
+            string targetCount, decimal? proportionSampProcNumeric, string resultSampPointType, string resultSampPointPlaceInSeries,
+            string resultSampPointCommentText, string recordIdentifierUserSupplied, string subjectTaxonomicNameUserSupplied,
+            string subjectTaxonomicNameUserSuppliedRefText, string groupSummaryCount, string functionalFeedingGroupName,
+            string comparableAnalMethodIdentifier, string comparableAnalMethodIdentifierCtx, string comparableAnalMethodModificationText,
+            string labCommentText, string detectionQuantLimitCommentText, string labSampSplitRatio,
             String cREATE_USER = "system");
         public List<TWqxRefData> GetT_WQX_REF_TAXA_ByOrg(string OrgID);
         public TWqxRefCharLimits GetT_WQX_REF_CHAR_LIMITS_ByNameUnit(string CharName, string UnitName);

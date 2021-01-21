@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -14,7 +15,7 @@ namespace OpenWater2.DataAccess.Data.Repository
         {
             _db = db;
         }
-        public TOeAppTasks GetT_OE_APP_TASKS_ByName(string taskName)
+        public async Task<TOeAppTasks> GetT_OE_APP_TASKS_ByNameAsync(string taskName)
         {
             try
             {
@@ -44,7 +45,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
-        public int UpdateT_OE_APP_TASKS(string taskName, string taskStatus, int? taskFreqMs, string modifyUserId)
+        public async Task<int> UpdateT_OE_APP_TASKSAsync(string taskName, string taskStatus, int? taskFreqMs, string modifyUserId)
         {
             try
             {
@@ -61,7 +62,7 @@ namespace OpenWater2.DataAccess.Data.Repository
 
                 return t.TaskIdx;
             }
-            catch
+            catch(Exception e)
             {
                 return 0;
             }

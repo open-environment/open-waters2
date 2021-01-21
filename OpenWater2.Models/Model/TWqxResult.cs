@@ -72,7 +72,25 @@ namespace OpenWater2.Models.Model
         public DateTime? LabSampPrepStartDt { get; set; }
         public DateTime? LabSampPrepEndDt { get; set; }
         public string DilutionFactor { get; set; }
+        public string TargetCount { get; set; }
+        public decimal? ProportionSampProcNumeric { get; set; }
 
+        public string ResultSampPointType { get; set; }
+        public string ResultSampPointPlaceInSeries { get; set; }
+        public string ResultSampPointCommentText { get; set; }
+        public string RecordIdentifierUserSupplied { get; set; }
+        public string SubjectTaxonomicNameUserSupplied { get; set; }
+        public string SubjectTaxonomicNameUserSuppliedRefText { get; set; }
+        public string GroupSummaryCount { get; set; }
+        public string FunctionalFeedingGroupName { get; set; }
+        public string ComparableAnalMethodIdentifier { get; set; }
+
+        public string ComparableAnalMethodIdentifierCtx { get; set; }
+        public string ComparableAnalMethodModificationText { get; set; }
+        public string LabCommentText { get; set; }
+        public string DetectionQuantLimitCommentText { get; set; }
+        public string LabSampSplitRatio { get; set; }
+        
         public virtual TWqxActivity ActivityIdxNavigation { get; set; }
         public virtual TWqxRefAnalMethod AnalyticMethodIdxNavigation { get; set; }
         public virtual TWqxRefLab LabIdxNavigation { get; set; }

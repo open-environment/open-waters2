@@ -44,10 +44,10 @@ namespace OpenWater2.DataAccess.Data.Repository
             tWqxImportTempBioIndexRepository = new TWqxImportTempBioIndexRepository(_db);
             tWqxTransactionLogRepository = new TWqxTransactionLogRepository(_db);
             oeAppTasksRepository = new TOeAppTasksRepository(_db);
+            tWqxBatchSubmitRepository = new TWqxBatchSubmitRepository(_db);
+            tWqxBatchSubmitTransRepository = new TWqxBatchSubmitTransRepository(_db);
 
 
-            
-            
             wqxOrganizationRepository = new TWqxOrganizationRepository(_db,
                                                                     loggerFactory,
                                                                     oeAppSettingsRepository,
@@ -86,7 +86,11 @@ namespace OpenWater2.DataAccess.Data.Repository
                                                             tWqxMonLocRepository,
                                                             tWqxProjectRepository,
                                                             tWqxActivityRepository,
-                                                            tWqxTransactionLogRepository);
+                                                            tWqxTransactionLogRepository,
+                                                            oeAppTasksRepository,
+                                                            tWqxBatchSubmitRepository,
+                                                            tWqxBatchSubmitTransRepository,
+                                                            _webHostEnvironment);
             tWqxImportTempResultRepository = new TWqxImportTempResultRepository(_db,
                                                                             tWqxRefCharacteristicRepository,
                                                                             tWqxRefDataRepository,
@@ -181,7 +185,8 @@ namespace OpenWater2.DataAccess.Data.Repository
         public ITWqxRefDefaultTimeZoneRepository tWqxRefDefaultTimeZoneRepository { get; private set; }
 
         public ITWqxImportTempProjectRepository tWqxImportTempProjectRepository { get; private set; }
-
+        public ITWqxBatchSubmitRepository tWqxBatchSubmitRepository { get; private set; }
+        public ITWqxBatchSubmitTransRepository tWqxBatchSubmitTransRepository { get; private set; }
         public void Dispose()
         {
             _db.Dispose();

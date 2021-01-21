@@ -417,6 +417,7 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
+        //TODO: need to handle tempmonloc for V3.0
         public int ProcessImportTempMonloc(bool wqxImport, string wqxSubmitStatus, string selectedMonlocIds, int  userIdx)
         {
             int actResult = 0;
@@ -440,7 +441,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                         int SuccID = _monlocRepo.InsertOrUpdateWQX_MONLOC(m.MonlocIdx, m.OrgId, m.MonlocId, m.MonlocName, m.MonlocType, m.MonlocDesc, m.HucEight, m.HucTwelve, m.TribalLandInd,
                             m.TribalLandName, m.LatitudeMsr, m.LongitudeMsr, m.SourceMapScale, m.HorizAccuracy, m.HorizAccuracyUnit, m.HorizCollMethod, m.HorizRefDatum, m.VertMeasure,
                             m.VertMeasureUnit, m.VertCollMethod, m.VertRefDatum, m.CountryCode, m.StateCode, m.CountyCode, m.WellType, m.AquiferName, m.FormationType, m.WellholeDepthMsr,
-                            m.WellholeDepthMsrUnit, wqxSubmitStatus, null, true, wqxImport, userName);
+                            m.WellholeDepthMsrUnit, wqxSubmitStatus, null, null, null, null, null, null, null, null, null, null, null, null, null, true, wqxImport, userName);
 
                     }
                 }

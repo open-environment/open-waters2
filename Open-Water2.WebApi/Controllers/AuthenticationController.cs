@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Open_Water2.WebApi.Services;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
 using OpwnWater2.DataAccess;
@@ -26,45 +25,43 @@ namespace Open_Water2.WebApi.Controllers
     [ApiController]
     public class AuthenticationController : Controller
     {
-        private readonly IUserService _userService;
         private readonly IWebHostEnvironment _env;
         private readonly ILogger _logger;
         IUnitOfWork _unitOfWork;
         private readonly AppSettings _appSettings;
 
-        public AuthenticationController(IUserService userService,
+        public AuthenticationController(
             IWebHostEnvironment env,
             ILoggerFactory logFactory,
             IUnitOfWork unitOfWork,
             IOptions<AppSettings> appSettings)
         {
-            _userService = userService;
             _env = env;
             _logger = logFactory.CreateLogger<AuthenticationController>();
             _unitOfWork = unitOfWork;
             _appSettings = appSettings.Value;
         }
 
-        [AllowAnonymous]
-        [EnableCors("MyPolicy")]
-        [HttpPost]
-        [Route("auth/login")]
-        public IActionResult login([FromBody] LoginAuthParams loginAuthParams)
-        {
-            _logger.LogInformation("Login action in OpenWater2 called..");
+        //[AllowAnonymous]
+        //[EnableCors("MyPolicy")]
+        //[HttpPost]
+        //[Route("auth/login")]
+        //public IActionResult login([FromBody] LoginAuthParams loginAuthParams)
+        //{
+        //    _logger.LogInformation("Login action in OpenWater2 called..");
             
-            _logger.LogInformation("clling Authenticate Method..");
-            var user = _userService.Authenticate(loginAuthParams.email, loginAuthParams.password);
-            if (user == null)
-            {
-                this.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                _logger.LogInformation("User is null..returning error message...");
-                return StatusCode(StatusCodes.Status500InternalServerError,new { error = "Invalid username or password." });
-            }
-            this.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            _logger.LogInformation("Returning Ok response..");
-            return Ok(new { data = new { token = user.token, session = user.Session } });
-        }
+        //    _logger.LogInformation("clling Authenticate Method..");
+        //    var user = _userService.Authenticate(loginAuthParams.email, loginAuthParams.password);
+        //    if (user == null)
+        //    {
+        //        this.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        //        _logger.LogInformation("User is null..returning error message...");
+        //        return StatusCode(StatusCodes.Status500InternalServerError,new { error = "Invalid username or password." });
+        //    }
+        //    this.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
+        //    _logger.LogInformation("Returning Ok response..");
+        //    return Ok(new { data = new { token = user.token, session = user.Session } });
+        //}
 
         [HttpPost]
         [Route("auth/sign-up")]
@@ -140,7 +137,7 @@ namespace Open_Water2.WebApi.Controllers
         }
         [AllowAnonymous]
         [HttpPost("api/auth/CheckUserExist")]
-        public IActionResult CheckUserExist([FromBody] CheckUserExistModel payload)
+        public async Task<IActionResult> CheckUserExistAsync([FromBody] CheckUserExistModel payload)
         {
             ExtLoginUser actResult = null;
             TOeUsers user = _unitOfWork.oeUsersRepostory.GetT_VCCB_USERByEmail(payload.email);
@@ -158,7 +155,8 @@ namespace Open_Water2.WebApi.Controllers
             {
                 _logger.LogInformation("User with given username does not exist...");
                 actResult = new ExtLoginUser();
-                // Create New User
+                // Create New User, for more information refer to following
+                // SVC Portal - IdentityServerConfig.cs - GetProfileDataAsync Method
                 string firstname = payload.open_waters[0].Split(";")[3];
                 if (string.IsNullOrEmpty(firstname)) firstname = Helpers.HelperUtils.RandomString(10);
                 string lastname = Helpers.HelperUtils.RandomString(10);
@@ -186,7 +184,7 @@ namespace Open_Water2.WebApi.Controllers
                             TWqxOrganization o = _unitOfWork.wqxOrganizationRepository.GetWQX_ORGANIZATION_ByID(orgAlias);
                             if (o == null)
                             {
-                                int isOrgAdded = _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATION(orgAlias, orgName);
+                                int isOrgAdded = await _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATIONAsync(orgAlias, orgName);
                                 if (isOrgAdded == 1)
                                 {
                                     _logger.LogInformation("New organization added..." + orgName);
@@ -282,7 +280,7 @@ namespace Open_Water2.WebApi.Controllers
         }
         [AllowAnonymous]
         [HttpGet("api/auth/CreateAndGetNewUserData")]
-        public IActionResult CreateAndGetNewUserData([FromQuery] string userid)
+        public async Task<IActionResult> CreateAndGetNewUserDataAsync([FromQuery] string userid)
         {
             _logger.LogInformation("CreateAndGetNewUserData action called..");
             ExtLoginUser actResult = new ExtLoginUser();
@@ -323,7 +321,7 @@ namespace Open_Water2.WebApi.Controllers
                             TWqxOrganization o = _unitOfWork.wqxOrganizationRepository.GetWQX_ORGANIZATION_ByID(orgAlias);
                             if (o == null)
                             {
-                                int isOrgAdded = _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATION(orgAlias, orgUser.ORG_NAME);
+                                int isOrgAdded = await _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATIONAsync(orgAlias, orgUser.ORG_NAME);
                                 if (isOrgAdded == 1)
                                 {
                                     _logger.LogInformation("New organization added..." + orgUser.ORG_NAME);
@@ -394,12 +392,7 @@ namespace Open_Water2.WebApi.Controllers
             public string email { get; set; }
             public List<string> open_waters { get; set; }
         }
-        public class LoginAuthParams
-        {
-            public string email { get; set; }
-            public string password { get; set; }
-            public string username { get; set; }
-        }
+
         public class ExtLoginUser
         {
             public bool userexist { get; set; }

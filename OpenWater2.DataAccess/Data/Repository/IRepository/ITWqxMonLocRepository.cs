@@ -20,6 +20,22 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public TWqxUserOrgs GetWQX_USER_ORGS_ByUserIDX_OrgID(int UserIDX, string OrgID);
         public int GetWQX_MONLOC_MyOrgCount(int UserIDX);
         public TWqxMonloc GetWQX_MONLOC_ByIDString(string orgID, string MonLocID);
+
+        public Task<int> InsertOrUpdateWQX_MONLOCAsync(int? mONLOC_IDX, string oRG_ID, string mONLOC_ID, string mONLOC_NAME,
+            string mONLOC_TYPE, string mONLOC_DESC, string hUC_EIGHT, string HUC_TWELVE, string tRIBAL_LAND_IND,
+            string tRIBAL_LAND_NAME, string lATITUDE_MSR, string lONGITUDE_MSR, Int32? sOURCE_MAP_SCALE,
+            string hORIZ_ACCURACY, string hORIZ_ACCURACY_UNIT, string hORIZ_COLL_METHOD, string hORIZ_REF_DATUM,
+            string vERT_MEASURE, string vERT_MEASURE_UNIT, string vERT_COLL_METHOD, string vERT_REF_DATUM,
+            string cOUNTRY_CODE, string sTATE_CODE, string cOUNTY_CODE, string wELL_TYPE, string aQUIFER_NAME,
+            string fORMATION_TYPE, string wELLHOLE_DEPTH_MSR, string wELLHOLE_DEPTH_MSR_UNIT, string wQX_SUBMIT_STATUS,
+            string drainageArea, string drainageAreaUnit, string contributingDrainageArea,
+            string contributingDrainageAreaUnit,
+            string aquiferTypeName, string nationalAquiferCode,
+            string localAquiferCode, string localAquiferCodeCtx,
+            string localAquiferDesc,
+            DateTime? constructionDate,
+            string wellDepthMeasure, string wellDepthMeasureUnit,
+            DateTime? wQXUpdateDate, Boolean? aCT_IND, Boolean? wQX_IND, String cREATE_USER = "system");
         public int InsertOrUpdateWQX_MONLOC(int? mONLOC_IDX, string oRG_ID, string mONLOC_ID, string mONLOC_NAME,
             string mONLOC_TYPE, string mONLOC_DESC, string hUC_EIGHT, string HUC_TWELVE, string tRIBAL_LAND_IND,
             string tRIBAL_LAND_NAME, string lATITUDE_MSR, string lONGITUDE_MSR, Int32? sOURCE_MAP_SCALE,
@@ -27,6 +43,13 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
             string vERT_MEASURE, string vERT_MEASURE_UNIT, string vERT_COLL_METHOD, string vERT_REF_DATUM,
             string cOUNTRY_CODE, string sTATE_CODE, string cOUNTY_CODE, string wELL_TYPE, string aQUIFER_NAME,
             string fORMATION_TYPE, string wELLHOLE_DEPTH_MSR, string wELLHOLE_DEPTH_MSR_UNIT, string wQX_SUBMIT_STATUS,
+            string drainageArea, string drainageAreaUnit, string contributingDrainageArea,
+            string contributingDrainageAreaUnit,
+            string aquiferTypeName, string nationalAquiferCode,
+            string localAquiferCode, string localAquiferCodeCtx,
+            string localAquiferDesc, 
+            DateTime? constructionDate,
+            string wellDepthMeasure, string wellDepthMeasureUnit,
             DateTime? wQXUpdateDate, Boolean? aCT_IND, Boolean? wQX_IND, String cREATE_USER = "system");
 
         public List<TWqxMonloc> GetWQX_MONLOC_ByOrgID(string OrgID);

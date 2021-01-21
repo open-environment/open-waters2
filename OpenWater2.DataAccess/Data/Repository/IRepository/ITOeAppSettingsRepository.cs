@@ -3,6 +3,7 @@ using OpenWater2.Models.Model;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OpenWater2.DataAccess.Data.Repository.IRepository
 {
@@ -12,5 +13,6 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         void Update(TOeAppSettings oeAppSettings);
 
         string GetT_OE_APP_SETTING(string settingName);
+        Task<string> GetT_OE_APP_SETTINGAsync(string v);
     }
 }

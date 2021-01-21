@@ -213,7 +213,12 @@ namespace OpenWater2.DataAccess.Data.Repository
             throw new NotImplementedException();
         }
 
-        public int InsertOrUpdateWQX_ACTIVITY(int? aCTIVITY_IDX, string oRG_ID, int? pROJECT_IDX, int? mONLOC_IDX, string aCTIVITY_ID, string aCT_TYPE, string aCT_MEDIA, string aCT_SUBMEDIA, DateTime? aCT_START_DT, DateTime? aCT_END_DT, string aCT_TIME_ZONE, string rELATIVE_DEPTH_NAME, string aCT_DEPTHHEIGHT_MSR, string aCT_DEPTHHEIGHT_MSR_UNIT, string tOP_DEPTHHEIGHT_MSR, string tOP_DEPTHHEIGHT_MSR_UNIT, string bOT_DEPTHHEIGHT_MSR, string bOT_DEPTHHEIGHT_MSR_UNIT, string dEPTH_REF_POINT, string aCT_COMMENT, string bIO_ASSEMBLAGE_SAMPLED, string bIO_DURATION_MSR, string bIO_DURATION_MSR_UNIT, string bIO_SAMP_COMPONENT, int? bIO_SAMP_COMPONENT_SEQ, string bIO_REACH_LEN_MSR, string bIO_REACH_LEN_MSR_UNIT, string bIO_REACH_WID_MSR, string bIO_REACH_WID_MSR_UNIT, int? bIO_PASS_COUNT, string bIO_NET_TYPE, string bIO_NET_AREA_MSR, string bIO_NET_AREA_MSR_UNIT, string bIO_NET_MESHSIZE_MSR, string bIO_MESHSIZE_MSR_UNIT, string bIO_BOAT_SPEED_MSR, string bIO_BOAT_SPEED_MSR_UNIT, string bIO_CURR_SPEED_MSR, string bIO_CURR_SPEED_MSR_UNIT, string bIO_TOXICITY_TEST_TYPE, int? sAMP_COLL_METHOD_IDX, string sAMP_COLL_EQUIP, string sAMP_COLL_EQUIP_COMMENT, int? sAMP_PREP_IDX, string sAMP_PREP_CONT_TYPE, string sAMP_PREP_CONT_COLOR, string sAMP_PREP_CHEM_PRESERV, string sAMP_PREP_THERM_PRESERV, string sAMP_PREP_STORAGE_DESC, string wQX_SUBMIT_STATUS, bool? aCT_IND, bool? wQX_IND, string cREATE_USER = "system", string eNTRY_TYPE = "C")
+        public int InsertOrUpdateWQX_ACTIVITY(int? aCTIVITY_IDX, string oRG_ID, int? pROJECT_IDX, int? mONLOC_IDX, string aCTIVITY_ID, string aCT_TYPE, string aCT_MEDIA, string aCT_SUBMEDIA, DateTime? aCT_START_DT, DateTime? aCT_END_DT, string aCT_TIME_ZONE, string rELATIVE_DEPTH_NAME, string aCT_DEPTHHEIGHT_MSR, string aCT_DEPTHHEIGHT_MSR_UNIT, string tOP_DEPTHHEIGHT_MSR, string tOP_DEPTHHEIGHT_MSR_UNIT, string bOT_DEPTHHEIGHT_MSR, string bOT_DEPTHHEIGHT_MSR_UNIT, string dEPTH_REF_POINT, string aCT_COMMENT, string bIO_ASSEMBLAGE_SAMPLED, string bIO_DURATION_MSR, string bIO_DURATION_MSR_UNIT, string bIO_SAMP_COMPONENT, int? bIO_SAMP_COMPONENT_SEQ, string bIO_REACH_LEN_MSR, string bIO_REACH_LEN_MSR_UNIT, string bIO_REACH_WID_MSR, string bIO_REACH_WID_MSR_UNIT, int? bIO_PASS_COUNT, string bIO_NET_TYPE, string bIO_NET_AREA_MSR, string bIO_NET_AREA_MSR_UNIT, string bIO_NET_MESHSIZE_MSR, string bIO_MESHSIZE_MSR_UNIT, string bIO_BOAT_SPEED_MSR, string bIO_BOAT_SPEED_MSR_UNIT, string bIO_CURR_SPEED_MSR, string bIO_CURR_SPEED_MSR_UNIT, string bIO_TOXICITY_TEST_TYPE, int? sAMP_COLL_METHOD_IDX, string sAMP_COLL_EQUIP, string sAMP_COLL_EQUIP_COMMENT, int? sAMP_PREP_IDX, string sAMP_PREP_CONT_TYPE, string sAMP_PREP_CONT_COLOR, string sAMP_PREP_CHEM_PRESERV, string sAMP_PREP_THERM_PRESERV, string sAMP_PREP_STORAGE_DESC, string wQX_SUBMIT_STATUS, bool? aCT_IND, bool? wQX_IND,
+            string activityIDUserSupplied, string sampCompName, string activityLocDescText,
+            string measureValue, string gearProcUnitSelected, string habitatSelMethod, string methodName,
+            string thermalPreservativeUsedName, string hydrologicCondition, string sampContLabNametring, string hydrologicEvent,
+            string horizCollMethod, string horizCoRefSysDatumName, string latitudeMsr, string longitudeMsr,   
+            string cREATE_USER = "system", string eNTRY_TYPE = "C")
         {
             Boolean insInd = false;
             try
@@ -288,6 +293,22 @@ namespace OpenWater2.DataAccess.Data.Repository
                 if (aCT_IND != null) a.ActInd = aCT_IND;
                 if (wQX_IND != null) a.WqxInd = wQX_IND;
                 if (eNTRY_TYPE != null) a.EntryType = eNTRY_TYPE;
+
+                if (activityIDUserSupplied != null) a.ActivityIdentifierUserSupplied = activityIDUserSupplied;
+                if (sampCompName != null) a.SamplingComponentName = sampCompName;
+                if (activityLocDescText != null) a.ActivityLocationDescriptionText = activityLocDescText;
+                if (measureValue != null) a.MeasureValue = measureValue;
+                if (gearProcUnitSelected != null) a.GearProcedureUnitCode = gearProcUnitSelected;
+                if (habitatSelMethod != null) a.HabitatSelectionMethod = habitatSelMethod;
+                if (methodName != null) a.MethodName = methodName;
+                if (thermalPreservativeUsedName != null) a.ThermalPreservativeUsedName = thermalPreservativeUsedName;
+                if (hydrologicCondition != null) a.HydrologicCondition = hydrologicCondition;
+                if (sampContLabNametring != null) a.SampleContainerLabelName = sampContLabNametring;
+                if (hydrologicEvent != null) a.HydrologicEvent = hydrologicEvent;
+                if (horizCollMethod != null) a.HorizCollMethod = horizCollMethod;
+                if (horizCoRefSysDatumName != null) a.HorizCoRefSysDatumName = horizCoRefSysDatumName;
+                if (latitudeMsr != null) a.LatitudeMsr = latitudeMsr;
+                if (longitudeMsr != null) a.LongitudeMsr = longitudeMsr;
 
                 if (insInd) //insert case
                 {

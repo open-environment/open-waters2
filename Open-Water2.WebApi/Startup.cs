@@ -16,11 +16,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Open_Water2.WebApi.Helpers;
-using Open_Water2.WebApi.Services;
 using OpenWater2.DataAccess.Data;
 using OpenWater2.DataAccess.Data.Repository;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using System.Web.Http.Cors;
+using Microsoft.IdentityModel.Logging;
 
 namespace Open_Water2.WebApi
 {
@@ -37,6 +37,8 @@ namespace Open_Water2.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
 
+            IdentityModelEventSource.ShowPII = true;
+
             services.AddControllers().AddNewtonsoftJson(options =>
             options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -50,25 +52,7 @@ namespace Open_Water2.WebApi
             services.Configure<AppSettings>(appSettingsSection);
 
             var appSettings = appSettingsSection.Get<AppSettings>();
-            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
-
-            //services.AddAuthentication(x =>
-            //{
-            //    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            //})
-            //.AddJwtBearer(x =>
-            //{
-            //    x.RequireHttpsMetadata = false;
-            //    x.SaveToken = true;
-            //    x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-            //    {
-            //        ValidateIssuerSigningKey = true,
-            //        IssuerSigningKey = new SymmetricSecurityKey(key),
-            //        ValidateIssuer = false,
-            //        ValidateAudience = false
-            //    };
-            //});
+            
             //JWT Changes Ends
             services.AddAuthentication(options =>
             {
@@ -78,6 +62,8 @@ namespace Open_Water2.WebApi
             {
                 o.Authority = appSettings.Authority;
                 o.Audience = appSettings.Audience;
+                o.RequireHttpsMetadata = false;
+                o.MetadataAddress = appSettings.MetadataAddress;
             });
 
             services.AddAuthorization(options =>
@@ -94,7 +80,7 @@ namespace Open_Water2.WebApi
                        .WithExposedHeaders("Content-Disposition");
             }));
 
-            services.AddScoped<IUserService, UserService>();
+            //services.AddScoped<IUserService, UserService>();
 
             services.AddScoped<ApplicationDbContext, ApplicationDbContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();

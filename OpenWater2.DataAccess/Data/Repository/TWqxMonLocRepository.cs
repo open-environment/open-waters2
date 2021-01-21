@@ -72,7 +72,8 @@ namespace OpenWater2.DataAccess.Data.Repository
                     {
                         //mark as inactive (deleted), which will send the delete request to EPA-WQX
                         InsertOrUpdateWQX_MONLOC(monLocIDX, null, null, null, null, null, null, null, null, null, null, null, null, null,
-                            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "U", null, false, null, UserID);
+                            null, null, null, null, null, null, null, null, null, null, null,
+                            null, null, null, null, "U", null, null, null, null, null, null, null, null, null, null,null,null, null, false, null, UserID);
                         return 1;
                     }
 
@@ -150,7 +151,151 @@ namespace OpenWater2.DataAccess.Data.Repository
             return _db.TWqxMonloc.Where(i => i.MonlocIdx == monLocIDX).FirstOrDefault();
         }
 
-        public int InsertOrUpdateWQX_MONLOC(int? mONLOC_IDX, string oRG_ID, string mONLOC_ID, string mONLOC_NAME, string mONLOC_TYPE, string mONLOC_DESC, string hUC_EIGHT, string HUC_TWELVE, string tRIBAL_LAND_IND, string tRIBAL_LAND_NAME, string lATITUDE_MSR, string lONGITUDE_MSR, int? sOURCE_MAP_SCALE, string hORIZ_ACCURACY, string hORIZ_ACCURACY_UNIT, string hORIZ_COLL_METHOD, string hORIZ_REF_DATUM, string vERT_MEASURE, string vERT_MEASURE_UNIT, string vERT_COLL_METHOD, string vERT_REF_DATUM, string cOUNTRY_CODE, string sTATE_CODE, string cOUNTY_CODE, string wELL_TYPE, string aQUIFER_NAME, string fORMATION_TYPE, string wELLHOLE_DEPTH_MSR, string wELLHOLE_DEPTH_MSR_UNIT, string wQX_SUBMIT_STATUS, DateTime? wQXUpdateDate, bool? aCT_IND, bool? wQX_IND, string cREATE_USER = "system")
+        public async Task<int> InsertOrUpdateWQX_MONLOCAsync(int? mONLOC_IDX,
+            string oRG_ID, string mONLOC_ID, string mONLOC_NAME, string mONLOC_TYPE, string mONLOC_DESC,
+            string hUC_EIGHT, string HUC_TWELVE, string tRIBAL_LAND_IND, string tRIBAL_LAND_NAME,
+            string lATITUDE_MSR, string lONGITUDE_MSR, int? sOURCE_MAP_SCALE, string hORIZ_ACCURACY,
+            string hORIZ_ACCURACY_UNIT, string hORIZ_COLL_METHOD, string hORIZ_REF_DATUM,
+            string vERT_MEASURE, string vERT_MEASURE_UNIT, string vERT_COLL_METHOD, string vERT_REF_DATUM,
+            string cOUNTRY_CODE, string sTATE_CODE, string cOUNTY_CODE, string wELL_TYPE, string aQUIFER_NAME,
+            string fORMATION_TYPE, string wELLHOLE_DEPTH_MSR, string wELLHOLE_DEPTH_MSR_UNIT,
+            string wQX_SUBMIT_STATUS, string drainageArea, string drainageAreaUnit,
+            string contributingDrainageArea, string contributingDrainageAreaUnit,
+            string aquiferTypeName, string nationalAquiferCode,
+            string localAquiferCode, string localAquiferCodeCtx,
+            string localAquiferDesc,
+            DateTime? constructionDate,
+            string wellDepthMeasure, string wellDepthMeasureUnit,
+            DateTime? wQXUpdateDate, bool? aCT_IND, bool? wQX_IND,
+            string cREATE_USER = "system")
+        {
+            Boolean insInd = false;
+            try
+            {
+                TWqxMonloc a = new TWqxMonloc();
+
+                if (mONLOC_IDX != null)
+                    a = await (from c in _db.TWqxMonloc
+                         where c.MonlocIdx == mONLOC_IDX
+                         select c).FirstOrDefaultAsync().ConfigureAwait(false);
+                else
+                    insInd = true;
+
+                if (a == null) //insert case
+                {
+                    a = new TWqxMonloc();
+                    insInd = true;
+                }
+
+                if (oRG_ID != null) a.OrgId = oRG_ID;
+                if (mONLOC_ID != null) a.MonlocId = mONLOC_ID;
+                if (mONLOC_NAME != null) a.MonlocName = mONLOC_NAME;
+                if (mONLOC_TYPE != null) a.MonlocType = mONLOC_TYPE;
+
+                if (mONLOC_DESC != null) a.MonlocDesc = mONLOC_DESC;
+                if (hUC_EIGHT != null) a.HucEight = hUC_EIGHT;
+                if (HUC_TWELVE != null) a.HucTwelve = HUC_TWELVE;
+                if (tRIBAL_LAND_IND != null) a.TribalLandInd = tRIBAL_LAND_IND;
+                if (tRIBAL_LAND_NAME != null) a.TribalLandName = tRIBAL_LAND_NAME;
+
+                if (lATITUDE_MSR != null) a.LatitudeMsr = lATITUDE_MSR;
+                if (lONGITUDE_MSR != null) a.LongitudeMsr = lONGITUDE_MSR;
+                if (sOURCE_MAP_SCALE != null) a.SourceMapScale = sOURCE_MAP_SCALE;
+                if (hORIZ_ACCURACY != null) a.HorizAccuracy = hORIZ_ACCURACY;
+                if (hORIZ_ACCURACY_UNIT != null) a.HorizAccuracyUnit = hORIZ_ACCURACY_UNIT;
+                if (hORIZ_COLL_METHOD != null) a.HorizCollMethod = hORIZ_COLL_METHOD;
+                if (hORIZ_REF_DATUM != null) a.HorizRefDatum = hORIZ_REF_DATUM;
+                if (vERT_MEASURE != null) a.VertMeasure = vERT_MEASURE;
+                if (vERT_MEASURE_UNIT != null) a.VertMeasureUnit = vERT_MEASURE_UNIT;
+                if (drainageArea != null) a.DrainageArea = drainageArea.Trim();
+                if (drainageAreaUnit != null) a.DrainageAreaUnit = drainageAreaUnit.Trim();
+                if (contributingDrainageArea != null) a.ContributingDrainageArea = contributingDrainageArea.Trim();
+                if (contributingDrainageAreaUnit != null) a.ContributingDrainageAreaUnit = contributingDrainageAreaUnit.Trim();
+
+                if (aquiferTypeName != null) a.AquiferTypeName = aquiferTypeName.Trim();
+                if (nationalAquiferCode != null) a.NationalAquiferCode = nationalAquiferCode.Trim();
+                if (localAquiferCode != null) a.LocalAquiferCode = localAquiferCode.Trim();
+                if (localAquiferCodeCtx != null) a.LocalAquiferCodeCtx = localAquiferCodeCtx.Trim();
+                if (localAquiferDesc != null) a.LocalAquiferDesc = localAquiferDesc.Trim();
+                if (constructionDate != null) a.ConstructionDate = constructionDate;
+                if (wellDepthMeasure != null) a.WellDepthMeasure = wellDepthMeasure.Trim();
+                if (wellDepthMeasureUnit != null) a.WellDepthMeasureUnit = wellDepthMeasureUnit.Trim();
+
+                if (vERT_COLL_METHOD != null) a.VertCollMethod = vERT_COLL_METHOD;
+                if (vERT_REF_DATUM != null) a.VertRefDatum = vERT_REF_DATUM;
+                if (cOUNTRY_CODE != null) a.CountryCode = cOUNTRY_CODE;
+                if (sTATE_CODE != null) a.StateCode = sTATE_CODE;
+                if (cOUNTY_CODE != null) a.CountyCode = cOUNTY_CODE;
+
+                if (wELL_TYPE != null) a.WellType = wELL_TYPE;
+                if (aQUIFER_NAME != null) a.AquiferName = aQUIFER_NAME;
+                if (fORMATION_TYPE != null) a.FormationType = fORMATION_TYPE;
+                if (wELLHOLE_DEPTH_MSR != null) a.WellholeDepthMsr = wELLHOLE_DEPTH_MSR;
+                if (wELLHOLE_DEPTH_MSR_UNIT != null) a.WellholeDepthMsrUnit = wELLHOLE_DEPTH_MSR_UNIT;
+                if (wQX_SUBMIT_STATUS != null) a.WqxSubmitStatus = wQX_SUBMIT_STATUS;
+                if (aCT_IND != null) a.ActInd = aCT_IND;
+                if (wQX_IND != null) a.WqxInd = wQX_IND;
+
+                if (insInd) //insert case
+                {
+                    a.CreateUserid = cREATE_USER.ToUpper();
+                    a.CreateDt = System.DateTime.Now;
+                    _db.TWqxMonloc.Add(a);
+                }
+                else
+                {
+                    a.UpdateUserid = cREATE_USER.ToUpper();
+                    a.UpdateDt = System.DateTime.Now;
+                }
+
+                await _db.SaveChangesAsync().ConfigureAwait(false);
+
+                return a.MonlocIdx;
+            }
+            catch (DbEntityValidationException e)
+            {
+                foreach (var eve in e.EntityValidationErrors)
+                {
+                    Console.WriteLine("Entity of type \"{0}\" in the state \"{1}\" has the following validation errors:",
+                        eve.Entry.Entity.GetType().Name, eve.Entry.State);
+                    foreach (var ve in eve.ValidationErrors)
+                    {
+                        Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
+                            ve.PropertyName, ve.ErrorMessage);
+                    }
+
+                    foreach (var ve in eve.ValidationErrors)
+                    {
+                        Console.WriteLine("- Property: \"{0}\", Value: \"{1}\", Error: \"{2}\"",
+                            ve.PropertyName,
+                            eve.Entry.CurrentValues.GetValue<object>(ve.PropertyName),
+                            ve.ErrorMessage);
+                    }
+                }
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+        public int InsertOrUpdateWQX_MONLOC(int? mONLOC_IDX, 
+            string oRG_ID, string mONLOC_ID, string mONLOC_NAME, string mONLOC_TYPE, string mONLOC_DESC, 
+            string hUC_EIGHT, string HUC_TWELVE, string tRIBAL_LAND_IND, string tRIBAL_LAND_NAME, 
+            string lATITUDE_MSR, string lONGITUDE_MSR, int? sOURCE_MAP_SCALE, string hORIZ_ACCURACY, 
+            string hORIZ_ACCURACY_UNIT, string hORIZ_COLL_METHOD, string hORIZ_REF_DATUM, 
+            string vERT_MEASURE, string vERT_MEASURE_UNIT, string vERT_COLL_METHOD, string vERT_REF_DATUM, 
+            string cOUNTRY_CODE, string sTATE_CODE, string cOUNTY_CODE, string wELL_TYPE, string aQUIFER_NAME, 
+            string fORMATION_TYPE, string wELLHOLE_DEPTH_MSR, string wELLHOLE_DEPTH_MSR_UNIT, 
+            string wQX_SUBMIT_STATUS, string drainageArea, string drainageAreaUnit,
+            string contributingDrainageArea, string contributingDrainageAreaUnit,
+            string aquiferTypeName, string nationalAquiferCode,
+            string localAquiferCode, string localAquiferCodeCtx,
+            string localAquiferDesc, 
+            DateTime? constructionDate,
+            string wellDepthMeasure, string wellDepthMeasureUnit,
+            DateTime? wQXUpdateDate, bool? aCT_IND, bool? wQX_IND, 
+            string cREATE_USER = "system")
         {
             Boolean insInd = false;
             try
@@ -190,6 +335,20 @@ namespace OpenWater2.DataAccess.Data.Repository
                 if (hORIZ_REF_DATUM != null) a.HorizRefDatum = hORIZ_REF_DATUM;
                 if (vERT_MEASURE != null) a.VertMeasure = vERT_MEASURE;
                 if (vERT_MEASURE_UNIT != null) a.VertMeasureUnit = vERT_MEASURE_UNIT;
+                if (drainageArea != null) a.DrainageArea = drainageArea.Trim();
+                if (drainageAreaUnit != null) a.DrainageAreaUnit = drainageAreaUnit.Trim();
+                if (contributingDrainageArea != null) a.ContributingDrainageArea = contributingDrainageArea.Trim();
+                if (contributingDrainageAreaUnit != null) a.ContributingDrainageAreaUnit = contributingDrainageAreaUnit.Trim();
+                
+                if (aquiferTypeName != null) a.AquiferTypeName = aquiferTypeName.Trim();
+                if (nationalAquiferCode != null) a.NationalAquiferCode = nationalAquiferCode.Trim();
+                if (localAquiferCode != null) a.LocalAquiferCode = localAquiferCode.Trim();
+                if (localAquiferCodeCtx != null) a.LocalAquiferCodeCtx = localAquiferCodeCtx.Trim();
+                if (localAquiferDesc != null) a.LocalAquiferDesc = localAquiferDesc.Trim();
+                if (constructionDate != null) a.ConstructionDate = constructionDate;
+                if (wellDepthMeasure != null) a.WellDepthMeasure = wellDepthMeasure.Trim();
+                if (wellDepthMeasureUnit != null) a.WellDepthMeasureUnit = wellDepthMeasureUnit.Trim();
+
                 if (vERT_COLL_METHOD != null) a.VertCollMethod = vERT_COLL_METHOD;
                 if (vERT_REF_DATUM != null) a.VertRefDatum = vERT_REF_DATUM;
                 if (cOUNTRY_CODE != null) a.CountryCode = cOUNTRY_CODE;

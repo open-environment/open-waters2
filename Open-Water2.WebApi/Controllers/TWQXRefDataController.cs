@@ -25,7 +25,8 @@ namespace Open_Water2.WebApi.Controllers
         }
 
         [HttpGet("api/refdata/GetAllTWQXRefData")]
-        public IActionResult GetAllT_WQX_REF_DATA() {
+        public IActionResult GetAllT_WQX_REF_DATA()
+        {
             var result = _unitOfWork.tWqxRefDataRepository.GetAllT_WQX_REF_DATA();
             return Ok(result);
         }
@@ -44,14 +45,14 @@ namespace Open_Water2.WebApi.Controllers
         }
 
         [HttpPost("api/refdata/insertOrUpdateTWQXRefAnalMethod")]
-        public IActionResult InsertOrUpdateT_WQX_REF_ANAL_METHOD([FromBody]TWqxRefAnalMethod refAnal)
+        public IActionResult InsertOrUpdateT_WQX_REF_ANAL_METHOD([FromBody] TWqxRefAnalMethod refAnal)
         {
             var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_ANAL_METHOD(refAnal.AnalyticMethodIdx, refAnal.AnalyticMethodId, refAnal.AnalyticMethodCtx,
             refAnal.AnalyticMethodName, refAnal.AnalyticMethodDesc, (bool)refAnal.ActInd.HasValue ? (bool)refAnal.ActInd : true);
             return Ok(result);
         }
         [HttpGet("api/refdata/GetTWQXRefAnalMethodByIDandContext")]
-        public IActionResult GetT_WQX_REF_ANAL_METHODByIDandContext([FromQuery]string ID, string Context)
+        public IActionResult GetT_WQX_REF_ANAL_METHODByIDandContext([FromQuery] string ID, string Context)
         {
             var result = _unitOfWork.tWqxRefDataRepository.GetT_WQX_REF_ANAL_METHODByIDandContext(ID, Context);
             return Ok(result);
@@ -64,7 +65,7 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
         [HttpPost("api/refdata/insertOrUpdateTWQXRefSampPrep")]
-        public IActionResult InsertOrUpdateT_WQX_REF_SAMP_PREP([FromBody]TWqxRefSampPrep refSamp)
+        public IActionResult InsertOrUpdateT_WQX_REF_SAMP_PREP([FromBody] TWqxRefSampPrep refSamp)
         {
             var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_SAMP_PREP(refSamp.SampPrepIdx, refSamp.SampPrepMethodId,
             refSamp.SampPrepMethodCtx, refSamp.SampPrepMethodName, refSamp.SampPrepMethodDesc, (bool)refSamp.ActInd.HasValue ? (bool)refSamp.ActInd : true);
@@ -74,12 +75,12 @@ namespace Open_Water2.WebApi.Controllers
         public IActionResult InsertOrUpdateT_WQX_REF_LAB([FromBody] TWqxRefLab refLab)
         {
             var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_LAB(
-                refLab.LabIdx, refLab.LabName, refLab.LabAccredInd, 
+                refLab.LabIdx, refLab.LabName, refLab.LabAccredInd,
                 refLab.LabAccredAuthority, refLab.OrgId, (bool)refLab.ActInd);
             return Ok(result);
         }
         [HttpPut("api/refdata/updateTWQXRefDataByIdx")]
-        public IActionResult UpdateT_WQX_REF_DATAByIDX([FromQuery]int idx, string value, string text, bool actInd)
+        public IActionResult UpdateT_WQX_REF_DATAByIDX([FromQuery] int idx, string value, string text, bool actInd)
         {
             var result = _unitOfWork.tWqxRefDataRepository.UpdateT_WQX_REF_DATAByIDX(idx, value, text, actInd);
             return Ok(result);
@@ -165,7 +166,7 @@ namespace Open_Water2.WebApi.Controllers
             var xml = XDocument.Load(filePath);
             var result = (from c in xml.Root.Descendants("Field")
                     .Where(i => i.Attribute("Level").Value == importType)
-                    select c.Attribute("FieldName").Value
+                          select c.Attribute("FieldName").Value
                     ).ToList();
             return Ok(result);
         }
@@ -227,6 +228,11 @@ namespace Open_Water2.WebApi.Controllers
             global::System.Int32? aNALYTIC_METHOD_IDX, int? lAB_IDX, DateTime? lAB_ANALYSIS_START_DT, global::System.String dETECTION_LIMIT, global::System.String pQL,
             global::System.String lOWER_QUANT_LIMIT, global::System.String uPPER_QUANT_LIMIT, int? lAB_SAMP_PREP_IDX, DateTime? lAB_SAMP_PREP_START_DT, string dILUTION_FACTOR,
             string fREQ_CLASS_CODE, string fREQ_CLASS_UNIT,
+            string targetCount, decimal? proportionSampProcNumeric, string resultSampPointType, string resultSampPointPlaceInSeries,
+            string resultSampPointCommentText, string recordIdentifierUserSupplied, string subjectTaxonomicNameUserSupplied,
+            string subjectTaxonomicNameUserSuppliedRefText, string groupSummaryCount, string functionalFeedingGroupName,
+            string comparableAnalMethodIdentifier, string comparableAnalMethodIdentifierCtx, string comparableAnalMethodModificationText,
+            string labCommentText, string detectionQuantLimitCommentText, string labSampSplitRatio,
             String cREATE_USER = "system")
         {
             if (lAB_IDX == 0) lAB_IDX = null;
@@ -237,7 +243,13 @@ namespace Open_Water2.WebApi.Controllers
             bIO_INTENT_NAME, bIO_INDIVIDUAL_ID, bIO_TAXONOMY, bIO_SAMPLE_TISSUE_ANATOMY,
             aNALYTIC_METHOD_IDX, lAB_IDX, lAB_ANALYSIS_START_DT, dETECTION_LIMIT, pQL,
             lOWER_QUANT_LIMIT, uPPER_QUANT_LIMIT, lAB_SAMP_PREP_IDX, lAB_SAMP_PREP_START_DT, dILUTION_FACTOR,
-            fREQ_CLASS_CODE, fREQ_CLASS_UNIT, cREATE_USER);
+            fREQ_CLASS_CODE, fREQ_CLASS_UNIT,
+            targetCount, proportionSampProcNumeric, resultSampPointType, resultSampPointPlaceInSeries,
+             resultSampPointCommentText, recordIdentifierUserSupplied, subjectTaxonomicNameUserSupplied,
+             subjectTaxonomicNameUserSuppliedRefText, groupSummaryCount, functionalFeedingGroupName,
+             comparableAnalMethodIdentifier, comparableAnalMethodIdentifierCtx, comparableAnalMethodModificationText,
+             labCommentText, detectionQuantLimitCommentText, labSampSplitRatio,
+            cREATE_USER);
             return Ok(result);
         }
         [HttpGet("api/refdata/getTWqxRefTaxaByOrg")]
@@ -277,7 +289,7 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
 
-        
+
         [HttpGet("api/refdata/getTWqxRefDataByValueOrText")]
         public IActionResult GetT_WQX_REF_DATA_ByValueOrText([FromQuery] string table, string value)
         {
@@ -288,7 +300,7 @@ namespace Open_Water2.WebApi.Controllers
         [HttpPost("api/refdata/insertOrUpdateTWqxRefData")]
         public IActionResult InsertOrUpdateT_WQX_REF_DATA([FromBody] TWqxRefData refData)
         {
-            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_DATA(refData.Table,refData.Value,refData.Text,refData.UsedInd, refData.ActInd);
+            var result = _unitOfWork.tWqxRefDataRepository.InsertOrUpdateT_WQX_REF_DATA(refData.Table, refData.Value, refData.Text, refData.UsedInd, refData.ActInd);
             return Ok(result);
         }
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using net.epacdxnode.test;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
@@ -10,6 +11,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -74,6 +76,19 @@ namespace OpenWater2.DataAccess.Data.Repository
             _db.SaveChanges();
         }
 
+        public async Task<TWqxOrganization> GetWQX_ORGANIZATION_ByIDAsync(string OrgID)
+        {
+            try
+            {
+                return await (from a in _db.TWqxOrganization
+                        where a.OrgId == OrgID
+                        select a).FirstOrDefaultAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         public TWqxOrganization GetWQX_ORGANIZATION_ByID(string OrgID)
         {
             try
@@ -101,11 +116,11 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
-        public int InsertOrUpdateT_WQX_ORGANIZATION(string oRG_ID, string oRG_NAME)
+        public async Task<int> InsertOrUpdateT_WQX_ORGANIZATIONAsync(string oRG_ID, string oRG_NAME)
         {
-            return InsertOrUpdateT_WQX_ORGANIZATION(oRG_ID, oRG_NAME, "", "", "", "", "", "", "", "", "", null, "");
+            return await InsertOrUpdateT_WQX_ORGANIZATIONAsync(oRG_ID, oRG_NAME, "", "", "", "", "", "", "", "", "", null, "").ConfigureAwait(false);
         }
-        public int InsertOrUpdateT_WQX_ORGANIZATION(string oRG_ID, string oRG_NAME, string oRG_DESC, string tRIBAL_CODE, string eLECTRONIC_ADDRESS, string eLECTRONICADDRESSTYPE, string tELEPHONE_NUM, string tELEPHONE_NUM_TYPE, string TELEPHONE_EXT, string cDX_SUBMITTER_ID, string cDX_SUBMITTER_PWD, bool? cDX_SUBMIT_IND, string dEFAULT_TIMEZONE, string cREATE_USER = "system", string mAIL_ADDRESS = null, string mAIL_ADD_CITY = null, string mAIL_ADD_STATE = null, string mAIL_ADD_ZIP = null)
+        public async Task<int> InsertOrUpdateT_WQX_ORGANIZATIONAsync(string oRG_ID, string oRG_NAME, string oRG_DESC, string tRIBAL_CODE, string eLECTRONIC_ADDRESS, string eLECTRONICADDRESSTYPE, string tELEPHONE_NUM, string tELEPHONE_NUM_TYPE, string TELEPHONE_EXT, string cDX_SUBMITTER_ID, string cDX_SUBMITTER_PWD, bool? cDX_SUBMIT_IND, string dEFAULT_TIMEZONE, string cREATE_USER = "system", string mAIL_ADDRESS = null, string mAIL_ADD_CITY = null, string mAIL_ADD_STATE = null, string mAIL_ADD_ZIP = null)
         {
             Boolean insInd = false;
             try
@@ -113,9 +128,9 @@ namespace OpenWater2.DataAccess.Data.Repository
                 TWqxOrganization a = new TWqxOrganization();
 
                 if (oRG_ID != null)
-                    a = (from c in _db.TWqxOrganization
+                    a = await (from c in _db.TWqxOrganization
                          where c.OrgId == oRG_ID
-                         select c).FirstOrDefault();
+                         select c).FirstOrDefaultAsync().ConfigureAwait(false);
 
                 if (a == null) //insert case
                 {
@@ -150,17 +165,17 @@ namespace OpenWater2.DataAccess.Data.Repository
 
                 if (insInd) //insert case
                 {
-                    a.CreateUserid = cREATE_USER.ToUpper();
+                    if(cREATE_USER != null) a.CreateUserid = cREATE_USER.ToUpper();
                     a.CreateDt = System.DateTime.Now;
                     _db.TWqxOrganization.Add(a);
                 }
                 else
                 {
-                    a.UpdateUserid = cREATE_USER.ToUpper();
+                    if (cREATE_USER != null)  a.UpdateUserid = cREATE_USER.ToUpper();
                     a.UpdateDt = System.DateTime.Now;
                 }
 
-                _db.SaveChanges();
+                await _db.SaveChangesAsync().ConfigureAwait(false);
 
                 return 1;
             }
@@ -481,7 +496,45 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
+        public async Task<List<string>> GetWQX_ORGANIZATION_PendingDataToSubmit2Async()
+        {
+            try
+            {
+                var x = (from m in _db.TWqxMonloc
+                         join o in _db.TWqxOrganization on m.OrgId equals o.OrgId
+                         join b1 in _db.TWqxBatchSubmitTrans on m.MonlocIdx equals b1.TableIdx into bo
+                         from b1 in bo.DefaultIfEmpty()
+                         where o.CdxSubmitInd == true
+                         && m.WqxSubmitStatus == "U"
+                         && m.WqxInd == true
+                         && (b1.IsInBatchProcess ?? "") != "Y"
+                         select m.OrgId).Union
+                         (from a in _db.TWqxActivity
+                          join o in _db.TWqxOrganization on a.OrgId equals o.OrgId
+                          join b2 in _db.TWqxBatchSubmitTrans on a.ActivityIdx equals b2.TableIdx into ba
+                          from b2 in ba.DefaultIfEmpty()
+                          where o.CdxSubmitInd == true
+                          && a.WqxSubmitStatus == "U"
+                          && a.WqxInd == true
+                          && (b2.IsInBatchProcess ?? "") != "Y"
+                          select a.OrgId).Union
+                          (from p in _db.TWqxProject
+                           join o in _db.TWqxOrganization on p.OrgId equals o.OrgId
+                           join b3 in _db.TWqxBatchSubmitTrans on p.ProjectIdx equals b3.TableIdx into bp
+                           from b3 in bp.DefaultIfEmpty()
+                           where o.CdxSubmitInd == true
+                           && p.WqxSubmitStatus == "U"
+                           && p.WqxInd == true
+                           && (b3.IsInBatchProcess ?? "") != "Y"
+                           select p.OrgId);
 
+                return x.Distinct().ToList();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
         //TODO: duplicate code
         private CDXCredentials GetCDXSubmitCredentials2(string OrgID)
         {
@@ -589,6 +642,24 @@ namespace OpenWater2.DataAccess.Data.Repository
 
                 return null;
             }
+        }
+
+        public async Task<List<string>> GetWQX_ORGANIZATION_PendingDataToSubmitStatusAsync()
+        {
+            List<string> actResult = null;
+            try
+            {
+                var x = await (from m in _db.TWqxBatchSubmit
+                         where (m.CdxSubmitStatus.ToLower() != "failed" &&
+                                m.CdxSubmitStatus.ToLower() != "completed")
+                         select m.OrgId).ToListAsync().ConfigureAwait(false);
+                return x.Distinct().ToList();
+            }
+            catch (Exception ex)
+            {
+                actResult = null;
+            }
+            return actResult;
         }
     }
 }

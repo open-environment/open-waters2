@@ -2,11 +2,21 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OpenWater2.DataAccess.Data.Repository.IRepository
 {
     public interface ITWqxTransactionLogRepository : IRepository<TWqxTransactionLog>
     {
+        public Task<int> InsertUpdateWQX_TRANSACTION_LOGAsync(int? logId,
+                                    string tableCd,
+                                    int tableIdx,
+                                    string submitType,
+                                    byte[] responseFile,
+                                    string responseText,
+                                    string cdxSubmitTransId,
+                                    string cdxSubmitStatus,
+                                    string orgId);
         public int InsertUpdateWQX_TRANSACTION_LOG(int? logId,
                                     string tableCd,
                                     int tableIdx,

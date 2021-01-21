@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -16,7 +18,12 @@ namespace OpenWater2.DataAccess.Data.Repository
         {
             _db = db;
         }
-
+        public async Task<string> GetT_OE_APP_SETTINGAsync(string settingName)
+        {
+            TOeAppSettings x = await _db.TOeAppSettings.Where(x => x.SettingName == settingName).FirstOrDefaultAsync().ConfigureAwait(false);
+            if (x != null) return x.SettingValue;
+            return string.Empty;
+        }
         public string GetT_OE_APP_SETTING(string settingName)
         {
             return _db.TOeAppSettings.Where(x => x.SettingName == settingName).FirstOrDefault().SettingValue;

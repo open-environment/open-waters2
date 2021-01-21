@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using OpwnWater2.DataAccess;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -43,7 +45,21 @@ namespace OpenWater2.DataAccess.Data.Repository
                 throw ex;
             }
         }
-
+        public async Task<List<TOeUsers>> GetWQX_USER_ORGS_AdminsByOrgAsync(string OrgID)
+        {
+            try
+            {
+                return await (from a in _db.TWqxUserOrgs
+                        join b in _db.TOeUsers on a.UserIdx equals b.UserIdx
+                        where a.OrgId == OrgID
+                        && a.RoleCd != "P"
+                        select b).ToListAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         public List<TOeUsers> GetWQX_USER_ORGS_AdminsByOrg(string OrgID)
         {
             try

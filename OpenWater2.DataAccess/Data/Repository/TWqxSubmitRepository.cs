@@ -11,6 +11,9 @@ using javax.xml.soap;
 using System.Linq;
 using net.epacdxnode.test;
 using System.Threading.Tasks;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using System.Xml;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -25,6 +28,13 @@ namespace OpenWater2.DataAccess.Data.Repository
         private readonly ITWqxProjectRepository _projRepo;
         private readonly ITWqxActivityRepository _activityRepo;
         private readonly ITWqxTransactionLogRepository _transLogRepo;
+        private readonly IOeAppTasksRepository _oeAppTasksRepository;
+        private readonly ITWqxBatchSubmitRepository _batchSubmitRepo;
+        private readonly ITWqxBatchSubmitTransRepository _batchSubmitTransRepo;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public object RandomString { get; private set; }
+
         public TWqxSubmitRepository(ApplicationDbContext db,
             ITOeSysLogRepository sysLogRepo,
             ITOeAppSettingsRepository appSettingsRepo,
@@ -33,7 +43,11 @@ namespace OpenWater2.DataAccess.Data.Repository
             ITWqxMonLocRepository monlocRepo,
             ITWqxProjectRepository projRepo,
             ITWqxActivityRepository activityRepo,
-            ITWqxTransactionLogRepository transLogRepo) : base(db)
+            ITWqxTransactionLogRepository transLogRepo,
+            IOeAppTasksRepository oeAppTasksRepository,
+            ITWqxBatchSubmitRepository batchSubmitRepo,
+            ITWqxBatchSubmitTransRepository batchSubmitTransRepo,
+            IWebHostEnvironment webHostEnvironment) : base(db)
         {
             _db = db;
             _sysLogRepo = sysLogRepo;
@@ -44,6 +58,455 @@ namespace OpenWater2.DataAccess.Data.Repository
             _projRepo = projRepo;
             _activityRepo = activityRepo;
             _transLogRepo = transLogRepo;
+            _oeAppTasksRepository = oeAppTasksRepository;
+            _batchSubmitRepo = batchSubmitRepo;
+            _batchSubmitTransRepo = batchSubmitTransRepo;
+            _webHostEnvironment = webHostEnvironment;
+        }
+
+        public async Task WQX_BulkMasterSubmitStatusAsync(string OrgID)
+        {
+            Console.WriteLine("[Status] >> WQX_BulkMasterSubmitStatusAsync called");
+            //log start of send
+            await _sysLogRepo.InsertT_OE_SYS_LOGAsync("INFO", "Getting submission status for " + OrgID).ConfigureAwait(false);
+
+            //get CDX username, password, and CDX destination URL
+            CDXCredentials cred = await GetCDXSubmitCredentials2Async(OrgID).ConfigureAwait(false);
+
+            //make 1 authenticate attempt just to verify. if failed, then exit, send email, and cancel for org
+            string authResp = await AuthHelperAsync(cred.userID, cred.credential, "Password", "default", cred.NodeURL).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(authResp))
+            {
+                Console.WriteLine("[Status] >> Login failed for supplied NAAS");
+                await DisableWQXForOrgAsync(OrgID, "Login failed for supplied NAAS Username and Password for " + OrgID).ConfigureAwait(false);
+                return;
+            }
+            // Get all the pending batches to to get the staus
+            List<TWqxBatchSubmit> wqxBatchSubmits = await _batchSubmitRepo.GetPendingWqxBatchesByOrgId4StatusAsync(OrgID).ConfigureAwait(false);
+            if(wqxBatchSubmits == null)
+            {
+                Console.WriteLine("[Status] >> GetPendingWqxBatchesByOrgId4StatusAsync returns null.");
+                return;
+            }
+            Console.WriteLine("[Status] >> Batches: " + wqxBatchSubmits.Count.ToString());
+            List<Task> tasks = new List<Task>();
+            foreach (TWqxBatchSubmit wqxBatchSubmit in wqxBatchSubmits)
+            {
+                await ProcessBatchStatusAsync(wqxBatchSubmit, OrgID, cred).ConfigureAwait(false);
+            }
+        }
+        public async Task WQX_BulkMasterAsync(string OrgID)
+        {
+            Console.WriteLine("[Submission] > WQX_BulkMasterAsync called");
+            //log start of send
+            await _sysLogRepo.InsertT_OE_SYS_LOGAsync("INFO", "Starting WQX submission for " + OrgID).ConfigureAwait(false);
+
+            //get CDX username, password, and CDX destination URL
+            CDXCredentials cred = await GetCDXSubmitCredentials2Async(OrgID).ConfigureAwait(false);
+
+            //make 1 authenticate attempt just to verify. if failed, then exit, send email, and cancel for org
+            string authResp = await AuthHelperAsync(cred.userID, cred.credential, "Password", "default", cred.NodeURL).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(authResp))
+            {
+                Console.WriteLine("[Submission] > Login failed for supplied NAAS");
+                await DisableWQXForOrgAsync(OrgID, "Login failed for supplied NAAS Username and Password for " + OrgID).ConfigureAwait(false);
+                return;
+            }
+
+            // Call WQXBatchProcess SP to create multiple batches for given OrgID
+            string transId = UtilityHelper.RandomString(35, false);
+
+            if (await SP_ProcessBatchAsync(transId, OrgID, 1).ConfigureAwait(false))
+            {
+                Console.WriteLine("[Submission] > SP_ProcessBatch called");
+                // Get all the pending batches to process and submit each
+                List<TWqxBatchSubmit> wqxBatchSubmits = await _batchSubmitRepo.GetPendingWqxBatchesByOrgIdAsync(OrgID).ConfigureAwait(false);
+                if(wqxBatchSubmits == null)
+                {
+                    Console.WriteLine("[Submission] > GetPendingWqxBatchesByOrgIdAsync returns null: " + wqxBatchSubmits.Count.ToString());
+                    return;
+                }
+                Console.WriteLine("[Submission] > Batches: " + wqxBatchSubmits.Count.ToString());
+                List<Task> tasks = new List<Task>();
+                foreach (TWqxBatchSubmit wqxBatchSubmit in wqxBatchSubmits)
+                {
+                    Console.WriteLine("[Submission] > Process batch Id:" + wqxBatchSubmit.Bsmid.ToString());
+                    //Create a task and add to task collection
+                    //************************************************************
+                    //DO NOT AWAIT HERE, entire task collection will be awaited
+                    //after for loop
+                    var task = ProcessBatchAsync(wqxBatchSubmit, OrgID, cred);
+                    tasks.Add(task);
+                    //***********************************************************
+                    //tasks.Add(Task.Run(ProcessBatchAsync(wqxBatchSubmit, OrgID, cred).ConfigureAwait(false)));
+                    //bool isBatchProcessed = await ProcessBatchAsync(wqxBatchSubmit, OrgID, cred).ConfigureAwait(false);
+                }
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+                Console.WriteLine("[Submission] > WhenAll done");
+            }
+
+        }
+        private async Task<bool> ProcessBatchStatusAsync(TWqxBatchSubmit wqxBatchSubmit,
+                                                    string OrgID,
+                                                   CDXCredentials cred)
+        {
+            string typeText = "Batch";
+            int RecordIDX = wqxBatchSubmit.Bsmid;
+
+            //*******AUTHENTICATE*********************************************************************************************************
+            string token = await AuthHelperAsync(cred.userID, cred.credential, "Password", "default", cred.NodeURL).ConfigureAwait(false);
+            Console.WriteLine("[Status] >> Token received..." + token);
+
+            Console.WriteLine("[Status] >> ProcessBatchAsync called for " + RecordIDX);
+            bool actResult = false;
+            try
+            {
+                string status = "";
+
+                StatusResponseType gsResp = await GetStatusHelperAsync(cred.NodeURL, token, wqxBatchSubmit.CdxSubmitTransid).ConfigureAwait(false);
+                if (gsResp != null)
+                {
+                    status = gsResp.status.ToString();
+                    Console.WriteLine("[Status] >> Received status " + status);
+                    //update status of record
+                    if (status == "Completed")
+                    {
+                        await _batchSubmitRepo.InsertOrUpdateBatchSubmitAsync(wqxBatchSubmit.Bsmid,
+                                                                    wqxBatchSubmit.CdxSubmitTransid,
+                                                                    status,
+                                                                    wqxBatchSubmit.SubmitType,
+                                                                    OrgID,
+                                                                    "N",
+                                                                    wqxBatchSubmit.SubmitAttempt ?? 0,
+                                                                    wqxBatchSubmit.StatusAttempt ?? 0,
+                                                                    wqxBatchSubmit.SubmitDate).ConfigureAwait(false);
+                        await _batchSubmitTransRepo.UpdateAllStatusByBMSIDAsync(wqxBatchSubmit.Bsmid,
+                                                                          status).ConfigureAwait(false);
+                        //UpdateRecordStatus(typeText, RecordIDX, "Y");
+                        //All the entries are passed so update it
+                        List<TWqxBatchSubmitTrans> batches = await _batchSubmitTransRepo.GetAllByBMSIDAsync(wqxBatchSubmit.Bsmid).ConfigureAwait(false);
+                        if(batches == null)
+                        {
+                            Console.WriteLine("[Status] >> GetAllByBMSIDAsync returns null. ");
+                            return false;
+                        }
+                        foreach (TWqxBatchSubmitTrans batch in batches)
+                        {
+                            await _batchSubmitTransRepo.InsertOrUpdateBatchSubmitTransAsync(
+                                                                batch.Bstid,
+                                                                batch.Bsmid,
+                                                                batch.TableCd,
+                                                                batch.TableIdx,
+                                                                batch.TableId,
+                                                                "Completed",
+                                                                "N").ConfigureAwait(false);
+                            await UpdateRecordStatusAsync(typeText, batch.TableIdx.GetValueOrDefault(), "Y").ConfigureAwait(false);
+                        }
+                        _transLogRepo.InsertUpdateWQX_TRANSACTION_LOG(null, typeText, RecordIDX, "I", null, null, wqxBatchSubmit.CdxSubmitTransid, status, OrgID);
+                    }
+                    else if (status == "Failed")
+                    {
+                        int submitAttempt = (wqxBatchSubmit.SubmitAttempt ?? 0);
+                        int statusAttemp = (wqxBatchSubmit.StatusAttempt ?? 0) + 1;
+                        await _batchSubmitRepo.InsertOrUpdateBatchSubmitAsync(wqxBatchSubmit.Bsmid,
+                                                                    wqxBatchSubmit.CdxSubmitTransid,
+                                                                    status,
+                                                                    wqxBatchSubmit.SubmitType,
+                                                                    OrgID,
+                                                                    "N",
+                                                                    submitAttempt,
+                                                                    statusAttemp,
+                                                                    wqxBatchSubmit.SubmitDate).ConfigureAwait(false);
+                        //UpdateRecordStatus(typeText, RecordIDX, "N");
+
+                        int iCount = 0;
+                        //*******DOWNLOAD ERROR REPORT ****************************************************************************
+                        NodeDocumentType[] dlResp = DownloadHelper(cred.NodeURL, token, "WQX", wqxBatchSubmit.CdxSubmitTransid);
+                        foreach (NodeDocumentType ndt in dlResp)
+                        {
+                            if (ndt.documentName.Contains("Processing"))
+                            {
+                                Byte[] resp1 = dlResp[iCount].documentContent.Value;
+                                string folderPath = Path.Combine(Environment.CurrentDirectory, "TempStatus");
+                                if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+                                string fileName = Guid.NewGuid().ToString() + ".zip";
+                                string filePath = Path.Combine(folderPath, fileName);
+                                if (File.Exists(filePath)) File.Delete(filePath);
+                                File.WriteAllBytes(filePath, resp1);
+                                string xmlContent = await ReadZipFileAsync(filePath).ConfigureAwait(false);
+                                //Try to delete the file
+                                try
+                                {
+                                    File.Delete(filePath);
+                                }
+                                catch (Exception e)
+                                {
+                                    //do nothing, or handle this case
+                                }
+                                
+                                if (!string.IsNullOrEmpty(xmlContent))
+                                {
+                                    XmlDocument document = new XmlDocument();
+                                    document.LoadXml(xmlContent);
+                                    XmlNode node = document.SelectSingleNode("/ProcessingReport/ProcessingFailures");
+                                    if (node.HasChildNodes)
+                                    {
+                                        foreach (XmlNode childNode in node.ChildNodes)
+                                        {
+                                            if (childNode.LocalName.ToLower() == "monitoringlocationidentifier")
+                                            {
+                                                string mlocid = childNode.InnerText;
+                                                if (!string.IsNullOrEmpty(mlocid))
+                                                {
+                                                    await UpdateBatchSubmitTransStatusAsync("MLOC", mlocid, "Failed").ConfigureAwait(false);
+                                                    UpdateRecordStatusAsync("MLOC", mlocid, "N");
+                                                    
+                                                }
+                                            }
+                                            if (childNode.LocalName.ToLower() == "activityidentifier")
+                                            {
+                                                string actid = childNode.InnerText;
+                                                if (!string.IsNullOrEmpty(actid))
+                                                {
+                                                    await UpdateBatchSubmitTransStatusAsync("ACT", actid, "Failed").ConfigureAwait(false);
+                                                    UpdateRecordStatusAsync("ACT", actid, "N");
+                                                }
+                                            }
+                                            if (childNode.LocalName.ToLower() == "projectidentifier")
+                                            {
+                                                string projid = childNode.InnerText;
+                                                if (!string.IsNullOrEmpty(projid))
+                                                {
+                                                    await UpdateBatchSubmitTransStatusAsync("PROJ", projid, "Failed").ConfigureAwait(false);
+                                                    UpdateRecordStatusAsync("PROJ", projid, "N");
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Select a list of nodes
+                                    //XmlNodeList nodes = document.SelectNodes("/People/Person");
+                                }
+                            }
+                            if (ndt.documentName.Contains("Validation") || ndt.documentName.Contains("Processing"))
+                            {
+                                Byte[] resp1 = dlResp[iCount].documentContent.Value;
+                                _transLogRepo.InsertUpdateWQX_TRANSACTION_LOG(null, typeText, RecordIDX, "I", resp1, ndt.documentName, wqxBatchSubmit.CdxSubmitTransid, status, OrgID);
+                            }
+                            iCount += 1;
+                        }
+
+                        //All the remaining entries are passed so update it
+                        List<TWqxBatchSubmitTrans> batches = _batchSubmitTransRepo.GetAllByBMSID(wqxBatchSubmit.Bsmid);
+                        if(batches != null)
+                        {
+                            foreach (TWqxBatchSubmitTrans batch in batches)
+                            {
+                                if (batch.IsInBatchProcess == "Y")
+                                {
+                                    await _batchSubmitTransRepo.InsertOrUpdateBatchSubmitTransAsync(
+                                                                        batch.Bstid,
+                                                                        batch.Bsmid,
+                                                                        batch.TableCd,
+                                                                        batch.TableIdx,
+                                                                        batch.TableId,
+                                                                        "Completed",
+                                                                        "N").ConfigureAwait(false);
+                                    await UpdateRecordStatusAsync(typeText, batch.TableIdx.GetValueOrDefault(), "Y").ConfigureAwait(false);
+                                }
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        await _batchSubmitRepo.InsertOrUpdateBatchSubmitAsync(wqxBatchSubmit.Bsmid,
+                                                                    wqxBatchSubmit.CdxSubmitTransid,
+                                                                    status,
+                                                                    wqxBatchSubmit.SubmitType,
+                                                                    OrgID,
+                                                                    wqxBatchSubmit.IsBatchInProcess,
+                                                                    wqxBatchSubmit.SubmitAttempt ?? 0,
+                                                                    wqxBatchSubmit.StatusAttempt ?? 0,
+                                                                    DateTime.Now).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("[Status] >> Status response is null for :" + wqxBatchSubmit.Bsmid);
+                }
+
+                //*******GET STATUS * *******************************************************************************************************
+                //string status = "";
+                //int i = 0;
+                //do
+                //{
+                //    i += 1;
+                //    Task.Delay(10000).Wait();
+                //    //Thread.Sleep(10000);
+                //    StatusResponseType gsResp = await GetStatusHelperAsync(cred.NodeURL, token, wqxBatchSubmit.CdxSubmitTransid).ConfigureAwait(false);
+                //    if (gsResp != null)
+                //    {
+                //        status = gsResp.status.ToString();
+                //        //exit if waiting too long
+                //        if (i > 30)
+                //        {
+                //            UpdateRecordStatus(typeText, RecordIDX, "N");
+                //            _transLogRepo.InsertUpdateWQX_TRANSACTION_LOG(null, typeText, RecordIDX, "I", null, "Timed out while getting status from EPA", wqxBatchSubmit.CdxSubmitTransid, "Failed", OrgID);
+                //            return false;
+                //        }
+                //    }
+                //} while (status != "Failed" && status != "Completed");
+
+                ////update status of record
+                //if (status == "Completed")
+                //{
+                //    UpdateRecordStatus(typeText, RecordIDX, "Y");
+                //    _transLogRepo.InsertUpdateWQX_TRANSACTION_LOG(null, typeText, RecordIDX, "I", null, null, wqxBatchSubmit.CdxSubmitTransid, status, OrgID);
+                //}
+                //else if (status == "Failed")
+                //{
+                //    UpdateRecordStatus(typeText, RecordIDX, "N");
+
+                //    int iCount = 0;
+                //    //*******DOWNLOAD ERROR REPORT ****************************************************************************
+                //    NodeDocumentType[] dlResp = DownloadHelper(cred.NodeURL, token, "WQX", wqxBatchSubmit.CdxSubmitTransid);
+                //    foreach (NodeDocumentType ndt in dlResp)
+                //    {
+                //        if (ndt.documentName.Contains("Validation") || ndt.documentName.Contains("Processing"))
+                //        {
+                //            Byte[] resp1 = dlResp[iCount].documentContent.Value;
+                //            _transLogRepo.InsertUpdateWQX_TRANSACTION_LOG(null, typeText, RecordIDX, "I", resp1, ndt.documentName, wqxBatchSubmit.CdxSubmitTransid, status, OrgID);
+                //        }
+                //        iCount += 1;
+                //    }
+                //}
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+            return actResult;
+        }
+
+        private async Task<int> UpdateBatchSubmitTransStatusAsync(string TableCd, string TableId, string Status)
+        {
+            
+            try
+            {
+                return await _batchSubmitTransRepo.UpdateBatchSubmitTransAsync(TableCd, TableId, Status).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                return 0;
+            }
+        }
+
+        private async Task<string> ReadZipFileAsync(String filePath)
+        {
+            String fileContents = "";
+            try
+            {
+                if (System.IO.File.Exists(filePath))
+                {
+                    using (System.IO.Compression.ZipArchive apcZipFile = System.IO.Compression.ZipFile.Open(filePath, System.IO.Compression.ZipArchiveMode.Read))
+                    {
+                        foreach (System.IO.Compression.ZipArchiveEntry entry in apcZipFile.Entries)
+                        {
+                            if (entry.Name.ToUpper().EndsWith(".XML"))
+                            {
+                                System.IO.Compression.ZipArchiveEntry zipEntry = apcZipFile.GetEntry(entry.Name);
+                                using (System.IO.StreamReader sr = new System.IO.StreamReader(zipEntry.Open()))
+                                {
+                                    //read the contents into a string
+                                    fileContents = sr.ReadToEnd();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                fileContents = "";
+            }
+            return fileContents;
+        }
+        private async Task<bool> ProcessBatchAsync(TWqxBatchSubmit wqxBatchSubmit,
+                                                    string OrgID,
+                                                    CDXCredentials cred)
+        {
+            Console.WriteLine("[Submission] > ProcessBatchAsync called...");
+            bool actResult = false;
+            try
+            {
+                string typeText = "Batch";
+                int RecordIDX = 0;
+
+                //log start of send
+                await _sysLogRepo.InsertT_OE_SYS_LOGAsync("INFO", "Starting WQX submission for " + OrgID).ConfigureAwait(false);
+
+                //*******AUTHENTICATE*********************************************************************************************************
+                string token = await AuthHelperAsync(cred.userID, cred.credential, "Password", "default", cred.NodeURL).ConfigureAwait(false);
+                Console.WriteLine("[Submission] > Token received..." + token);
+                //*******SUBMIT***************************************************************************************************************
+                string requestXml = "";
+                Console.WriteLine(
+                    System.Threading.Thread.CurrentThread.
+                    ManagedThreadId.ToString());
+                Console.WriteLine("[Submission] > BSMID:" + wqxBatchSubmit.Bsmid);
+                requestXml = SP_GenWQXXML_Single2("", 0, OrgID, wqxBatchSubmit.Bsmid);
+                if (string.IsNullOrEmpty(requestXml)) return false;
+                byte[] bytes = UtilityHelper.StrToByteArray(requestXml);
+                if (bytes == null) return false;
+                Console.WriteLine("[Submission] > XML generated");
+                StatusResponseType subStatus = await SubmitHelperAsync(cred.NodeURL, token, "WQX", "default", bytes, "submit.xml", DocumentFormatType.XML, "1").ConfigureAwait(false);
+                if (subStatus != null)
+                {
+                    Console.WriteLine("[Submission] > Response received.");
+                    Console.WriteLine(subStatus.status.ToString());
+                    Console.WriteLine(subStatus.transactionId);
+                    await UpdateBatchStatusAsync(wqxBatchSubmit, subStatus).ConfigureAwait(false);
+                }
+                else
+                {
+                    Console.WriteLine("[Submission] > Response received.: Failed");
+                    subStatus = new StatusResponseType();
+                    subStatus.status = TransactionStatusCode.Failed;
+                    wqxBatchSubmit.IsBatchInProcess = "N";
+                    await UpdateBatchStatusAsync(wqxBatchSubmit, subStatus).ConfigureAwait(false);
+                    await _transLogRepo.InsertUpdateWQX_TRANSACTION_LOGAsync(null, typeText, RecordIDX, "I", null, "Unable to submit", null, "Failed", OrgID).ConfigureAwait(false);
+                    await DisableWQXForOrgAsync(OrgID, "Submission failed for supplied for " + OrgID).ConfigureAwait(false);
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return actResult;
+        }
+
+        private async Task<int> UpdateBatchStatusAsync(TWqxBatchSubmit wqxBatchSubmit, 
+                                                        StatusResponseType subStatus)
+        {
+            int actResult = 0;
+            try
+            {
+                actResult = await _batchSubmitRepo.InsertOrUpdateBatchSubmitAsync(wqxBatchSubmit.Bsmid,
+                                                            subStatus.transactionId,
+                                                            Enum.GetName(typeof(TransactionStatusCode), subStatus.status),
+                                                            wqxBatchSubmit.SubmitType,
+                                                            wqxBatchSubmit.OrgId,
+                                                            wqxBatchSubmit.IsBatchInProcess,
+                                                            wqxBatchSubmit.SubmitAttempt ?? 0,
+                                                            wqxBatchSubmit.StatusAttempt ?? 0,
+                                                            wqxBatchSubmit.SubmitDate).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                actResult = 0;
+            }
+            return actResult;
         }
 
         public async Task WQX_MasterAsync(string OrgID)
@@ -53,14 +516,14 @@ namespace OpenWater2.DataAccess.Data.Repository
             _sysLogRepo.InsertT_OE_SYS_LOG("INFO", "Starting WQX submission for " + OrgID);
 
             //get CDX username, password, and CDX destination URL
-            CDXCredentials cred = GetCDXSubmitCredentials2(OrgID);
+            CDXCredentials cred = await GetCDXSubmitCredentials2Async(OrgID).ConfigureAwait(false);
 
             //make 1 authenticate attempt just to verify. if failed, then exit, send email, and cancel for org
             string authResp = await AuthHelperAsync(cred.userID, cred.credential, "Password", "default", cred.NodeURL).ConfigureAwait(false);
             if (string.IsNullOrEmpty(authResp))
             {
-                DisableWQXForOrg(OrgID, "Login failed for supplied NAAS Username and Password for " + OrgID);
-                return;  
+                await DisableWQXForOrgAsync(OrgID, "Login failed for supplied NAAS Username and Password for " + OrgID).ConfigureAwait(false);
+                return;
             }
 
             //Loop through all pending monitoring locations (including both active and inactive) and submit one at a time
@@ -82,11 +545,11 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
             catch (Exception ex)
             {
-                _sysLogRepo.InsertT_OE_SYS_LOG("ERROR", "Exception during activity submit: " + ex.Message.SubStringPlus(1,200));
+                _sysLogRepo.InsertT_OE_SYS_LOG("ERROR", "Exception during activity submit: " + ex.Message.SubStringPlus(1, 200));
             }
 
         }
-        public  CDXCredentials GetCDXSubmitCredentials2(string OrgID)
+        public async Task<CDXCredentials> GetCDXSubmitCredentials2Async(string OrgID)
         {
             //production
             //    NodeURL = "https://cdxnodengn.epa.gov/ngn-enws20/services/NetworkNode2ServiceConditionalMTOM"; //new 2.1
@@ -99,9 +562,9 @@ namespace OpenWater2.DataAccess.Data.Repository
             var cred = new CDXCredentials();
             try
             {
-                cred.NodeURL = _appSettingsRepo.GetT_OE_APP_SETTING("CDX Submission URL");
+                cred.NodeURL = await _appSettingsRepo.GetT_OE_APP_SETTINGAsync("CDX Submission URL").ConfigureAwait(false);
 
-                TWqxOrganization org = _orgRepo.GetWQX_ORGANIZATION_ByID(OrgID);
+                TWqxOrganization org = await _orgRepo.GetWQX_ORGANIZATION_ByIDAsync(OrgID).ConfigureAwait(false);
                 if (org != null)
                 {
                     if (string.IsNullOrEmpty(org.CdxSubmitterId) == false && string.IsNullOrEmpty(org.CdxSubmitterPwdHash) == false)
@@ -111,8 +574,8 @@ namespace OpenWater2.DataAccess.Data.Repository
                     }
                     else
                     {
-                        cred.userID = _appSettingsRepo.GetT_OE_APP_SETTING("CDX Submitter");
-                        cred.credential = _appSettingsRepo.GetT_OE_APP_SETTING("CDX Submitter Password");
+                        cred.userID = await _appSettingsRepo.GetT_OE_APP_SETTINGAsync("CDX Submitter").ConfigureAwait(false);
+                        cred.credential = await _appSettingsRepo.GetT_OE_APP_SETTINGAsync("CDX Submitter Password").ConfigureAwait(false);
                     }
                 }
             }
@@ -120,12 +583,12 @@ namespace OpenWater2.DataAccess.Data.Repository
 
             return cred;
         }
-        internal async System.Threading.Tasks.Task<string> AuthHelperAsync(string userID, string credential, string authMethod, string domain, string NodeURL)
+        internal async Task<string> AuthHelperAsync(string userID, string credential, string authMethod, string domain, string NodeURL)
         {
             NetworkNodePortType2Client.EndpointConfiguration endpoint =
                 new NetworkNodePortType2Client.EndpointConfiguration();
-            
-            NetworkNodePortType2Client nn = 
+
+            NetworkNodePortType2Client nn =
                 new NetworkNodePortType2Client(endpoint, NodeURL);
             //nn.Url = NodeURL;
             Authenticate auth1 = new Authenticate();
@@ -148,20 +611,29 @@ namespace OpenWater2.DataAccess.Data.Repository
                 return "";
             }
         }
-        private void DisableWQXForOrg(string OrgID, string LogMsg)
+        private async Task<int> DisableWQXForOrgAsync(string OrgID, string LogMsg)
         {
-            //when done, update status back to stopped
-            _orgRepo.InsertOrUpdateT_WQX_ORGANIZATION(OrgID, null, null, null, null, null, null, null, null, null, null, false, null, null);
-            _sysLogRepo.InsertT_OE_SYS_LOG("WQX_ORG_STOP", LogMsg);
+            int actResult = 0;
+            try
+            {
+                //when done, update status back to stopped
+                await _orgRepo.InsertOrUpdateT_WQX_ORGANIZATIONAsync(OrgID, null, null, null, null, null, null, null, null, null, null, false, null, null).ConfigureAwait(false);
+                await _sysLogRepo.InsertT_OE_SYS_LOGAsync("WQX_ORG_STOP", LogMsg).ConfigureAwait(false);
 
-            List<TOeUsers> users = _userOrgRepo.GetWQX_USER_ORGS_AdminsByOrg(OrgID);
-            foreach (TOeUsers user in users)
-                UtilityHelper.SendEmail(null, user.Email.Split(';').ToList(), 
-                    null, null, "Open Waters Submit Failure", 
-                    "Automated submission for " + OrgID + 
-                    " has been disabled due to a submission failure. Failure details are: " + 
-                    LogMsg, null, _appSettingsRepo,
-                    _sysLogRepo);
+                List<TOeUsers> users = await _userOrgRepo.GetWQX_USER_ORGS_AdminsByOrgAsync(OrgID).ConfigureAwait(false);
+                foreach (TOeUsers user in users)
+                    UtilityHelper.SendEmail(null, user.Email.Split(';').ToList(),
+                        null, null, "Open Waters Submit Failure",
+                        "Automated submission for " + OrgID +
+                        " has been disabled due to a submission failure. Failure details are: " +
+                        LogMsg, null, _appSettingsRepo,
+                        _sysLogRepo);
+            }
+            catch (Exception e)
+            {
+                return 0;
+            }
+            return actResult;
         }
 
         public async Task WQX_Submit_OneByOneAsync(string typeText, int RecordIDX, string userID, string credential, string NodeURL, string orgID, bool? InsUpdIndicator)
@@ -172,9 +644,19 @@ namespace OpenWater2.DataAccess.Data.Repository
                 string token = await AuthHelperAsync(userID, credential, "Password", "default", NodeURL).ConfigureAwait(false);
 
                 //*******SUBMIT***************************************************************************************************************
-                string requestXml = InsUpdIndicator == false ? SP_GenWQXXML_Single_Delete(typeText, RecordIDX) : SP_GenWQXXML_Single(typeText, RecordIDX);   //get XML from DB stored procedure
+                string requestXml = "";
+                if (typeText == "All")
+                {
+                    requestXml = InsUpdIndicator == false ? SP_GenWQXXML_Single_Delete(typeText, RecordIDX) : SP_GenWQXXML_Single2(typeText, RecordIDX, orgID, 0);   //get XML from DB stored procedure
+                }
+                else
+                {
+                    requestXml = InsUpdIndicator == false ? SP_GenWQXXML_Single_Delete(typeText, RecordIDX) : SP_GenWQXXML_Single(typeText, RecordIDX);   //get XML from DB stored procedure
+                }
+
                 byte[] bytes = UtilityHelper.StrToByteArray(requestXml);
                 if (bytes == null) return;
+
 
                 StatusResponseType subStatus = await SubmitHelperAsync(NodeURL, token, "WQX", "default", bytes, "submit.xml", DocumentFormatType.XML, "1").ConfigureAwait(false);
                 if (subStatus != null)
@@ -194,8 +676,8 @@ namespace OpenWater2.DataAccess.Data.Repository
                             //exit if waiting too long
                             if (i > 30)
                             {
-                                UpdateRecordStatus(typeText, RecordIDX, "N");
-                                _transLogRepo.InsertUpdateWQX_TRANSACTION_LOG(null, typeText, RecordIDX, "I", null, "Timed out while getting status from EPA", subStatus.transactionId, "Failed", orgID);
+                                await UpdateRecordStatusAsync(typeText, RecordIDX, "N").ConfigureAwait(false);
+                                await _transLogRepo.InsertUpdateWQX_TRANSACTION_LOGAsync(null, typeText, RecordIDX, "I", null, "Timed out while getting status from EPA", subStatus.transactionId, "Failed", orgID).ConfigureAwait(false);
                                 return;
                             }
                         }
@@ -204,12 +686,12 @@ namespace OpenWater2.DataAccess.Data.Repository
                     //update status of record
                     if (status == "Completed")
                     {
-                        UpdateRecordStatus(typeText, RecordIDX, "Y");
-                        _transLogRepo.InsertUpdateWQX_TRANSACTION_LOG(null, typeText, RecordIDX, "I", null, null, subStatus.transactionId, status, orgID);
+                        await UpdateRecordStatusAsync(typeText, RecordIDX, "Y").ConfigureAwait(false);
+                        await _transLogRepo.InsertUpdateWQX_TRANSACTION_LOGAsync(null, typeText, RecordIDX, "I", null, null, subStatus.transactionId, status, orgID).ConfigureAwait(false);
                     }
                     else if (status == "Failed")
                     {
-                        UpdateRecordStatus(typeText, RecordIDX, "N");
+                        await UpdateRecordStatusAsync(typeText, RecordIDX, "N").ConfigureAwait(false);
 
                         int iCount = 0;
                         //*******DOWNLOAD ERROR REPORT ****************************************************************************
@@ -228,7 +710,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                 else
                 {
                     _transLogRepo.InsertUpdateWQX_TRANSACTION_LOG(null, typeText, RecordIDX, "I", null, "Unable to submit", null, "Failed", orgID);
-                    DisableWQXForOrg(orgID, "Submission failed for supplied for " + orgID);
+                    await DisableWQXForOrgAsync(orgID, "Submission failed for supplied for " + orgID).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -268,19 +750,49 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
 
         }
-        internal void UpdateRecordStatus(string type, int RecordIDX, string status)
+        internal async Task UpdateRecordStatusAsync(string type, string tableID, string status)
         {
             if (type == "MLOC")
-                _monlocRepo.InsertOrUpdateWQX_MONLOC(RecordIDX, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, null, null, null, null, null, status, System.DateTime.Now, true, null, "SYSTEM");
+            {
+                TWqxMonloc monloc = _monlocRepo.GetFirstOrDefault(m => m.MonlocId == tableID);
+                if(monloc != null)
+                {
+                    await UpdateRecordStatusAsync(type, monloc.MonlocIdx, status).ConfigureAwait(false);
+                }
+            }
+            if (type == "PROJ")
+            {
+                TWqxProject proj = _projRepo.GetFirstOrDefault(p => p.ProjectId == tableID);
+                if(proj != null)
+                {
+                    await UpdateRecordStatusAsync(type, proj.ProjectIdx, status).ConfigureAwait(false);
+                }
+            }
+            if (type == "ACT")
+            {
+                TWqxActivity act = _activityRepo.GetFirstOrDefault(a => a.ActivityId == tableID);
+                if(act != null)
+                {
+                    await UpdateRecordStatusAsync(type, act.ActivityIdx, status).ConfigureAwait(false);
+                }
+            }
+        }
+        internal async Task UpdateRecordStatusAsync(string type, int RecordIDX, string status)
+        {
+            if (type == "MLOC")
+                await _monlocRepo.InsertOrUpdateWQX_MONLOCAsync(RecordIDX, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null, null, null, null, null,
+                    null, status, null, null, null, null, null, null, null, null, null, null, null, null, DateTime.Now, true, false, "SYSTEM").ConfigureAwait(false);
 
             if (type == "PROJ")
-                _projRepo.InsertOrUpdateWQX_PROJECT(RecordIDX, null, null, null, null, null, null, null, status, System.DateTime.Now, null, null, "SYSTEM");
+                _projRepo.InsertOrUpdateWQX_PROJECT(RecordIDX, null, null, null, null, null, null, null, status, System.DateTime.Now, null, false, "SYSTEM");
 
             if (type == "ACT")
-                _activityRepo.UpdateWQX_ACTIVITY_WQXStatus(RecordIDX, status, null, null, "SYSTEM");
+                _activityRepo.UpdateWQX_ACTIVITY_WQXStatus(RecordIDX, status, null, false, "SYSTEM");
         }
-        internal async Task<StatusResponseType> SubmitHelperAsync(string NodeURL, string secToken, string dataFlow, string flowOperation, byte[] doc, string docName, DocumentFormatType docFormat, string docID)
+        internal async Task<StatusResponseType> SubmitHelperAsync(string NodeURL, string secToken,
+            string dataFlow, string flowOperation, byte[] doc, string docName,
+            DocumentFormatType docFormat, string docID)
         {
             try
             {
@@ -372,6 +884,61 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
             return actResult;
         }
+        public async Task<bool> SP_ProcessBatchAsync(string TransId, string OrgId, int ActCount)
+        {
+            bool actResult = false;
+
+            try
+            {
+                SqlParameter[] @params =
+                {
+                   new SqlParameter("@TransId", SqlDbType.VarChar, 100)
+                   {Direction = ParameterDirection.Input, Value = TransId},
+                   new SqlParameter("@OrgID", SqlDbType.VarChar)
+                   {Direction = ParameterDirection.Input, Value = OrgId},
+                   new SqlParameter("@ActCount", SqlDbType.Int)
+                   {Direction = ParameterDirection.Input, Value = ActCount}
+                };
+                string storedProcName = "WQXBatchProcess";
+                await _db.Database.ExecuteSqlCommandAsync("exec " + storedProcName + " @TransId, @OrgID, @ActCount", @params).ConfigureAwait(false);
+                actResult = true;
+            }
+            catch (Exception ex)
+            {
+                actResult = false;
+            }
+            return actResult;
+        }
+        public string SP_GenWQXXML_Single2(string TypeText, int recordIDX,
+                                            string OrgId, int BsmId)
+        {
+            string actResult = "";
+            try
+            {
+                SqlParameter[] @params =
+                {
+                   new SqlParameter("@ReturnValue", SqlDbType.NVarChar, -1)
+                   {Direction = ParameterDirection.Output},
+                   new SqlParameter("@TypeText", SqlDbType.VarChar, 4)
+                   {Direction = ParameterDirection.Input, Value = TypeText},
+                   new SqlParameter("@RecordIDX", SqlDbType.Int)
+                   {Direction = ParameterDirection.Input, Value = recordIDX},
+                   new SqlParameter("@OrgId", SqlDbType.VarChar)
+                   {Direction = ParameterDirection.Input, Value = OrgId},
+                   new SqlParameter("@BSMID", SqlDbType.Int)
+                   {Direction = ParameterDirection.Input, Value = BsmId}
+                };
+                string storedProcName = "GetWQXXML_Single3";
+                _db.Database.ExecuteSqlCommand("exec " + storedProcName + " @ReturnValue OUT, @TypeText, @RecordIDX, @OrgId, @BSMID", @params);
+                actResult = @params[0].Value.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("SP_GenWQXXML_Single2 Error " + ex.Message);
+                return "";
+            }
+            return actResult;
+        }
         public string SP_GenWQXXML_Single_Delete(string TypeText, int recordIDX)
         {
             // TODO: STORED PROCEDURE SHOULD RETURN GENERATED XML IN
@@ -383,7 +950,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                 {
                     new SqlParameter("@ReturnValue", SqlDbType.NVarChar, -1)
                    {Direction = ParameterDirection.Output},
-                   new SqlParameter("@TypeText", SqlDbType.VarChar, 4) 
+                   new SqlParameter("@TypeText", SqlDbType.VarChar, 4)
                    {Direction = ParameterDirection.Input, Value = TypeText},
                    new SqlParameter("@RecordIDX", SqlDbType.Int)
                    {Direction = ParameterDirection.Input, Value = recordIDX}
@@ -425,7 +992,89 @@ namespace OpenWater2.DataAccess.Data.Repository
                 return null;
             }
         }
+        public async Task<bool> WQX_MasterAllOrgsTaskStatusAsync()
+        {
+            Console.WriteLine("[Status] >> WQX_MasterAllOrgsTaskStatusAsync called...");
+            bool actResult = false;
+            try
+            {
 
+                //loop through all registered organizations that have pending data to send, and submit pending data for each
+                List<string> orgs = await _orgRepo.GetWQX_ORGANIZATION_PendingDataToSubmitStatusAsync().ConfigureAwait(false);
+                if(orgs == null)
+                {
+                    Console.WriteLine("[Status] >> GetWQX_ORGANIZATION_PendingDataToSubmitStatusAsync returns null.");
+                    return false;
+                }
+                Console.WriteLine("[Status] >> Organization Count: " + orgs.Count.ToString());
+                foreach (string org in orgs)
+                {
+                    await WQX_BulkMasterSubmitStatusAsync(org).ConfigureAwait(false);
+                }
+
+                //when done, update status back to stopped
+                //db_Ref.UpdateT_OE_APP_TASKS("WQXSubmit", "STOPPED", null, "SYSTEM");
+                actResult = true;
+
+            }
+            catch (Exception e)
+            {
+                actResult = false;
+            }
+            return actResult;
+        }
+        public async Task<bool> WQX_MasterAllOrgsAsync()
+        {
+            Console.WriteLine("[Submission] > WQX_MasterAllOrgsAsync called...");
+            bool actResult = false;
+            //TOeAppTasks t = await _oeAppTasksRepository.GetT_OE_APP_TASKS_ByNameAsync("WQXSubmit").ConfigureAwait(false);
+            //if (t != null)
+            //{
+            //Console.WriteLine("GetT_OE_APP_TASKS_ByName called..." + t.TaskStatus);
+            //if (t.TaskStatus == "STOPPED")
+            //{
+            //Console.WriteLine("Task Status is Stopped...");
+            //set status to RUNNING so tasks won't execute simultaneously
+            //await _oeAppTasksRepository.UpdateT_OE_APP_TASKSAsync("WQXSubmit", "RUNNING", null, "SYSTEM").ConfigureAwait(false);
+
+            //loop through all registered organizations that have pending data to send, and submit pending data for each
+            try
+            {
+                List<string> orgs = await _orgRepo.GetWQX_ORGANIZATION_PendingDataToSubmit2Async().ConfigureAwait(false);
+                if(orgs == null)
+                {
+                    Console.WriteLine("[Submission] > GetWQX_ORGANIZATION_PendingDataToSubmit2Async returns null");
+                    return false;
+                }
+                Console.WriteLine("[Submission] > Organization Count: " + orgs.Count.ToString());
+                foreach (string org in orgs)
+                {
+                    await WQX_BulkMasterAsync(org).ConfigureAwait(false);
+                }
+                Console.WriteLine("[Submission] > All org processed for submission.");
+                //when done, update status back to stopped
+                //db_Ref.UpdateT_OE_APP_TASKS("WQXSubmit", "STOPPED", null, "SYSTEM");
+                actResult = true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Submission] > Error:" + e.Message);
+                throw;
+            }
+                    
+                //}
+                //else
+                //{
+                //    Console.WriteLine("Task Status is not Stopped, Running...");
+                //}
+            //}
+            //else
+            //{
+            //    Console.WriteLine("Task not found...");
+            //    //db_Ref.InsertT_OE_SYS_LOG("ERROR", "WQX Submission task not found");
+            //}
+            return actResult;
+        }
     }
 
     public class CDXCredentials

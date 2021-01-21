@@ -19,7 +19,7 @@ namespace OpenWater2.Models.Model
         public DateTime? UpdateDt { get; set; }
         public string SampFracReq { get; set; }
         public string PickList { get; set; }
-
+        // public string MethSpecReq { get; set; }
         public virtual ICollection<TWqxRefCharLimits> TWqxRefCharLimits { get; set; }
         public virtual ICollection<TWqxRefCharOrg> TWqxRefCharOrg { get; set; }
     }

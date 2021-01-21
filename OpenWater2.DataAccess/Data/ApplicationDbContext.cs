@@ -66,6 +66,8 @@ namespace OpenWater2.DataAccess.Data
         public virtual DbSet<VWqxAllOrgs> VWqxAllOrgs { get; set; }
         public virtual DbSet<VWqxPendingRecords> VWqxPendingRecords { get; set; }
         public virtual DbSet<VWqxTransactionLog> VWqxTransactionLog { get; set; }
+        public virtual DbSet<TWqxBatchSubmit> TWqxBatchSubmit { get; set; }
+        public virtual DbSet<TWqxBatchSubmitTrans> TWqxBatchSubmitTrans { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -1118,6 +1120,81 @@ namespace OpenWater2.DataAccess.Data
                 entity.Property(e => e.EntryType)
                     .HasColumnName("ENTRY_TYPE")
                     .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ActivityIdentifierUserSupplied)
+                    .HasColumnName("ACTIVITY_IDENTIFIER_USER_SUPPLIED")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.SamplingComponentName)
+                    .HasColumnName("SAMPLING_COMP_NAME")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ActivityLocationDescriptionText)
+                    .HasColumnName("ACTIVITY_LOCATION_DESC_TEXT")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.MeasureValue)
+                    .HasColumnName("MEASURE_VALUE")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.GearProcedureUnitCode)
+                    .HasColumnName("GEAR_PROC_UNIT_CODE")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.HabitatSelectionMethod)
+                    .HasColumnName("HABITAT_SELECTION_METHOD")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.MethodName)
+                    .HasColumnName("METHOD_NAME")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ThermalPreservativeUsedName)
+                    .HasColumnName("THERM_PRESERVATIVE_USED_NAME")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.HydrologicCondition)
+                    .HasColumnName("HYDROLOGIC_CONDITION")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.SampleContainerLabelName)
+                    .HasColumnName("SAMPLE_CONTAINER_LAB_NAME")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.HydrologicEvent)
+                    .HasColumnName("HYDROLOGIC_EVENT")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.HorizCollMethod)
+                    .HasColumnName("HORIZ_COLL_METHOD")
+                    .HasMaxLength(70)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.HorizCoRefSysDatumName)
+                    .HasColumnName("HORIZ_CO_REF_SYS_DATUM_NAME")
+                    .HasMaxLength(6)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.LatitudeMsr)
+                    .HasColumnName("LATITUDE_MSR")
+                    .HasMaxLength(30)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.LongitudeMsr)
+                    .HasColumnName("LONGITUDE_MSR")
+                    .HasMaxLength(30)
                     .IsUnicode(false);
 
                 entity.Property(e => e.MonlocIdx).HasColumnName("MONLOC_IDX");
@@ -2890,10 +2967,68 @@ namespace OpenWater2.DataAccess.Data
                     .HasMaxLength(12)
                     .IsUnicode(false);
 
-                entity.Property(e => e.VertRefDatum)
-                    .HasColumnName("VERT_REF_DATUM")
-                    .HasMaxLength(10)
+                entity.Property(e => e.DrainageArea)
+                    .HasColumnName("DRAINAGE_AREA_MSR")
+                    .HasMaxLength(60)
                     .IsUnicode(false);
+
+                entity.Property(e => e.DrainageAreaUnit)
+                    .HasColumnName("DRAINAGE_AREA_MSR_UNIT")
+                    .HasMaxLength(12)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ContributingDrainageArea)
+                    .HasColumnName("CONTRIBUTING_DRAINAGE_AREA_MSR")
+                    .HasMaxLength(60)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ContributingDrainageAreaUnit)
+                    .HasColumnName("CONTRIBUTING_DRAINAGE_AREA_MSR_UNIT")
+                    .HasMaxLength(12)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.AquiferTypeName)
+                    .HasColumnName("AQUIFER_TYPE_NAME")
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.NationalAquiferCode)
+                .HasColumnName("NATIONAL_AQUIFER_CODE")
+                .HasMaxLength(120)
+                .IsUnicode(false);
+
+                entity.Property(e => e.LocalAquiferCode)
+            .HasColumnName("LOCAL_AQUIFER_CODE")
+            .HasMaxLength(120)
+            .IsUnicode(false);
+
+                entity.Property(e => e.LocalAquiferCodeCtx)
+        .HasColumnName("LOCAL_AQUIFER_CODE_CTX")
+        .HasMaxLength(120)
+        .IsUnicode(false);
+
+                entity.Property(e => e.LocalAquiferDesc)
+    .HasColumnName("LOCAL_AQUIFER_DESCRIPTION_TEXT")
+    .HasMaxLength(120)
+    .IsUnicode(false);
+
+                entity.Property(e => e.WellDepthMeasure)
+    .HasColumnName("WELL_DEPTH_MSR")
+    .HasMaxLength(120)
+    .IsUnicode(false);
+
+                entity.Property(e => e.WellDepthMeasureUnit)
+        .HasColumnName("WELL_DEPTH_MSR_UNIT_CODE")
+        .HasMaxLength(120)
+        .IsUnicode(false);
+                entity.Property(e => e.ConstructionDate)
+                    .HasColumnName("CONSTRUCTION_DATE")
+                    .HasColumnType("datetime");
+
+                entity.Property(e => e.VertRefDatum)
+                            .HasColumnName("VERT_REF_DATUM")
+                            .HasMaxLength(10)
+                            .IsUnicode(false);
 
                 entity.Property(e => e.WellType)
                     .HasColumnName("WELL_TYPE")
@@ -4005,6 +4140,76 @@ namespace OpenWater2.DataAccess.Data
                     .HasMaxLength(15)
                     .IsUnicode(false);
 
+                entity.Property(e => e.TargetCount)
+                                   .HasColumnName("TARGET_COUNT")
+                                   .HasMaxLength(35)
+                                   .IsUnicode(false);
+
+                entity.Property(e => e.ProportionSampProcNumeric)
+                                    .HasColumnName("PROPORTION_SAMP_PROC_NUMERIC")
+                                    .HasColumnType("decimal(10, 2)");
+
+                entity.Property(e => e.ResultSampPointType)
+                                    .HasColumnName("RESULT_SAMP_POINT_TYPE")
+                                    .HasMaxLength(60)
+                                    .IsUnicode(false);
+                entity.Property(e => e.ResultSampPointPlaceInSeries)
+                                    .HasColumnName("RESULT_SAMP_POINT_PLACE_IN_SERIES")
+                                    .HasMaxLength(60)
+                                    .IsUnicode(false);
+                entity.Property(e => e.ResultSampPointCommentText)
+                                    .HasColumnName("RESULT_SAMP_POINT_COMMENT_TEXT")
+                                    .HasMaxLength(60)
+                                    .IsUnicode(false);
+                entity.Property(e => e.RecordIdentifierUserSupplied)
+                                    .HasColumnName("RECORD_IDENTIFIER_USER_SUPPLIED")
+                                    .HasMaxLength(60)
+                                    .IsUnicode(false);
+                entity.Property(e => e.SubjectTaxonomicNameUserSupplied)
+                                    .HasColumnName("SUBJECT_TAXONOMIC_NAME_USER_SUPPLIED")
+                                    .HasMaxLength(255)
+                                    .IsUnicode(false);
+
+                entity.Property(e => e.SubjectTaxonomicNameUserSuppliedRefText)
+                                    .HasColumnName("SUBJECT_TAXONOMIC_NAME_USER_SUPPLIED_REF_TEXT")
+                                    .HasMaxLength(255)
+                                    .IsUnicode(false);
+                entity.Property(e => e.GroupSummaryCount)
+                                   .HasColumnName("GROUP_SUMMARY_COUNT")
+                                   .HasMaxLength(255)
+                                   .IsUnicode(false);
+                entity.Property(e => e.FunctionalFeedingGroupName)
+                                    .HasColumnName("FUNCTIONAL_FEEDING_GROUP_NAME")
+                                    .HasMaxLength(255)
+                                    .IsUnicode(false);
+                entity.Property(e => e.ComparableAnalMethodIdentifier)
+                                   .HasColumnName("COMPARABLE_ANAL_METHOD_IDENTIFIER")
+                                   .HasMaxLength(35)
+                                   .IsUnicode(false);
+
+                entity.Property(e => e.ComparableAnalMethodIdentifierCtx)
+                    .HasColumnName("COMPARABLE_ANAL_METHOD_IDENTIFIER_CTX")
+                    .HasMaxLength(120)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ComparableAnalMethodModificationText)
+                    .HasColumnName("COMPARABLE_ANAL_METHOD_MODIFICATION_TEXT")
+                    .HasMaxLength(4000)
+                    .IsUnicode(false);
+                entity.Property(e => e.LabCommentText)
+                                    .HasColumnName("LAB_COMMENT_TEXT")
+                                    .HasMaxLength(4000)
+                                    .IsUnicode(false);
+                entity.Property(e => e.DetectionQuantLimitCommentText)
+                                   .HasColumnName("DETECTION_QUANT_LIMIT_COMMENT_TEXT")
+                                   .HasMaxLength(4000)
+                                   .IsUnicode(false);
+                entity.Property(e => e.LabSampSplitRatio)
+                                    .HasColumnName("LAB_SAMP_SPLIT_RATIO")
+                                    .HasMaxLength(60)
+                                    .IsUnicode(false);
+
+
                 entity.HasOne(d => d.ActivityIdxNavigation)
                     .WithMany(p => p.TWqxResult)
                     .HasForeignKey(d => d.ActivityIdx)
@@ -4343,6 +4548,88 @@ namespace OpenWater2.DataAccess.Data
 
                 entity.Property(e => e.TableIdx).HasColumnName("TABLE_IDX");
             });
+
+
+            modelBuilder.Entity<TWqxBatchSubmit>(entity =>
+            {
+                entity.HasKey(e => e.Bsmid);
+
+                entity.ToTable("T_WQX_BATCH_SUBMIT");
+
+                entity.Property(e => e.Bsmid).HasColumnName("BSMID");
+
+                entity.Property(e => e.CdxSubmitStatus)
+                    .HasColumnName("CDX_SUBMIT_STATUS")
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.CdxSubmitTransid)
+                    .HasColumnName("CDX_SUBMIT_TRANSID")
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.IsBatchInProcess)
+                    .HasColumnName("IS_BATCH_IN_PROCESS")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.OrgId)
+                    .HasColumnName("ORG_ID")
+                    .HasMaxLength(35)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.SubmitDate)
+                    .HasColumnName("SUBMIT_DATE")
+                    .HasColumnType("datetime");
+
+                entity.Property(e => e.SubmitType)
+                    .HasColumnName("SUBMIT_TYPE")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TWqxBatchSubmitTrans>(entity =>
+            {
+                entity.HasKey(e => e.Bstid);
+
+                entity.ToTable("T_WQX_BATCH_SUBMIT_TRANS");
+
+                entity.Property(e => e.Bstid).HasColumnName("BSTID");
+
+                entity.Property(e => e.Bsmid).HasColumnName("BSMID");
+
+                entity.Property(e => e.CdxSubmitStatus)
+                    .HasColumnName("CDX_SUBMIT_STATUS")
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.IsInBatchProcess)
+                    .HasColumnName("IS_IN_BATCH_PROCESS")
+                    .HasMaxLength(1)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.TableCd)
+                    .HasColumnName("TABLE_CD")
+                    .HasMaxLength(5)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.TableId)
+                    .HasColumnName("TABLE_ID")
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.TableIdx).HasColumnName("TABLE_IDX");
+
+                entity.HasOne(d => d.Bsm)
+                    .WithMany(p => p.TWqxBatchSubmitTrans)
+                    .HasForeignKey(d => d.Bsmid)
+                    .HasConstraintName("FK_T_WQX_BATCH_SUBMIT_TRANS_T_WQX_BATCH_SUBMIT");
+            });
+
+
+
+
+
 
             OnModelCreatingPartial(modelBuilder);
         }

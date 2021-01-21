@@ -24,18 +24,7 @@ namespace Open_Water2.WebApi.Services
 {
     public class UserService : IUserService
     {
-        //private List<User> _users = new List<User>
-        //{
-        //    new User
-        //    {
-        //         Id=1,
-        //         FirstName="test",
-        //         LastName="user",
-        //         UserName="kshitij@appletechconsultants.com",
-        //         Password="pwd"
-        //    }
-        //};
-
+        
         private readonly AppSettings _appSettings;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _env;

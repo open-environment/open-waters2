@@ -15,10 +15,11 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public List<TWqxOrganization> GetWQX_USER_ORGS_ByUserIDX(int UserIDX, bool excludePendingInd);
         public List<VWqxAllOrgs> GetV_WQX_ALL_ORGS();
         public List<TWqxOrganization> GetWQX_ORGANIZATION();
+        public Task<TWqxOrganization> GetWQX_ORGANIZATION_ByIDAsync(string OrgID);
         public TWqxOrganization GetWQX_ORGANIZATION_ByID(string OrgID);
         public TEpaOrgs GetT_EPA_ORGS_ByOrgID(string OrgID);
-        public int InsertOrUpdateT_WQX_ORGANIZATION(string oRG_ID, string oRG_NAME);
-        public int InsertOrUpdateT_WQX_ORGANIZATION(string oRG_ID, string oRG_NAME, string oRG_DESC, string tRIBAL_CODE, string eLECTRONIC_ADDRESS,
+        public Task<int> InsertOrUpdateT_WQX_ORGANIZATIONAsync(string oRG_ID, string oRG_NAME);
+        public Task<int> InsertOrUpdateT_WQX_ORGANIZATIONAsync(string oRG_ID, string oRG_NAME, string oRG_DESC, string tRIBAL_CODE, string eLECTRONIC_ADDRESS,
             string eLECTRONICADDRESSTYPE, string tELEPHONE_NUM, string tELEPHONE_NUM_TYPE, string TELEPHONE_EXT, string cDX_SUBMITTER_ID,
             string cDX_SUBMITTER_PWD, bool? cDX_SUBMIT_IND, string dEFAULT_TIMEZONE, string cREATE_USER = "system", string mAIL_ADDRESS = null,
             string mAIL_ADD_CITY = null, string mAIL_ADD_STATE = null, string mAIL_ADD_ZIP = null);
@@ -31,6 +32,8 @@ namespace OpenWater2.DataAccess.Data.Repository.IRepository
         public List<TWqxImportTranslate> GetWQX_IMPORT_TRANSLATE_byOrg(string OrgID);
         public bool CanUserEditOrg(int UserIDX, string OrgID);
         public List<string> GetWQX_ORGANIZATION_PendingDataToSubmit();
+        public Task<List<string>> GetWQX_ORGANIZATION_PendingDataToSubmit2Async();
+        public Task<List<string>> GetWQX_ORGANIZATION_PendingDataToSubmitStatusAsync();
 
     }
 }

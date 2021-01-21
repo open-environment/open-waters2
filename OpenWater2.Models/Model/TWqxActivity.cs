@@ -71,6 +71,22 @@ namespace OpenWater2.Models.Model
         public int? TempSampleIdx { get; set; }
         public string EntryType { get; set; }
 
+        public string ActivityIdentifierUserSupplied { get; set; }
+        public string SamplingComponentName { get; set; }
+        public string ActivityLocationDescriptionText { get; set; }
+        public string MeasureValue { get; set; }
+        public string GearProcedureUnitCode { get; set; }
+        public string HabitatSelectionMethod { get; set; }
+        public string MethodName { get; set; }
+        public string ThermalPreservativeUsedName { get; set; }
+        public string HydrologicCondition { get; set; }
+        public string SampleContainerLabelName { get; set; }
+        public string HydrologicEvent { get; set; }
+        public string HorizCollMethod { get; set; }
+        public string HorizCoRefSysDatumName { get; set; }
+        public string LatitudeMsr { get; set; }
+        public string LongitudeMsr { get; set; }
+
         public virtual TWqxMonloc MonlocIdxNavigation { get; set; }
         public virtual TWqxOrganization Org { get; set; }
         public virtual TWqxProject ProjectIdxNavigation { get; set; }

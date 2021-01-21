@@ -572,6 +572,24 @@ namespace OpenWater2.DataAccess.Data.Repository
             string sampFracReq,
             string pickList)
         {
+            return InsertOrUpdateT_WQX_REF_CHARACTERISTIC(charName,
+            detectLimit,
+            defaultUnit,
+            usedInd,
+            actInd,
+            sampFracReq,
+            pickList, "");
+        }
+        public int InsertOrUpdateT_WQX_REF_CHARACTERISTIC(
+           string charName,
+           decimal? detectLimit,
+           string defaultUnit,
+           bool? usedInd,
+           bool actInd,
+           string sampFracReq,
+           string pickList,
+           string methSpecReq)
+        {
             try
             {
                 Boolean insInd = true;
@@ -592,6 +610,7 @@ namespace OpenWater2.DataAccess.Data.Repository
                 if (usedInd != null) a.UsedInd = usedInd;
                 if (sampFracReq != null) a.SampFracReq = sampFracReq;
                 if (pickList != null) a.PickList = pickList;
+                // if (methSpecReq != null) a.MethSpecReq = methSpecReq;
                 if (actInd != null) a.ActInd = actInd;
                 a.UpdateDt = System.DateTime.Now;
 
@@ -610,7 +629,6 @@ namespace OpenWater2.DataAccess.Data.Repository
                 return 0;
             }
         }
-
         public int InsertOrUpdateT_WQX_REF_CHAR_ORG(string charName, string orgName, string createUserId, string defaultDetectLimit, string defaultUnit, int? defaultAnalMethodIdx, string defaultSampFraction, string defaultResultStatus, string defaultResultTypeValue, string defaultLowerQuantLimit, string defaultUpperQuantLimit)
         {
             try
@@ -927,7 +945,19 @@ namespace OpenWater2.DataAccess.Data.Repository
             }
         }
 
-        public int InsertOrUpdateT_WQX_RESULT(int? rESULT_IDX, int aCTIVITY_IDX, string rESULT_DETECT_CONDITION, string cHAR_NAME, string rESULT_SAMP_FRACTION, string rESULT_MSR, string rESULT_MSR_UNIT, string rESULT_STATUS, string rESULT_VALUE_TYPE, string rESULT_COMMENT, string bIO_INTENT_NAME, string bIO_INDIVIDUAL_ID, string bIO_TAXONOMY, string bIO_SAMPLE_TISSUE_ANATOMY, int? aNALYTIC_METHOD_IDX, int? lAB_IDX, DateTime? lAB_ANALYSIS_START_DT, string dETECTION_LIMIT, string pQL, string lOWER_QUANT_LIMIT, string uPPER_QUANT_LIMIT, int? lAB_SAMP_PREP_IDX, DateTime? lAB_SAMP_PREP_START_DT, string dILUTION_FACTOR, string fREQ_CLASS_CODE, string fREQ_CLASS_UNIT, string cREATE_USER = "system")
+        public int InsertOrUpdateT_WQX_RESULT(int? rESULT_IDX, int aCTIVITY_IDX, string rESULT_DETECT_CONDITION, 
+            string cHAR_NAME, string rESULT_SAMP_FRACTION, string rESULT_MSR, string rESULT_MSR_UNIT, 
+            string rESULT_STATUS, string rESULT_VALUE_TYPE, string rESULT_COMMENT, string bIO_INTENT_NAME, 
+            string bIO_INDIVIDUAL_ID, string bIO_TAXONOMY, string bIO_SAMPLE_TISSUE_ANATOMY, int? aNALYTIC_METHOD_IDX, 
+            int? lAB_IDX, DateTime? lAB_ANALYSIS_START_DT, string dETECTION_LIMIT, string pQL, 
+            string lOWER_QUANT_LIMIT, string uPPER_QUANT_LIMIT, int? lAB_SAMP_PREP_IDX, 
+            DateTime? lAB_SAMP_PREP_START_DT, string dILUTION_FACTOR, string fREQ_CLASS_CODE, string fREQ_CLASS_UNIT,
+            string targetCount, decimal? proportionSampProcNumeric, string resultSampPointType, string resultSampPointPlaceInSeries,
+            string resultSampPointCommentText, string recordIdentifierUserSupplied, string subjectTaxonomicNameUserSupplied,
+            string subjectTaxonomicNameUserSuppliedRefText, string groupSummaryCount, string functionalFeedingGroupName,
+            string comparableAnalMethodIdentifier, string comparableAnalMethodIdentifierCtx, string comparableAnalMethodModificationText,
+            string labCommentText, string detectionQuantLimitCommentText, string labSampSplitRatio,
+            string cREATE_USER = "system")
         {
             Boolean insInd = false;
             try
@@ -975,6 +1005,22 @@ namespace OpenWater2.DataAccess.Data.Repository
                 //set freq class unit to count if not provided
                 if (fREQ_CLASS_UNIT == null && fREQ_CLASS_CODE != null) fREQ_CLASS_UNIT = "count";
 
+                if (targetCount != null) a.TargetCount = targetCount;
+                if (proportionSampProcNumeric != null) a.ProportionSampProcNumeric = proportionSampProcNumeric;
+                if (resultSampPointType != null) a.ResultSampPointType = resultSampPointType;
+                if (resultSampPointPlaceInSeries != null) a.ResultSampPointPlaceInSeries = resultSampPointPlaceInSeries;
+                if (resultSampPointCommentText != null) a.ResultSampPointCommentText = resultSampPointCommentText;
+                if (recordIdentifierUserSupplied != null) a.RecordIdentifierUserSupplied = recordIdentifierUserSupplied;
+                if (subjectTaxonomicNameUserSupplied != null) a.SubjectTaxonomicNameUserSupplied = subjectTaxonomicNameUserSupplied;
+                if (subjectTaxonomicNameUserSuppliedRefText != null) a.SubjectTaxonomicNameUserSuppliedRefText = subjectTaxonomicNameUserSuppliedRefText;
+                if (groupSummaryCount != null) a.GroupSummaryCount = groupSummaryCount;
+                if (functionalFeedingGroupName != null) a.FunctionalFeedingGroupName = functionalFeedingGroupName;
+                if (comparableAnalMethodIdentifier != null) a.ComparableAnalMethodIdentifier = comparableAnalMethodIdentifier;
+                if (comparableAnalMethodIdentifierCtx != null) a.ComparableAnalMethodIdentifierCtx = comparableAnalMethodIdentifierCtx;
+                if (comparableAnalMethodModificationText != null) a.ComparableAnalMethodModificationText = comparableAnalMethodModificationText;
+                if (labCommentText != null) a.LabCommentText = labCommentText;
+                if (detectionQuantLimitCommentText != null) a.DetectionQuantLimitCommentText = detectionQuantLimitCommentText;
+                if (labSampSplitRatio != null) a.LabSampSplitRatio = labSampSplitRatio;
                 if (insInd) //insert case
                     _db.TWqxResult.Add(a);
 
@@ -1220,6 +1266,26 @@ namespace OpenWater2.DataAccess.Data.Repository
                     await GetAndStoreRefTableAsync("ToxicityTestType", "Name", "Name", null).ConfigureAwait(false);
                 if (tableName == "ALL" || tableName == "Voltinism")
                     await GetAndStoreRefTableAsync("Voltinism", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "AquiferType")
+                    await GetAndStoreRefTableAsync("AquiferType", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "NationalAquifer")
+                    await GetAndStoreRefTableAsync("NationalAquifer", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "LocalAquifer")
+                    await GetAndStoreRefTableAsync("LocalAquifer", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "LocalAquiferContext")
+                    await GetAndStoreRefTableAsync("LocalAquiferContext", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "GearProcedureUnit")
+                    await GetAndStoreRefTableAsync("GearProcedureUnit", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "HabitatSelectionMethod")
+                    await GetAndStoreRefTableAsync("HabitatSelectionMethod", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "HydrologicCondition")
+                    await GetAndStoreRefTableAsync("HydrologicCondition", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "HydrologicEvent")
+                    await GetAndStoreRefTableAsync("HydrologicEvent", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "TargetCount")
+                    await GetAndStoreRefTableAsync("TargetCount", "Name", "Description", null).ConfigureAwait(false);
+                if (tableName == "ALL" || tableName == "ResultSamplingPointType")
+                    await GetAndStoreRefTableAsync("ResultSamplingPointType", "Name", "Description", null).ConfigureAwait(false);
 
                 // DisplayDates();
 
@@ -1249,6 +1315,20 @@ namespace OpenWater2.DataAccess.Data.Repository
                     = new WQXWebServicesSoapClient.EndpointConfiguration();
                 string url = _oeAppSettingsRepo.GetT_OE_APP_SETTING("CDX Ref Data URL");
                 WQXWebServicesSoapClient client = new WQXWebServicesSoapClient(endpointConfiguration, url);
+
+                // Get the comma seperated list of available Domain Names 
+                //GetDomainNamesRequest dnRequest =
+                //    new GetDomainNamesRequest
+                //    {
+                //        Body = new GetDomainNamesRequestBody
+                //        {
+
+                //        }
+                //    };
+                //GetDomainNamesResponse dnResponse =
+                //    await client.GetDomainNamesAsync(dnRequest).ConfigureAwait(false);
+                //GetDomainNamesResponseBody dnResponseBody = dnResponse.Body;
+
                 GetDomainValuesRequest request =
                     new GetDomainValuesRequest
                     {
@@ -1257,7 +1337,8 @@ namespace OpenWater2.DataAccess.Data.Repository
                             domainName = tableName,
                         }
                     };
-                GetDomainValuesResponse response = await client.GetDomainValuesAsync(request).ConfigureAwait(false);
+                GetDomainValuesResponse response = 
+                    await client.GetDomainValuesAsync(request).ConfigureAwait(false);
                 GetDomainValuesResponseBody responseBody = response.Body;
 
                 //d.Url = db_Ref.GetT_OE_APP_SETTING("CDX Ref Data URL");

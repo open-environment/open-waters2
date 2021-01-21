@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OpenWater2.DataAccess.Data.Repository;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
 using OpenWater2.Models.Model;
 
@@ -56,18 +57,18 @@ namespace Open_Water2.WebApi.Controllers
         // GET api/mgmt/getTOeAppTasksByName
         [Route("api/mgmt/getTOeAppTasksByName")]
         [HttpGet]
-        public IActionResult getTOeAppTasksByName(string taskName)
+        public async Task<IActionResult> getTOeAppTasksByNameAsync(string taskName)
         {
-            var result = _unitOfWork.oeAppTasksRepository.GetT_OE_APP_TASKS_ByName(taskName);
+            var result = await _unitOfWork.oeAppTasksRepository.GetT_OE_APP_TASKS_ByNameAsync(taskName);
             return Ok(result);
         }
 
         // PUT api/mgmt/updateTOeAppTasks
         [Route("api/mgmt/updateTOeAppTasks")]
         [HttpPut]
-        public IActionResult updateTOeAppTasks([FromBody] TOeAppTasks oeAppTasks)
+        public async Task<IActionResult> updateTOeAppTasksAsync([FromBody] TOeAppTasks oeAppTasks)
         {
-            var result = _unitOfWork.oeAppTasksRepository.UpdateT_OE_APP_TASKS(oeAppTasks.TaskName, oeAppTasks.TaskStatus, oeAppTasks.TaskFreqMs, oeAppTasks.ModifyUserid);
+            var result = await _unitOfWork.oeAppTasksRepository.UpdateT_OE_APP_TASKSAsync(oeAppTasks.TaskName, oeAppTasks.TaskStatus, oeAppTasks.TaskFreqMs, oeAppTasks.ModifyUserid);
             return Ok(result);
         }
 
@@ -124,10 +125,11 @@ namespace Open_Water2.WebApi.Controllers
         // GET api/mgmt/getCdxSubmitCredentials2
         [Route("api/mgmt/getCdxSubmitCredentials2")]
         [HttpGet]
-        public IActionResult getCdxSubmitCredentials2([FromQuery] string orgId)
+        public async Task<IActionResult> getCdxSubmitCredentials2Async([FromQuery] string orgId)
         {
-            _unitOfWork.tWqxSubmitRepository.GetCDXSubmitCredentials2(orgId);
-            return new StatusCodeResult(StatusCodes.Status200OK);
+            CDXCredentials cred = await _unitOfWork.tWqxSubmitRepository.GetCDXSubmitCredentials2Async(orgId).ConfigureAwait(false);
+            //return new StatusCodeResult(StatusCodes.Status200OK);
+            return Ok(cred);
         }
 
         // TODO: THIS IS FOR TEST ONLY, REMOVE DURING REFACTRING
@@ -143,9 +145,9 @@ namespace Open_Water2.WebApi.Controllers
         // GET api/mgmt/wqxSubmitOneByOne
         [Route("api/mgmt/wqxSubmitOneByOne")]
         [HttpGet]
-        public IActionResult wqxSubmitOneByOne([FromQuery] string typeText, int RecordIDX, string userID, string credential, string NodeURL, string orgID, bool? InsUpdIndicator)
+        public async Task<IActionResult> wqxSubmitOneByOne([FromQuery] string typeText, int RecordIDX, string userID, string credential, string NodeURL, string orgID, bool? InsUpdIndicator)
         {
-            _unitOfWork.tWqxSubmitRepository.WQX_Submit_OneByOneAsync(typeText, RecordIDX, userID, credential, NodeURL, orgID, InsUpdIndicator);
+            await _unitOfWork.tWqxSubmitRepository.WQX_Submit_OneByOneAsync(typeText, RecordIDX, userID, credential, NodeURL, orgID, InsUpdIndicator);
             return Ok(1);
         }
     }

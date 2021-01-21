@@ -31,6 +31,20 @@ namespace OpenWater2.Models.Model
         public string HorizRefDatum { get; set; }
         public string VertMeasure { get; set; }
         public string VertMeasureUnit { get; set; }
+        public string DrainageArea { get; set; }
+        public string DrainageAreaUnit { get; set; }
+        public string ContributingDrainageArea { get; set; }
+        public string ContributingDrainageAreaUnit { get; set; }
+
+        public string AquiferTypeName { get; set; }
+        public string NationalAquiferCode { get; set; }
+        public string LocalAquiferCode { get; set; }
+        public string LocalAquiferCodeCtx { get; set; }
+        public string LocalAquiferDesc { get; set; }
+        public DateTime? ConstructionDate { get; set; }
+        public string WellDepthMeasure { get; set; }
+        public string WellDepthMeasureUnit { get; set; }
+
         public string VertCollMethod { get; set; }
         public string VertRefDatum { get; set; }
         public string CountryCode { get; set; }

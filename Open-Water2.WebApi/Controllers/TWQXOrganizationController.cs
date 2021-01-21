@@ -60,7 +60,7 @@ namespace Open_Water2.WebApi.Controllers
             return Ok(result);
         }
         [HttpPost("api/org/InsertOrUpdateTWQXOrganization")]
-        public IActionResult InsertOrUpdateT_WQX_ORGANIZATION(string oRG_ID, string oRG_NAME, string oRG_DESC, string tRIBAL_CODE, string eLECTRONIC_ADDRESS,
+        public async Task<IActionResult> InsertOrUpdateT_WQX_ORGANIZATIONAsync(string oRG_ID, string oRG_NAME, string oRG_DESC, string tRIBAL_CODE, string eLECTRONIC_ADDRESS,
             string eLECTRONICADDRESSTYPE, string tELEPHONE_NUM, string tELEPHONE_NUM_TYPE, string TELEPHONE_EXT, string cDX_SUBMITTER_ID,
             string cDX_SUBMITTER_PWD, bool? cDX_SUBMIT_IND, string dEFAULT_TIMEZONE, string cREATE_USER = "system", string mAIL_ADDRESS = null,
             string mAIL_ADD_CITY = null, string mAIL_ADD_STATE = null, string mAIL_ADD_ZIP = null)
@@ -70,7 +70,7 @@ namespace Open_Water2.WebApi.Controllers
                 cDX_SUBMITTER_ID = "";
                 cDX_SUBMITTER_PWD = "--------";
             }
-            var result = _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATION(oRG_ID, oRG_NAME, oRG_DESC, tRIBAL_CODE, eLECTRONIC_ADDRESS,
+            var result = await _unitOfWork.wqxOrganizationRepository.InsertOrUpdateT_WQX_ORGANIZATIONAsync(oRG_ID, oRG_NAME, oRG_DESC, tRIBAL_CODE, eLECTRONIC_ADDRESS,
             eLECTRONICADDRESSTYPE, tELEPHONE_NUM, tELEPHONE_NUM_TYPE, TELEPHONE_EXT, cDX_SUBMITTER_ID,
             cDX_SUBMITTER_PWD, cDX_SUBMIT_IND, dEFAULT_TIMEZONE, cREATE_USER, mAIL_ADDRESS,
             mAIL_ADD_CITY, mAIL_ADD_STATE, mAIL_ADD_ZIP);

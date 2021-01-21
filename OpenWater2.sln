@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenWater2.Utility", "OpenW
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Open-Waters2.Tests", "Open-Waters2.Tests\Open-Waters2.Tests.csproj", "{7D19A876-CA67-4E96-BBA1-481DC6C5C376}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Open-Water2.WebApi", "Open-Water2.WebApi\Open-Water2.WebApi.csproj", "{07AFD78C-5DC8-4640-89E1-0E6E3585CCB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Open-Water2.WebApi", "Open-Water2.WebApi\Open-Water2.WebApi.csproj", "{07AFD78C-5DC8-4640-89E1-0E6E3585CCB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenWaterSvcCore", "OpenWaterSvcCore\OpenWaterSvcCore.csproj", "{121AB07C-08A0-4902-B482-EC87A816EF8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{07AFD78C-5DC8-4640-89E1-0E6E3585CCB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07AFD78C-5DC8-4640-89E1-0E6E3585CCB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07AFD78C-5DC8-4640-89E1-0E6E3585CCB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{121AB07C-08A0-4902-B482-EC87A816EF8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{121AB07C-08A0-4902-B482-EC87A816EF8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{121AB07C-08A0-4902-B482-EC87A816EF8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{121AB07C-08A0-4902-B482-EC87A816EF8C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

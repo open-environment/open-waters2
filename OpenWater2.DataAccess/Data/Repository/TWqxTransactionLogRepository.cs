@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace OpenWater2.DataAccess.Data.Repository
 {
@@ -94,7 +96,45 @@ namespace OpenWater2.DataAccess.Data.Repository
 
                 return t.LogId;
             }
-            catch
+            catch(Exception e)
+            {
+                return 0;
+            }
+        }
+
+        public async Task<int> InsertUpdateWQX_TRANSACTION_LOGAsync(int? logId, string tableCd, int tableIdx, string submitType, byte[] responseFile, string responseText, string cdxSubmitTransId, string cdxSubmitStatus, string orgId)
+        {
+            try
+            {
+                TWqxTransactionLog t = new TWqxTransactionLog();
+                if (logId != null)
+                    t = await (from c in _db.TWqxTransactionLog
+                         where c.LogId == logId
+                         select c).FirstOrDefaultAsync().ConfigureAwait(false);
+
+                if (logId == null)
+                    t = new TWqxTransactionLog();
+
+                if (tableCd != null) t.TableCd = tableCd;
+                t.TableIdx = tableIdx;
+                if (submitType != null) t.SubmitType = submitType;
+                if (responseFile != null) t.ResponseFile = responseFile;
+                if (responseText != null) t.ResponseTxt = responseText;
+                if (cdxSubmitTransId != null) t.CdxSubmitTransid = cdxSubmitTransId;
+                if (cdxSubmitStatus != null) t.CdxSubmitStatus = cdxSubmitStatus;
+                if (orgId != null) t.OrgId = orgId;
+
+                if (logId == null) //insert case
+                {
+                    t.SubmitDt = System.DateTime.Now;
+                    _db.TWqxTransactionLog.Add(t);
+                }
+
+                await _db.SaveChangesAsync().ConfigureAwait(false);
+
+                return t.LogId;
+            }
+            catch (Exception e)
             {
                 return 0;
             }
