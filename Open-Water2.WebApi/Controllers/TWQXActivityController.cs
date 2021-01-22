@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenWater2.DataAccess.Data.Repository.IRepository;
+using OpenWater2.Models.Model;
 
 namespace Open_Water2.WebApi.Controllers
 {
@@ -56,8 +57,29 @@ namespace Open_Water2.WebApi.Controllers
             var result = _unitOfWork.tWqxActivityRepository.DeleteT_WQX_ACTIVITY(ActivityIDX, userIdx);
             return Ok(result);
         }
+
         [HttpPost("api/activity/insertOrUpdateWqxActivity")]
-        public IActionResult InsertOrUpdateWQX_ACTIVITY([FromQuery] global::System.Int32? aCTIVITY_IDX, global::System.String oRG_ID, global::System.Int32? pROJECT_IDX, global::System.Int32? mONLOC_IDX, global::System.String aCTIVITY_ID,
+        public IActionResult InsertOrUpdateWQX_ACTIVITY([FromBody] TWqxActivity act)
+        {
+            return InsertOrUpdateWQX_ACTIVITY(act.ActivityIdx, act.OrgId, act.ProjectIdx, act.MonlocIdx, act.ActivityId,
+            act.ActType, act.ActMedia, act.ActSubmedia, act.ActStartDt, act.ActEndDt,
+            act.ActTimeZone, act.RelativeDepthName, act.ActDepthheightMsr, act.ActDepthheightMsrUnit,
+            act.TopDepthheightMsr, act.TopDepthheightMsrUnit, act.BioDurationMsr, act.BioDurationMsrUnit,
+            act.DepthRefPoint, act.ActComment, act.BioAssemblageSampled, act.BioDurationMsr,
+            act.BioDurationMsrUnit, act.BioSampComponent, act.BioSampComponentSeq, act.BioReachLenMsr,
+            act.BioReachLenMsrUnit, act.BioReachWidMsr, act.BioReachWidMsrUnit, act.BioPassCount,
+            act.BioNetType, act.BioNetAreaMsr, act.BioNetAreaMsrUnit, act.BioNetMeshsizeMsr,
+            act.BioMeshsizeMsrUnit, act.BioBoatSpeedMsr, act.BioBoatSpeedMsrUnit, act.BioCurrSpeedMsr,
+            act.BioCurrSpeedMsrUnit, act.BioToxicityTestType, act.SampCollMethodIdx, act.SampCollEquip, act.SampCollEquipComment,
+            act.SampPrepIdx, act.SampPrepContType, act.SampPrepContColor, act.SampPrepChemPreserv, act.SampPrepThermPreserv,
+            act.SampPrepStorageDesc, act.WqxSubmitStatus, act.ActInd, act.WqxInd,
+            act.ActivityIdentifierUserSupplied, act.SamplingComponentName, act.ActivityLocationDescriptionText,
+            act.MeasureValue, act.GearProcedureUnitCode, act.HabitatSelectionMethod, act.MethodName,
+            act.ThermalPreservativeUsedName, act.HydrologicCondition, act.SampleContainerLabelName, act.HydrologicEvent,
+            act.HorizCollMethod, act.HorizCoRefSysDatumName, act.LatitudeMsr, act.LongitudeMsr,
+            act.CreateUserid, act.EntryType);
+        }
+        private IActionResult InsertOrUpdateWQX_ACTIVITY([FromQuery] global::System.Int32? aCTIVITY_IDX, global::System.String oRG_ID, global::System.Int32? pROJECT_IDX, global::System.Int32? mONLOC_IDX, global::System.String aCTIVITY_ID,
             global::System.String aCT_TYPE, global::System.String aCT_MEDIA, global::System.String aCT_SUBMEDIA, global::System.DateTime? aCT_START_DT, global::System.DateTime? aCT_END_DT,
             global::System.String aCT_TIME_ZONE, global::System.String rELATIVE_DEPTH_NAME, global::System.String aCT_DEPTHHEIGHT_MSR, global::System.String aCT_DEPTHHEIGHT_MSR_UNIT,
             global::System.String tOP_DEPTHHEIGHT_MSR, global::System.String tOP_DEPTHHEIGHT_MSR_UNIT, global::System.String bOT_DEPTHHEIGHT_MSR, global::System.String bOT_DEPTHHEIGHT_MSR_UNIT,
